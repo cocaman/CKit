@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.2 2004/02/27 00:32:35 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.3 2004/02/27 10:52:06 drbob Exp $
  */
 
 //	System Headers
@@ -486,7 +486,9 @@ bool CKTimeSeries::add( double anOffset )
 	// for each value in the series, add the constant
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		i->second += anOffset;
+		if (!isnan(i->second)) {
+			i->second += anOffset;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -555,7 +557,9 @@ bool CKTimeSeries::subtract( double anOffset )
 	// for each value in the series, subtract the constant
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		i->second -= anOffset;
+		if (!isnan(i->second)) {
+			i->second -= anOffset;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -621,7 +625,9 @@ bool CKTimeSeries::multiply( double aFactor )
 	// for each value in the series, multiply the factor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		i->second *= aFactor;
+		if (!isnan(i->second)) {
+			i->second *= aFactor;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -643,7 +649,9 @@ bool CKTimeSeries::divide( double aDivisor )
 	// for each value in the series, divide by the divisor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		i->second /= aDivisor;
+		if (!isnan(i->second)) {
+			i->second /= aDivisor;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -681,7 +689,9 @@ bool CKTimeSeries::computeReturns()
 	std::map<double, double>::iterator	i = mTimeseries.begin();
 	double		baseline = i->second;
 	for (; i != mTimeseries.end(); ++i) {
-		i->second = log(i->second / baseline);
+		if (!isnan(i->second)) {
+			i->second = log(i->second / baseline);
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -704,7 +714,9 @@ bool CKTimeSeries::inverse()
 	// for each value in the series, invert it
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		i->second = 1.0 / i->second;
+		if (!isnan(i->second)) {
+			i->second = 1.0 / i->second;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -728,10 +740,104 @@ double CKTimeSeries::average()
 	// for each value in the series, multiply the factor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		retval += i->second;
+		if (!isnan(i->second)) {
+			retval += i->second;
+		}
 	}
 	// now divide by the number
 	retval /= (double) mTimeseries.size();
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * These methods are simple numerical attributes of the series
+ * computed each time they are called. They are pretty easy to
+ * understand, with the rms() being the root-mean-square value
+ * of the series and the linf() being the l-infinity norm of the
+ * series.
+ */
+double CKTimeSeries::max()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// check each value in the series for the numerically largest
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if (!isnan(i->second) && ((retval < i->second) || isnan(retval))) {
+			retval = i->second;
+		}
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+double CKTimeSeries::min()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// check each value in the series for the numerically smallest
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if (!isnan(i->second) && ((retval > i->second) || isnan(retval))) {
+			retval = i->second;
+		}
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+double CKTimeSeries::rms()
+{
+	double		retval = 0;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// compute the sum of the squares of each value
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if (!isnan(i->second)) {
+			retval += i->second * i->second;
+		}
+	}
+	// finally take the square root of the average of the squares
+	retval = sqrt(retval/((double) mTimeseries.size()));
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+double CKTimeSeries::linf()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// find the largest absolute value of any element
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if (!isnan(i->second)) {
+			double	a = fabs(i->second);
+			if ((retval < a) || isnan(retval)) {
+				retval = a;
+			}
+		}
+	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
 
