@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.16 2004/12/06 15:19:51 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.17 2004/12/06 20:41:40 drbob Exp $
  */
 
 //	System Headers
@@ -654,6 +654,43 @@ void CKIRCProtocol::disconnect()
 }
 
 
+/*
+ * This method can be used as often as the user wants to verify
+ * that the connection to the IRC server is solid and ready to
+ * both receive and send messages. This is nice because we can
+ * put this in a loop and make sure that even if the IRC server
+ * goes down, we'll re-establish the connection as necessary.
+ */
+bool CKIRCProtocol::verifyConnection()
+{
+	bool		error = false;
+
+	/*
+	 * Make sure we have a connection to this IRC server, if not, then
+	 * see if we did, and if we did, then reconnect.
+	 */
+	if (!error) {
+		if (!isConnected() && !mHostname.empty() && !mNickname.empty()) {
+			if (!connect()) {
+				error = true;
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::verifyCOnnection() - the connection to the "
+					"IRC server at " << mHostname << ":" << mPort << " seemed to "
+					"be down, and trying to re-establish it was not possible. "
+					"Please check into this as soon as possible.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// send the NICK and USER commands to get things going
+				doNICK(mNickname);
+				doUSER(mNickname, mUserHost, mUserServer, mNickname);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
 /********************************************************
  *
  *            IRC Commands - Object Model
@@ -696,21 +733,15 @@ void CKIRCProtocol::sendMessage( const CKString & aDest, const CKString & aMsg )
 	 * see if we did, and if we did, then reconnect.
 	 */
 	if (!error) {
-		if (!isConnected() && !mHostname.empty() && !mNickname.empty()) {
-			if (!connect()) {
-				error = true;
-				std::ostringstream	msg;
-				msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
-					" - while trying to send the message to the IRC server, the "
-					"connection to the IRC server at " << mHostname << ":" << mPort <<
-					" seemed to be down, and trying to re-establish it was not possible. "
-					"Please check into this as soon as possible.";
-				throw CKException(__FILE__, __LINE__, msg.str());
-			} else {
-				// send the NICK and USER commands to get things going
-				doNICK(mNickname);
-				doUSER(mNickname, mUserHost, mUserServer, mNickname);
-			}
+		if (!verifyConnection()) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
+				" - while trying to send the message to the IRC server, the "
+				"connection to the IRC server at " << mHostname << ":" << mPort <<
+				" seemed to be down, and trying to re-establish it was not possible. "
+				"Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
 

@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.10 2004/09/25 16:14:39 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.11 2004/12/06 20:41:42 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -326,6 +326,14 @@ class CKIRCProtocol
 		 * possibilities in one fell swoop.
 		 */
 		void disconnect();
+		/*
+		 * This method can be used as often as the user wants to verify
+		 * that the connection to the IRC server is solid and ready to
+		 * both receive and send messages. This is nice because we can
+		 * put this in a loop and make sure that even if the IRC server
+		 * goes down, we'll re-establish the connection as necessary.
+		 */
+		bool verifyConnection();
 
 		/********************************************************
 		 *
