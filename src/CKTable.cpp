@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.5 2004/05/19 15:51:45 drbob Exp $
+ * $Id: CKTable.cpp,v 1.6 2004/06/04 16:11:07 drbob Exp $
  */
 
 //	System Headers
@@ -3261,10 +3261,14 @@ void CKTable::dropTable()
 	}
 
 	// also drop the array of column headers
-	mColumnHeaders.clear();
+	if (!mColumnHeaders.empty()) {
+		mColumnHeaders.clear();
+	}
 
 	// ...and the array of row labels
-	mRowLabels.clear();
+	if (!mRowLabels.empty()) {
+		mRowLabels.clear();
+	}
 
 	// also, set the size to 'undefined'
 	setNumRows(-1);
