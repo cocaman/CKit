@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.8 2004/09/28 15:45:46 drbob Exp $
+ * $Id: CKString.cpp,v 1.9 2004/09/28 23:17:00 drbob Exp $
  */
 
 //	System Headers
@@ -3639,6 +3639,65 @@ bool CKString::operator>=( const std::string & anSTLString ) const
 CKString CKString::toString() const
 {
 	return CKString(mString);
+}
+
+
+/*
+ * There are times that it'd be nice to see the hex characters of
+ * the string laid out so that you can actually see the binary data
+ * in the string. This is the method that does that.
+ */
+CKString CKString::toHexString() const
+{
+	CKString	retval = "[";
+
+	// put each byte in the return string
+	for (int i = 0; i < mSize; i++) {
+		if (i != 0) {
+			retval.append(" ");
+		}
+		unsigned char	msb = mString[i] & 0xf0;
+		unsigned char	lsb = mString[i] & 0x0f;
+		switch (msb) {
+			case 0x00: retval.append("0");	break;
+			case 0x10: retval.append("1");	break;
+			case 0x20: retval.append("2");	break;
+			case 0x30: retval.append("3");	break;
+			case 0x40: retval.append("4");	break;
+			case 0x50: retval.append("5");	break;
+			case 0x60: retval.append("6");	break;
+			case 0x70: retval.append("7");	break;
+			case 0x80: retval.append("8");	break;
+			case 0x90: retval.append("9");	break;
+			case 0xa0: retval.append("a");	break;
+			case 0xb0: retval.append("b");	break;
+			case 0xc0: retval.append("c");	break;
+			case 0xd0: retval.append("d");	break;
+			case 0xe0: retval.append("e");	break;
+			case 0xf0: retval.append("f");	break;
+		}
+		switch (lsb) {
+			case 0x00: retval.append("0");	break;
+			case 0x01: retval.append("1");	break;
+			case 0x02: retval.append("2");	break;
+			case 0x03: retval.append("3");	break;
+			case 0x04: retval.append("4");	break;
+			case 0x05: retval.append("5");	break;
+			case 0x06: retval.append("6");	break;
+			case 0x07: retval.append("7");	break;
+			case 0x08: retval.append("8");	break;
+			case 0x09: retval.append("9");	break;
+			case 0x0a: retval.append("a");	break;
+			case 0x0b: retval.append("b");	break;
+			case 0x0c: retval.append("c");	break;
+			case 0x0d: retval.append("d");	break;
+			case 0x0e: retval.append("e");	break;
+			case 0x0f: retval.append("f");	break;
+		}
+	}
+	retval.append("]");
+
+	return retval;
 }
 
 
