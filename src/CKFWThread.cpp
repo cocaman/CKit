@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.3 2003/12/16 18:08:56 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.4 2004/06/08 19:57:10 drbob Exp $
  */
 
 //	System Headers
@@ -11,6 +11,7 @@
 #include <iostream>
 
 //	Third-Party Headers
+#include <SQLAPI.h>
 
 //	Other Headers
 #include "CKFWThread.h"
@@ -59,7 +60,20 @@ void CKFWThread::run( )
   } catch ( CKException & lException ) {
     std::cerr << "CKFWThread::run() - while running the thread a CKException "
     	"was thrown: " << lException.getMessage() << std::endl;
-  } catch( ... ) {
+  } catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run() - while running the thread a (char*) exception "
+    	"was thrown: " << charstar << std::endl;
+  } catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run() - while running the thread a std::string "
+    	"exception was thrown: " << str << std::endl;
+  } catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run() - while running the thread a std::exception "
+    	"exception was thrown: " << excep.what() << std::endl;
+  } catch ( SAException & sae ) {
+  	std::string		excep = (const SAChar *)sae.ErrText();
+    std::cerr << "CKFWThread::run() - while running the thread an SAException "
+    	"exception was thrown: " << excep << std::endl;
+  } catch ( ... ) {
     std::cerr << "CKFWThread::run() - while running the thread an unknown "
     	"exception was thrown." << std::endl;
   }
@@ -69,7 +83,20 @@ void CKFWThread::run( )
   } catch ( CKException & lException ) {
     std::cerr << "CKFWThread::run() - while terminating the thread a "
     	"CKException was thrown: " << lException.getMessage() << std::endl;
-  } catch( ... ) {
+  } catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run() - while terminating the thread a (char*) exception "
+    	"was thrown: " << charstar << std::endl;
+  } catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run() - while terminating the thread a std::string "
+    	"exception was thrown: " << str << std::endl;
+  } catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run() - while terminating the thread a std::exception "
+    	"exception was thrown: " << excep.what() << std::endl;
+  } catch ( SAException & sae ) {
+  	std::string		excep = (const SAChar *)sae.ErrText();
+    std::cerr << "CKFWThread::run() - while terminating the thread an SAException "
+    	"exception was thrown: " << excep << std::endl;
+  } catch ( ... ) {
     std::cerr << "CKFWThread::run() - while terminating the thread an unknown "
     	"exception was thrown." << std::endl;
   }
