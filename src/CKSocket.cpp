@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.7 2004/04/02 18:27:54 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.8 2004/05/24 18:19:44 drbob Exp $
  */
 
 //	System Headers
@@ -20,15 +20,6 @@
 #ifdef __sun__
 #include <stropts.h>
 #include <sys/filio.h>
-#endif
-
-/*
- * In some older versions of Solaris, socklen_t isn't defined and we need
- * it in order to make the code more cross-platform.
- */
-#ifndef __socklen_t_defined
-typedef int socklen_t;
-#define __socklen_t_defined
 #endif
 
 //	Third-Party Headers
@@ -1262,11 +1253,16 @@ bool CKSocket::send( const char *aBuffer, int aLength )
 
 		// ...then check for other general errors
 		if (bytesSent == SOCKET_ERROR) {
+			// create the message about what's happened and include the errno
+			std::ostringstream	msg;
+			msg << "CKSocket::send(const char*, int) - we had a socket error while "
+				"trying to send the data. This is a serious problem. Errno=" <<
+				errno << "(" << strerror(errno) << ")";
 			// we certainly aren't on an established connection...
 			setConnectionEstablished(false);
-			// ...now log the error
+			// ...now flag the error and throw the exception
 			error = true;
-			throw CKErrNoException(__FILE__, __LINE__);
+			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
 			// We sent something out, so update the remaining work
 			bytesRemaining -= bytesSent;
