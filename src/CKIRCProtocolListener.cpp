@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.7 2004/08/31 21:23:37 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.8 2004/09/02 18:15:13 drbob Exp $
  */
 
 //	System Headers
@@ -231,7 +231,7 @@ int CKIRCProtocolListener::process()
 	}
 
 	// next, let's see if we have a line from the IRC Server to process
-	std::string		line;
+	std::string		line("");
 	bool			processed = false;
 	if (!error && !timeToDie()) {
 		try {
