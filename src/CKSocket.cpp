@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.16 2004/09/20 16:19:39 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.17 2005/01/04 20:12:57 drbob Exp $
  */
 
 //	System Headers
@@ -602,7 +602,15 @@ bool CKSocket::connect( const CKString & aHost, int aPort, int aService, int aPr
 {
 	bool				error = false;
 	SOCKET				newSocket;
-	struct hostent*		serverInfo;
+#ifdef __linux__
+	struct hostent		serverInfo;
+#endif
+#ifdef __sun__
+	struct hostent		serverInfo;
+#endif
+#ifdef __MACH__
+	struct hostent		*serverInfo;
+#endif
 	struct in_addr		serverAddr;
 	struct sockaddr_in	socketINetAddr;
 
@@ -621,8 +629,77 @@ bool CKSocket::connect( const CKString & aHost, int aPort, int aService, int aPr
 
 	// Resolve the server's IP address by name or number
 	if (!error) {
+#ifdef __linux__
+		struct hostent	*info = NULL;
+		char buff[4096];
+		int h_error;
+		if (gethostbyname_r(aHost.c_str(), &serverInfo, buff, 4096, &info, &h_error) != 0) {
+			/*
+			 * We weren't successful, most likely because the name was a
+			 * numerical IP address of the form "a.b.c.d". Take this IP
+			 * address and try to convert it directly.
+			 */
+			unsigned long tmpIP = inet_addr(aHost.c_str());
+			if (tmpIP == INADDR_NONE) {
+				error = true;
+				serverAddr.s_addr = 0x0;
+				std::ostringstream	msg;
+				msg << "CKSocket::connect(const CKString &, int, int, int) - an "
+					"IP address for the host '" << aHost << "' could not be "
+					"located. Please check the DNS entries to make sure the "
+					"host is resolved properly.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				serverAddr.s_addr = tmpIP;
+			}
+		} else {
+			/*
+			 * We were successful at getting the host information
+			 * structure and now just need to extract the numerical
+			 * IP address from the structure. This is a very poor
+			 * extraction technique, but at least it is cross-
+			 * platform.
+			 */
+			memcpy(&serverAddr, serverInfo.h_addr, serverInfo.h_length);
+		}
+#endif
+#ifdef __sun__
+		char buff[4096];
+		int h_error;
+		struct hostent *info = gethostbyname_r(aHost.c_str(), &serverInfo, buff, 4096, &h_error);
+		if (info == NULL) {
+			/*
+			 * We weren't successful, most likely because the name was a
+			 * numerical IP address of the form "a.b.c.d". Take this IP
+			 * address and try to convert it directly.
+			 */
+			unsigned long tmpIP = inet_addr(aHost.c_str());
+			if (tmpIP == INADDR_NONE) {
+				error = true;
+				serverAddr.s_addr = 0x0;
+				std::ostringstream	msg;
+				msg << "CKSocket::connect(const CKString &, int, int, int) - an "
+					"IP address for the host '" << aHost << "' could not be "
+					"located. Please check the DNS entries to make sure the "
+					"host is resolved properly.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				serverAddr.s_addr = tmpIP;
+			}
+		} else {
+			/*
+			 * We were successful at getting the host information
+			 * structure and now just need to extract the numerical
+			 * IP address from the structure. This is a very poor
+			 * extraction technique, but at least it is cross-
+			 * platform.
+			 */
+			memcpy(&serverAddr, serverInfo.h_addr, serverInfo.h_length);
+		}
+#endif
+#ifdef __MACH__
 		serverInfo = gethostbyname(aHost.c_str());
-	    if (serverInfo == NULL) {
+		if (serverInfo == NULL) {
 			/*
 			 * We weren't successful, most likely because the name was a
 			 * numerical IP address of the form "a.b.c.d". Take this IP
@@ -651,6 +728,7 @@ bool CKSocket::connect( const CKString & aHost, int aPort, int aService, int aPr
 			 */
 			memcpy(&serverAddr, serverInfo->h_addr, serverInfo->h_length);
 		}
+#endif
 	}
 
 	// set up the socket info to connect to the server
