@@ -28,10 +28,26 @@ int main(int argc, char *argv[]) {
 	n->putVarAtPath("MainB/SubA/price", CKVariant((double) 11.1));
 	n->putVarAtPath("MainB/SubB/price", CKVariant((double) 11.2));
 	n->putVarAtPath("MainB/SubC/price", CKVariant((double) 11.3));
+	n->putVarAtPath("MainB/\"R/V\"/price", CKVariant((double) 22.2));
 	std::cout << "Sectors:" << std::endl;
 	std::cout << "-------" << std::endl;
 	std::cout << (*n) << std::endl;
-	std::cout << "MainA/SubC/price = " << (*n->getVarAtPath("MainA/SubC/price")) << std::endl;
+
+	CKVariant	*a;
+	a = n->getVarAtPath("MainA/SubC/price");
+	std::cout << "MainA/SubC/price = " << (*a) << std::endl;
+	a = n->getVarAtPath("MainA/\"R/V\"/price");
+	if (a == NULL) {
+		std::cout << "MainA/\"R/V\"/price = " << "NULL" << std::endl;
+	} else {
+		std::cout << "MainA/\"R/V\"/price = " << (*a) << std::endl;
+	}
+	a = n->getVarAtPath("MainB/\"R/V\"/price");
+	if (a == NULL) {
+		std::cout << "MainB/\"R/V\"/price = " << "NULL" << std::endl;
+	} else {
+		std::cout << "MainB/\"R/V\"/price = " << (*a) << std::endl;
+	}
 	CKDataNode::deleteNodeDeep(n);
 	if (n == NULL) {
 		std::cout << "...cleaned up successfully." << std::endl;
