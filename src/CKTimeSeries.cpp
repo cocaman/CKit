@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.15 2004/11/02 18:32:06 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.16 2004/12/06 14:03:20 drbob Exp $
  */
 
 //	System Headers
@@ -517,6 +517,40 @@ CKVector<double> CKTimeSeries::interpolate( const CKVector<double> & aDateSeries
 	}
 
 	return retval;
+}
+
+
+/*
+ * This method does a simple time-based accumutation of the data in
+ * the time series modifying the data as it goes. This can be thought
+ * of as a simple integrator, but since it's really not integrating,
+ * we've used the method name 'accumulate' as that's a bit more
+ * descriptive of what it's really doing.
+ */
+bool CKTimeSeries::accumulate()
+{
+	bool		error = false;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// keep track of the running sum
+	double		sum = 0.0;
+	// for each value in the series, accumulate it and replace it
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		// hold on to the value as it's going to be used a few times
+		double	value = (*i).second;
+		// if the value is NAN, then accumulate nothing
+		if (!isnan(value)) {
+			sum += value;
+		}
+		// OK, save the sum up to this point
+		(*i).second = sum;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return !error;
 }
 
 
