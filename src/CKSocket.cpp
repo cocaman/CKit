@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.3 2003/12/04 10:47:15 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.4 2003/12/04 12:47:30 drbob Exp $
  */
 
 //	System Headers
@@ -751,6 +751,7 @@ void CKSocket::shutdownSocket()
 {
 	// See if we need to handle an un-bind()
 	if (isActivelyListening()) {
+		::close(getSocketHandle());
 	}
 
 	// Now just shut down the socket
