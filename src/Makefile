@@ -68,6 +68,7 @@ OBJS = CKUUID.o \
 	CKFWConditional.o \
 	CKFWMutex.o \
 	CKFWSemaphore.o \
+	CKFWTimedSemaphore.o \
 	CKFWThread.o \
 	CKFWThreadLocal.o \
 	CKFWTime.o \
