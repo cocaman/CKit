@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.16 2004/09/28 15:45:59 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.17 2004/10/04 16:09:27 drbob Exp $
  */
 
 //	System Headers
@@ -292,6 +292,7 @@ void CKVariant::setStringValue( const char *aStringValue )
 				"not be created. This is a serious allocation error.");
 		} else {
 			// go ahead and copy it in
+			bzero(mStringValue, strlen(aStringValue) + 1);
 			strncpy( mStringValue, aStringValue, strlen(aStringValue) );
 		}
 	}
