@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.3 2004/02/27 00:32:34 drbob Exp $
+ * $Id: CKTable.cpp,v 1.4 2004/05/11 19:17:04 drbob Exp $
  */
 
 //	System Headers
@@ -1907,8 +1907,7 @@ char *CKTable::generateCodeFromValues() const
 	}
 
 	// now create a new buffer to hold all this
-	int		len = buff.str().length();
-	char	*retval = new char[len + 1];
+	char	*retval = new char[buff.str().size() + 1];
 	if (retval == NULL) {
 		throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFromValues"
 			"() - the space to hold the codified representation of this "
@@ -1916,9 +1915,7 @@ char *CKTable::generateCodeFromValues() const
 			"error.");
 	} else {
 		// copy over the string's contents
-		strncpy(retval, buff.str().c_str(), len);
-		// ...and make sure to NULL terminate it
-		retval[len] = '\0';
+		strcpy(retval, buff.str().c_str());
 	}
 
 	/*

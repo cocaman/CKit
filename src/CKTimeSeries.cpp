@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.4 2004/02/27 14:37:45 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.5 2004/05/11 19:17:08 drbob Exp $
  */
 
 //	System Headers
@@ -960,8 +960,7 @@ char *CKTimeSeries::generateCodeFromValues() const
 	}
 
 	// now create a new buffer to hold all this
-	int		len = buff.str().length();
-	char	*retval = new char[len + 1];
+	char	*retval = new char[buff.str().size() + 1];
 	if (retval == NULL) {
 		throw CKException(__FILE__, __LINE__, "CKTimeSeries::generateCodeFromValues"
 			"() - the space to hold the codified representation of this "
@@ -969,9 +968,7 @@ char *CKTimeSeries::generateCodeFromValues() const
 			"error.");
 	} else {
 		// copy over the string's contents
-		strncpy(retval, buff.str().c_str(), len);
-		// ...and make sure to NULL terminate it
-		retval[len] = '\0';
+		strcpy(retval, buff.str().c_str());
 	}
 
 	/*
