@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.6 2004/09/22 12:08:34 drbob Exp $
+ * $Id: CKString.cpp,v 1.7 2004/09/22 13:48:29 drbob Exp $
  */
 
 //	System Headers
@@ -1612,8 +1612,9 @@ CKString CKString::substr( int aStartingPos, int aLength )
 		if (aLength == -1) {
 			newSize = mSize - aStartingPos;
 		}
-		if (retval.mSize < (newSize + mCapacityIncrement)) {
-			if (!retval.resize(newSize + mCapacityIncrement)) {
+		if (newSize >= retval.mCapacity) {
+			// make the resize just fit this new data
+			if (!retval.resize(newSize + 1)) {
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKString::substr(int, int) - while trying to resize the "
