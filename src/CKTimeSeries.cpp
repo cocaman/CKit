@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.16 2004/12/06 14:03:20 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.17 2004/12/07 20:03:39 drbob Exp $
  */
 
 //	System Headers
@@ -300,6 +300,18 @@ CKVector<double> CKTimeSeries::get( const CKVector<double> & aDateSeries )
 
 
 /*
+ * This method tries to get the value from the timeseries for
+ * today. This can be tricky as the date being used here is not
+ * the complete timestamp, so you have to be sure that the data
+ * in the series is by date.
+ */
+double CKTimeSeries::getToday()
+{
+	return get(getCurrentDate());
+}
+
+
+/*
  * This method takes today's date and marches back in time the
  * provided number of days to arrive at the value to return.
  * This is nice in that 0 will get the latest value and 1 will
@@ -313,6 +325,98 @@ double CKTimeSeries::getDaysBack( int aDayCnt )
 	// first, get today's date offset the requested amount
 	double		date = addDays(getCurrentDate(), -1 * aDayCnt);
 	retval = get(date);
+
+	return retval;
+}
+
+
+/*
+ * This method looks at the first point in time in this series
+ * and returns the value of that point. This is an easy way to
+ * get the "starting value" of the series.
+ */
+double CKTimeSeries::getFirstValue()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// get the first pair and that's it
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.begin();
+		retval = (*i).second;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method looks at the last point in time in this series
+ * and returns the value of that point. This is an easy way to
+ * get the "ending value" of the series.
+ */
+double CKTimeSeries::getLastValue()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// get the first pair and that's it
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.end();
+		retval = (*i).second;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method looks at the first point in time in this series
+ * and returns the date of that point in the format YYYYMMDD.hhmmss.
+ * This is an easy way to get the "starting time" of the series.
+ */
+double CKTimeSeries::getFirstDate()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// get the first pair and that's it
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.begin();
+		retval = (*i).first;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method looks at the last point in time in this series
+ * and returns the date of that point in the format YYYYMMDD.hhmmss.
+ * This is an easy way to get the "ending time" of the series.
+ */
+double CKTimeSeries::getLastDate()
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// get the first pair and that's it
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.end();
+		retval = (*i).first;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
 
 	return retval;
 }

@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.13 2004/12/06 14:03:22 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.14 2004/12/07 20:03:40 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -178,6 +178,13 @@ class CKTimeSeries
 		 */
 		CKVector<double> get( const CKVector<double> & aDateSeries );
 		/*
+		 * This method tries to get the value from the timeseries for
+		 * today. This can be tricky as the date being used here is not
+		 * the complete timestamp, so you have to be sure that the data
+		 * in the series is by date.
+		 */
+		double getToday();
+		/*
 		 * This method takes today's date and marches back in time the
 		 * provided number of days to arrive at the value to return.
 		 * This is nice in that 0 will get the latest value and 1 will
@@ -185,6 +192,30 @@ class CKTimeSeries
 		 * ago.
 		 */
 		double getDaysBack( int aDayCnt );
+		/*
+		 * This method looks at the first point in time in this series
+		 * and returns the value of that point. This is an easy way to
+		 * get the "starting value" of the series.
+		 */
+		double getFirstValue();
+		/*
+		 * This method looks at the last point in time in this series
+		 * and returns the value of that point. This is an easy way to
+		 * get the "ending value" of the series.
+		 */
+		double getLastValue();
+		/*
+		 * This method looks at the first point in time in this series
+		 * and returns the date of that point in the format YYYYMMDD.hhmmss.
+		 * This is an easy way to get the "starting time" of the series.
+		 */
+		double getFirstDate();
+		/*
+		 * This method looks at the last point in time in this series
+		 * and returns the date of that point in the format YYYYMMDD.hhmmss.
+		 * This is an easy way to get the "ending time" of the series.
+		 */
+		double getLastDate();
 
 		/*
 		 * This method gets the complete series of dates for the current
