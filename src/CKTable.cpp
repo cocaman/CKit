@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.19 2004/09/28 23:37:56 drbob Exp $
+ * $Id: CKTable.cpp,v 1.20 2004/12/16 10:39:16 drbob Exp $
  */
 
 //	System Headers
@@ -2608,6 +2608,70 @@ CKString CKTable::toString() const
 }
 
 
+/********************************************************
+ *
+ *               Text/String Parsing Methods
+ *
+ ********************************************************/
+/*
+ * This method is used in the creation of the encoded strings that
+ * assist in the translation of the objects from the C++ to Java
+ * environments. Basically, the CKString buffer that's passed in
+ * contains delimiters that are '\x01' but that need to be changed
+ * to a printable ASCII character. This method scans the entire
+ * string for the presence of delimiters and then selects one
+ * character that's not used in the string and replaces all the
+ * "placeholder" delimiters with this value and returns. If it was
+ * impossible to find a delimiter, this method will return false
+ * otherwise it will return true.
+ */
+bool CKTable::chooseAndApplyDelimiter( CKString & aBuff )
+{
+	bool	error = false;
+
+	// first, see if we have anything to do
+	if (!error) {
+		if (aBuff.empty()) {
+			error = true;
+			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
+				"(char *) - the passed-in buffer is empty and that means that "
+				"there's nothing I can do. Please make sure that the argument to "
+				"this method is not empty before calling.");
+		}
+	}
+
+	/*
+	 * Let's check each of the possible delimiters in turn, and if
+	 * one passes, then let's flag that and we can replace it next.
+	 */
+	if (!error) {
+		bool	replaced = false;
+		// these are out list of possible delimiters in a reasonable order
+		char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
+		int		passCnt = (int)strlen(delimiters);
+		// check each and replace if it's not found
+		for (int pass = 0; pass < passCnt; ++pass) {
+			if (aBuff.find(delimiters[pass]) == -1) {
+				aBuff.replace('\x01', delimiters[pass]);
+				replaced = true;
+				break;
+			}
+		}
+		// see if we failed
+		if (!replaced) {
+			error = true;
+			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
+				"(char *) - while trying to find an acceptable delimiter for the "
+				"data in this string we ran out of possibles before finding one "
+				"that wasn't being used in the text of the code. This is a serious "
+				"problem that the developers need to look into.");
+		}
+	}
+
+	return !error;
+}
+
+
 /*
  * This method sets the datastructure of the array of arrays of
  * pointers of CKVariants to the proper location in this class
@@ -2746,70 +2810,6 @@ const CKString *CKTable::getColumnHeaders() const
 const CKString *CKTable::getRowLabels() const
 {
 	return mRowLabels;
-}
-
-
-/********************************************************
- *
- *               Text/String Parsing Methods
- *
- ********************************************************/
-/*
- * This method is used in the creation of the encoded strings that
- * assist in the translation of the objects from the C++ to Java
- * environments. Basically, the CKString buffer that's passed in
- * contains delimiters that are '\x01' but that need to be changed
- * to a printable ASCII character. This method scans the entire
- * string for the presence of delimiters and then selects one
- * character that's not used in the string and replaces all the
- * "placeholder" delimiters with this value and returns. If it was
- * impossible to find a delimiter, this method will return false
- * otherwise it will return true.
- */
-bool CKTable::chooseAndApplyDelimiter( CKString & aBuff )
-{
-	bool	error = false;
-
-	// first, see if we have anything to do
-	if (!error) {
-		if (aBuff.empty()) {
-			error = true;
-			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
-				"(char *) - the passed-in buffer is empty and that means that "
-				"there's nothing I can do. Please make sure that the argument to "
-				"this method is not empty before calling.");
-		}
-	}
-
-	/*
-	 * Let's check each of the possible delimiters in turn, and if
-	 * one passes, then let's flag that and we can replace it next.
-	 */
-	if (!error) {
-		bool	replaced = false;
-		// these are out list of possible delimiters in a reasonable order
-		char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
-		int		passCnt = (int)strlen(delimiters);
-		// check each and replace if it's not found
-		for (int pass = 0; pass < passCnt; ++pass) {
-			if (aBuff.find(delimiters[pass]) == -1) {
-				aBuff.replace('\x01', delimiters[pass]);
-				replaced = true;
-				break;
-			}
-		}
-		// see if we failed
-		if (!replaced) {
-			error = true;
-			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
-				"(char *) - while trying to find an acceptable delimiter for the "
-				"data in this string we ran out of possibles before finding one "
-				"that wasn't being used in the text of the code. This is a serious "
-				"problem that the developers need to look into.");
-		}
-	}
-
-	return !error;
 }
 
 
