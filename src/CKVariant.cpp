@@ -2,10 +2,10 @@
  * CKVariant.cpp - this file defines a class that can be used to represent a
  *                 general data value. The power of this class is that all the
  *                 different kinds of values that this object can rperesent can
- *                 then be treated as a single data type and thus really 
+ *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
- * 
- * $Id: CKVariant.cpp,v 1.12 2004/09/20 16:19:56 drbob Exp $
+ *
+ * $Id: CKVariant.cpp,v 1.13 2004/09/20 17:59:09 drbob Exp $
  */
 
 //	System Headers
@@ -42,7 +42,7 @@
  ********************************************************/
 /*
  * This is the default constructor that defaults to a String but
- * contains nothing. After this, you're certainly going to have to 
+ * contains nothing. After this, you're certainly going to have to
  * set the value's type and contents.
  */
 CKVariant::CKVariant() :
@@ -390,7 +390,7 @@ CKVariantType CKVariant::getType() const
 
 /*
  * This method will return the integer value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an 
+ * instance - if the type is numeric. If the data isn't numeric an
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -409,7 +409,7 @@ int CKVariant::getIntValue() const
 
 /*
  * This method will return the double value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an 
+ * instance - if the type is numeric. If the data isn't numeric an
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -531,7 +531,7 @@ void CKVariant::clearValue()
 			}
 			break;
 	}
-	
+
 	// don't forget to set it to 'unknown'
 	mType = eUnknownVariant;
 }
@@ -689,28 +689,40 @@ bool CKVariant::isTable( const char *aValue )
 
 
 /*
- * This method returns a copy of the current value as contained in 
- * a string and it is the responsibility of the caller to call
- * 'delete []' on the results. It's also possible that this method
- * will return NULL, so you have better check the return value
- * before assuming anything.
+ * This method returns a copy of the current value as contained in
+ * a string. This is returned as a CKString just so it's easy to use.
  */
-char *CKVariant::getValueAsString() const
+CKString CKVariant::getValueAsString() const
 {
-	char	*retval = NULL;
-
-	// first, create a string and then stream the value into it
-	std::string		ans = getValueAsSTLString();
-	// now we need to create a copy of the string
-	retval = new char[ans.size() + 1];
-	if (retval == NULL) {
-		throw CKException(__FILE__, __LINE__, "CKVariant::getValueAsString"
-			"() - the space to hold the string representation of this "
-			"value could not be created. This is a serious allocation "
-			"error.");
-	} else {
-		// copy the std::string's value into the new (char *) array
-		strcpy(retval, ans.c_str());
+	// first, create a string and then set it's value
+	CKString		retval;
+	switch (mType) {
+		case eUnknownVariant:
+			retval += "<unknown>";
+			break;
+		case eStringVariant:
+			retval += mStringValue;
+			break;
+		case eNumberVariant:
+			retval += mDoubleValue;
+			break;
+		case eDateVariant:
+			retval += mDateValue;
+			break;
+		case eTableVariant:
+			if (mTableValue == NULL) {
+				retval += "NULL";
+			} else {
+				retval += mTableValue->toString();
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue == NULL) {
+				retval += "NULL";
+			} else {
+				retval += mTimeSeriesValue->toString();
+			}
+			break;
 	}
 
 	return retval;
@@ -726,38 +738,7 @@ char *CKVariant::getValueAsString() const
  */
 std::string CKVariant::getValueAsSTLString() const
 {
-	// first, create a string and then stream the value into it
-	std::ostringstream	buff;
-	switch (mType) {
-		case eUnknownVariant:
-			buff << "<unknown>";
-			break;
-		case eStringVariant:
-			buff << mStringValue;
-			break;
-		case eNumberVariant:
-			buff << mDoubleValue;
-			break;
-		case eDateVariant:
-			buff << mDateValue;
-			break;
-		case eTableVariant:
-			if (mTableValue == NULL) {
-				buff << "NULL";
-			} else {
-				buff << mTableValue->toString();
-			}
-			break;
-		case eTimeSeriesVariant:
-			if (mTimeSeriesValue == NULL) {
-				buff << "NULL";
-			} else {
-				buff << mTimeSeriesValue->toString();
-			}
-			break;
-	}
-
-	return buff.str();
+	return getValueAsString().stl_str();
 }
 
 

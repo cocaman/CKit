@@ -2,10 +2,10 @@
  * CKVariant.h - this file defines a class that can be used to represent a
  *               general data value. The power of this class is that all the
  *               different kinds of values that this object can rperesent can
- *               then be treated as a single data type and thus really 
+ *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
- * 
- * $Id: CKVariant.h,v 1.9 2004/09/20 16:19:57 drbob Exp $
+ *
+ * $Id: CKVariant.h,v 1.10 2004/09/20 17:59:11 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -61,7 +61,7 @@ class CKVariant
 		 ********************************************************/
 		/*
 		 * This is the default constructor that defaults to a String but
-		 * contains nothing. After this, you're certainly going to have to 
+		 * contains nothing. After this, you're certainly going to have to
 		 * set the value's type and contents.
 		 */
 		CKVariant();
@@ -186,14 +186,14 @@ class CKVariant
 
 		/*
 		 * This method will return the integer value of the data stored in this
-		 * instance - if the type is numeric. If the data isn't numeric an 
+		 * instance - if the type is numeric. If the data isn't numeric an
 		 * exception will be thrown as it's assumed that the user should make
 		 * sure that this instance is numeric *before* calling this method.
 		 */
 		int getIntValue() const;
 		/*
 		 * This method will return the double value of the data stored in this
-		 * instance - if the type is numeric. If the data isn't numeric an 
+		 * instance - if the type is numeric. If the data isn't numeric an
 		 * exception will be thrown as it's assumed that the user should make
 		 * sure that this instance is numeric *before* calling this method.
 		 */
@@ -225,7 +225,7 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTimeSeries *getTimeSeriesValue() const;
-		
+
 		/*
 		 * This method can be used to clear out any existing value in the
 		 * variant and reset it to it's "unknown" state. This is useful if
@@ -270,13 +270,10 @@ class CKVariant
 		static bool isTable( const char *aValue );
 
 		/*
-		 * This method returns a copy of the current value as contained in 
-		 * a string and it is the responsibility of the caller to call
-		 * 'delete []' on the results. It's also possible that this method
-		 * will return NULL, so you have better check the return value
-		 * before assuming anything.
+		 * This method returns a copy of the current value as contained in
+		 * a string. This is returned as a CKString just so it's easy to use.
 		 */
-		char *getValueAsString() const;
+		CKString getValueAsString() const;
 		/*
 		 * This method returns a STL std::string that is a nice, clean,
 		 * string representation of the data this instance is holding. It's
@@ -320,7 +317,7 @@ class CKVariant
 		 */
 		bool operator!=( const CKVariant & anOther ) const;
 		/*
-		 * Because there are times when it's useful to have a nice 
+		 * Because there are times when it's useful to have a nice
 		 * human-readable form of the contents of this instance. Most of the
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
