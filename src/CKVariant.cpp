@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.6 2004/08/03 17:00:51 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.7 2004/08/03 18:39:08 drbob Exp $
  */
 
 //	System Headers
@@ -198,8 +198,7 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
 {
 	switch (anOther.getType()) {
 		case eUnknownVariant:
-			mType = eUnknownVariant;
-			mStringValue = NULL;
+			clearValue();
 			break;
 		case eStringVariant:
 			setStringValue(anOther.getStringValue());
