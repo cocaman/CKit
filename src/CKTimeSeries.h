@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.12 2004/09/28 15:45:58 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.13 2004/12/06 14:03:22 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -223,6 +223,14 @@ class CKTimeSeries
 		 * interpolated value.
 		 */
 		CKVector<double> interpolate( const CKVector<double> & aDateSeries );
+		/*
+		 * This method does a simple time-based accumutation of the data in
+		 * the time series modifying the data as it goes. This can be thought
+		 * of as a simple integrator, but since it's really not integrating,
+		 * we've used the method name 'accumulate' as that's a bit more
+		 * descriptive of what it's really doing.
+		 */
+		bool accumulate();
 		/*
 		 * This method, and it's convenience method, fill in the values
 		 * in the time series by starting at the point furthest back in time
