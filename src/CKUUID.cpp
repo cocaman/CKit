@@ -9,7 +9,7 @@
  *              possibility of including a hashed class name so that the UUID
  *              can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.cpp,v 1.7 2004/09/20 16:19:55 drbob Exp $
+ * $Id: CKUUID.cpp,v 1.8 2005/01/04 20:12:59 drbob Exp $
  */
 
 //	System Headers
@@ -506,6 +506,65 @@ bool CKUUID::getHostIPAddress()
 
 		// now see if we can get the details about this hostname
 		if (!error) {
+#ifdef __linux__
+			struct hostent hostInfo;
+			struct hostent *info = NULL;
+			char buff[4096];
+			int h_error;
+			if (gethostbyname_r(host, &hostInfo, buff, 4096, &info, &h_error) != 0) {
+				/*
+				 * We weren't successful, most likely because the name was a
+				 * numerical IP address of the form "a.b.c.d". Take this IP
+				 * address and try to convert it directly. If it errors out,
+				 * simply set the IP address to 0x0. We'll check on it in the
+				 * initialization method.
+				 */
+				unsigned long tmpIP = inet_addr(host);
+				if (tmpIP == (unsigned long)(-1)) {
+					cIPAddress.s_addr = 0x0;
+				} else {
+					cIPAddress.s_addr = tmpIP;
+				}
+			} else {
+				/*
+				 * We were successful at getting the host information structure
+				 * and now just need to extract the numerical IP address from the
+				 * structure. This is a very poor extraction technique, but at
+				 * least it is cross-platform.
+				 */
+				memcpy(&cIPAddress, hostInfo.h_addr, hostInfo.h_length);
+			}
+#endif
+#ifdef __sun__
+			struct hostent hostInfo;
+			char buff[4096];
+			int h_error;
+			struct hostent *info = gethostbyname_r(host, &hostInfo, buff, 4096, &h_error);
+			if (info == NULL) {
+				/*
+				 * We weren't successful, most likely because the name was a
+				 * numerical IP address of the form "a.b.c.d". Take this IP
+				 * address and try to convert it directly. If it errors out,
+				 * simply set the IP address to 0x0. We'll check on it in the
+				 * initialization method.
+				 */
+				unsigned long tmpIP = inet_addr(host);
+				if (tmpIP == (unsigned long)(-1)) {
+					cIPAddress.s_addr = 0x0;
+				} else {
+					cIPAddress.s_addr = tmpIP;
+				}
+			} else {
+				/*
+				 * We were successful at getting the host information structure
+				 * and now just need to extract the numerical IP address from the
+				 * structure. This is a very poor extraction technique, but at
+				 * least it is cross-platform.
+				 */
+				memcpy(&cIPAddress, hostInfo.h_addr, hostInfo.h_length);
+			}
+#endif
+#ifdef __MACH__
 			struct hostent *hostInfo = gethostbyname(host);
 			if (hostInfo == NULL) {
 				/*
@@ -530,6 +589,7 @@ bool CKUUID::getHostIPAddress()
 				 */
 				memcpy(&cIPAddress, hostInfo->h_addr, hostInfo->h_length);
 			}
+#endif
 		}
 	}
 

@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.11 2004/09/25 16:14:38 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.12 2005/01/04 20:12:51 drbob Exp $
  */
 
 //	System Headers
@@ -2712,7 +2712,80 @@ CKString CKFTPConnection::transferData( const CKString & aType,
 	 */
 	struct in_addr		hostAddr;
 	if (!error) {
-		struct hostent	*hostInfo = gethostbyname(hostname);
+#ifdef __linux__
+		struct hostent hostInfo;
+		struct hostent *info = NULL;
+		char buff[4096];
+		int h_error;
+		if (gethostbyname_r(hostname, &hostInfo, buff, 4096, &info, &h_error) != 0) {
+			/*
+			 * We weren't successful, most likely because the name was a
+			 * numerical IP address of the form "a.b.c.d". Take this IP
+			 * address and try to convert it directly.
+			 */
+			unsigned long tmpIP = inet_addr(hostname);
+			if (tmpIP == (unsigned long)(-1)) {
+				error = true;
+				hostAddr.s_addr = 0x0;
+				std::ostringstream	msg;
+				msg << "CKFTPConnection::transferData(const CKString &, "
+					"const CKString &, const CKString &) - the IP address "
+					"for the host: '" << hostname << "' could not be located. "
+					"Please check the DNS entries for proper host name.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// got something, so keep it
+				hostAddr.s_addr = tmpIP;
+			}
+		} else {
+			/*
+			 * We were successful at getting the host information
+			 * structure and now just need to extract the numerical
+			 * IP address from the structure. This is a very poor
+			 * extraction technique, but at least it is cross-
+			 * platform.
+			 */
+			memcpy(&hostAddr, hostInfo.h_addr, hostInfo.h_length);
+		}
+#endif
+#ifdef __sun__
+		struct hostent hostInfo;
+		char buff[4096];
+		int h_error;
+		struct hostent *info = gethostbyname_r(hostname, &hostInfo, buff, 4096, &h_error);
+		if (info == NULL) {
+			/*
+			 * We weren't successful, most likely because the name was a
+			 * numerical IP address of the form "a.b.c.d". Take this IP
+			 * address and try to convert it directly.
+			 */
+			unsigned long tmpIP = inet_addr(hostname);
+			if (tmpIP == (unsigned long)(-1)) {
+				error = true;
+				hostAddr.s_addr = 0x0;
+				std::ostringstream	msg;
+				msg << "CKFTPConnection::transferData(const CKString &, "
+					"const CKString &, const CKString &) - the IP address "
+					"for the host: '" << hostname << "' could not be located. "
+					"Please check the DNS entries for proper host name.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// got something, so keep it
+				hostAddr.s_addr = tmpIP;
+			}
+		} else {
+			/*
+			 * We were successful at getting the host information
+			 * structure and now just need to extract the numerical
+			 * IP address from the structure. This is a very poor
+			 * extraction technique, but at least it is cross-
+			 * platform.
+			 */
+			memcpy(&hostAddr, hostInfo.h_addr, hostInfo.h_length);
+		}
+#endif
+#ifdef __MACH__
+		struct hostent *hostInfo = gethostbyname(hostname);
 		if (hostInfo == NULL) {
 			/*
 			 * We weren't successful, most likely because the name was a
@@ -2743,6 +2816,7 @@ CKString CKFTPConnection::transferData( const CKString & aType,
 			 */
 			memcpy(&hostAddr, hostInfo->h_addr, hostInfo->h_length);
 		}
+#endif
 	}
 
 	// Finally, format the data for the PORT command and send it
