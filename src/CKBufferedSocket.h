@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.4 2003/12/03 16:45:15 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.5 2003/12/16 18:08:49 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H

@@ -5,7 +5,7 @@
  *              order to be more generally useful, we need more advanced
  *              features and more object-oriented behaviors.
  *
- * $Id: CKSocket.h,v 1.3 2003/12/03 16:45:32 drbob Exp $
+ * $Id: CKSocket.h,v 1.4 2003/12/16 18:09:05 drbob Exp $
  */
 #ifndef __CKSOCKET_H
 #define __CKSOCKET_H

@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.5 2003/12/04 13:07:29 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.6 2003/12/16 18:09:04 drbob Exp $
  */
 
 //	System Headers
@@ -20,6 +20,15 @@
 #ifdef __sun__
 #include <stropts.h>
 #include <sys/filio.h>
+#endif
+
+/*
+ * In some older versions of Solaris, socklen_t isn't defined and we need
+ * it in order to make the code more cross-platform.
+ */
+#ifndef __socklen_t_defined
+typedef int socklen_t;
+#define __socklen_t_defined
 #endif
 
 //	Third-Party Headers
@@ -750,9 +759,7 @@ bool CKSocket::incomingConnectionActive() const
 void CKSocket::shutdownSocket()
 {
 	// First shut down the socket against any communication
-	if (getSocketHandle() != INVALID_SOCKET) {
-		shutdown(getSocketHandle(), 2);
-	}
+	shutdown(getSocketHandle(), 2);
 
 	// See if we need to undo a bind() call with close()
 	if (isActivelyListening()) {

@@ -43,9 +43,9 @@ LIB_FILE = $(LIB_DIR)/libCKit.$(SO_EXT)
 # includes, the libs, the compiler flags, etc.
 #
 INCLUDES = -I. -I$(INCLUDE_DIR)
-CXXFLAGS = -fPIC -g -Wall $(INCLUDES)
-
-LIBS = -L$(LIB_DIR) -lstdc++ 
+DEFINES = $(CXX_DEFS)
+CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
+LIBS = -L$(LIB_DIR) -lstdc++
 LDFLAGS = -fPIC $(LIBS)
 
 #
@@ -73,6 +73,9 @@ OBJS = CKUUID.o \
 	CKFWThreadLocal.o \
 	CKFWTime.o \
 	CKFWTimer.o \
+	CKVariant.o \
+	CKTable.o \
+	CKStopwatch.o \
 	CKException.o \
 	CKErrNoException.o
 SRCS = $(OBJS:%.o=%.cpp)
@@ -117,8 +120,9 @@ CKSMTPDelivery.o: CKSMTPDelivery.h CKMailDelivery.h CKMailMessage.h
 CKSMTPDelivery.o: CKSMTPConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKSMTPDelivery.o: CKSocket.h CKException.h
 CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h
-CKIRCProtocolListener.o: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
-CKIRCProtocolListener.o: CKBufferedSocket.h CKSocket.h CKException.h
+CKIRCProtocolListener.o: CKIRCProtocol.h CKException.h
+CKIRCProtocolListener.o: CKTelnetConnection.h CKTCPConnection.h
+CKIRCProtocolListener.o: CKBufferedSocket.h CKSocket.h
 CKIRCResponder.o: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
 CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
 CKFWConditional.o: CKFWConditional.h
@@ -128,6 +132,6 @@ CKFWSemaphore.o: CKFWSemaphore.h CKErrNoException.h CKException.h
 CKFWThread.o: CKFWThread.h CKErrNoException.h CKException.h
 CKFWThreadLocal.o: CKFWThreadLocal.h
 CKFWTime.o: CKFWTime.h CKErrNoException.h CKException.h
-CKFWTimer.o: CKFWTimer.h CKException.h
+CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h
 CKException.o: CKException.h
 CKErrNoException.o: CKErrNoException.h CKException.h
