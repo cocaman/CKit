@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.7 2004/09/28 23:16:59 drbob Exp $
+ * $Id: CKString.h,v 1.8 2005/01/13 10:32:42 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -208,8 +208,8 @@ class CKString
 		 */
 		CKString & append( CKString & aString );
 		CKString & append( const CKString & aString );
-		CKString & append( char *aCString );
-		CKString & append( const char *aCString );
+		CKString & append( char *aCString, int aLength = -1 );
+		CKString & append( const char *aCString, int aLength = -1 );
 		CKString & append( std::string & aSTLString );
 		CKString & append( const std::string & aSTLString );
 		/*

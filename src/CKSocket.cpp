@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.17 2005/01/04 20:12:57 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.18 2005/01/13 10:32:41 drbob Exp $
  */
 
 //	System Headers
@@ -1430,6 +1430,7 @@ CKString CKSocket::readAvailableData()
 	 * Now that I have the character data from the socket, I need to
 	 * NULL terminate it and then create a CKString out of it.
 	 */
+	CKString	retval;
 	if (!error) {
 		// we thankfully left room at the very end
 		incomingPtr[bytesRead] = '\0';
@@ -1438,9 +1439,13 @@ CKString CKSocket::readAvailableData()
 			std::cout << "Received " << bytesRead << " bytes: " << incomingPtr <<
 				 std::endl;
 		}
+		// make the returned string the right size
+		retval.fill('\0', (bytesRead + 1));
+		// now put the data from the buffer into the string
+		memcpy((void *)retval.c_str(), incomingPtr, bytesRead);
 	}
 
-    return CKString(incomingPtr);
+    return retval;
 }
 
 

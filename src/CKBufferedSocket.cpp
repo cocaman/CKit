@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.14 2004/12/17 21:04:13 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.15 2005/01/13 10:32:41 drbob Exp $
  */
 
 //	System Headers
@@ -36,7 +36,7 @@
  ********************************************************/
 /*
  * This is the default constructor that gets things started, but
- * wse still need to set the host and port before we can make a
+ * we still need to set the host and port before we can make a
  * connection.
  */
 CKBufferedSocket::CKBufferedSocket() :
