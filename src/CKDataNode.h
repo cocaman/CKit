@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.13 2004/09/25 16:14:38 drbob Exp $
+ * $Id: CKDataNode.h,v 1.14 2004/09/28 15:45:45 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -485,18 +485,6 @@ class CKDataNode
 		 * of.
 		 */
 		CKVector<CKDataNode*> *getKids();
-
-		/*
-		 * This is the tokenizer/parser that wasn't in the STL string
-		 * class for some unknown reason. It takes a source and a
-		 * delimiter and breaks up the source into chunks that are
-		 * all separated by the delimiter string. Each chunk is put
-		 * into the returned vector for accessing by the caller. Since
-		 * the return value is created on the stack, the user needs to
-		 * save it if they want it to stay around.
-		 */
-		static CKStringList parseIntoChunks( const CKString & aString,
-											 const CKString & aDelim );
 
 	private:
 		/*

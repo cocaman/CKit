@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.7 2004/09/22 13:48:29 drbob Exp $
+ * $Id: CKString.cpp,v 1.8 2004/09/28 15:45:46 drbob Exp $
  */
 
 //	System Headers
@@ -268,9 +268,7 @@ CKString::CKString( char aChar, int aRepeatCount ) :
 		// clear out all of it first
 		bzero(mString, mInitialCapacity);
 		// now see if we need to copy anything into this buffer
-		for (int i = 0; i < mSize; i++) {
-			mString[i] = aChar;
-		}
+		memset(mString, aChar, mSize);
 		// ...and set the capacity of this guy as well
 		mCapacity = mInitialCapacity;
 	}
@@ -498,6 +496,7 @@ CKString & CKString::append( char *aCString )
 				mString = NULL;
 				// save the new buffer for the string
 				mString = more;
+				mCapacity = mSize + newChars + mCapacityIncrement;
 			}
 		}
 	}
@@ -658,6 +657,7 @@ CKString & CKString::prepend( char *aCString )
 				mString = NULL;
 				// save the new buffer for the string
 				mString = more;
+				mCapacity = mSize + newChars + mCapacityIncrement;
 			}
 		}
 	}
@@ -744,6 +744,71 @@ CKString & CKString::prepend( double aDouble )
 	bzero(c, 80);
 	snprintf(c, 79, "%f", aDouble);
 	return prepend(c);
+}
+
+
+/*
+ * When you want to fill an existing string with a repeated value,
+ * this is a good way to do it. It replaces what's in the string
+ * and in it's place puts the requested number of copies of the
+ * given character.
+ */
+CKString & CKString::fill( char aChar, int aCount )
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::fill(char, int) - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// see if we need to make more room in the buffer
+	if (!error) {
+		if (aCount+1 >= mCapacity) {
+			// make room for it all and then a little growth
+			char	*more = new char[aCount+1];
+			if (more == NULL) {
+				error = true;
+				std::ostringstream	msg;
+				msg << "CKString::fill(char, int) - the existing buffer of " <<
+					mCapacity << " chars was not sufficient to hold the " <<
+					(aCount + 1) << " characters, and while trying to "
+					"create more space we failed. This is a serious allocation "
+					"error that needs to be looked into.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// clear this puppy out
+				bzero(more, (aCount + 1));
+				// delete the old buffer as it's used up
+				delete [] mString;
+				mString = NULL;
+				// save the new buffer for the string
+				mString = more;
+				mCapacity = aCount + 1;
+			}
+		}
+	}
+
+	// now copy over the new characters to the string
+	if (!error) {
+		memset(mString, aChar, aCount);
+		mSize = aCount;
+	}
+
+	return *this;
+}
+
+
+CKString & CKString::fill( char aChar, int aCount ) const
+{
+	return ((CKString *)this)->fill(aChar, aCount);
 }
 
 
@@ -1081,11 +1146,222 @@ bool CKString::clear() const
 }
 
 
+/*
+ * There are times that you might want to see the numeric
+ * representation of the contents of this string. These methods
+ * make that easy enough to do and take care of all the dirty
+ * work for us.
+ */
+int CKString::intValue()
+{
+	bool		error = false;
+	int			retval = 0;
+
+	/*
+	 * We're going to loop over each character in the String until we
+	 * get to the end. As we're going, we'll be building up
+	 * the return value. If we find a character that's not a digit
+	 * then we'll return what we have to this point, just as atoi()
+	 * would.
+	 */
+	for (int i = 0; i < mSize; i++) {
+		// see if it's not a digit
+		if (!isdigit(mString[i])) {
+			break;
+		} else {
+			// accumulate the value
+			retval = retval * 10 + (mString[i] - '0');
+		}
+	}
+
+	return error ? 0 : retval;
+}
+
+
+int CKString::intValue() const
+{
+	return ((CKString *)this)->intValue();
+}
+
+
+int CKString::hexIntValue()
+{
+	bool		error = false;
+	int			retval = 0;
+
+	/*
+	 * We're going to loop over each character in the string until we
+	 * get to the end. As we're going, we'll be building up
+	 * the return value. If we find a character that's not a hex
+	 * digit then we'll return what we have to this point, just as
+	 * atoi() would.
+	 */
+	for (int i = 0; i < mSize; i++) {
+		// see if it's not a digit
+		if (!isxdigit(mString[i])) {
+			break;
+		} else {
+			// accumulate the value based on the digit itself
+			if (isdigit(mString[i])) {
+				retval = retval * 16 + (mString[i] - '0');
+			} else {
+				retval = retval * 16 + (toupper(mString[i]) - 'A' + 10);
+			}
+		}
+	}
+
+	return error ? 0 : retval;
+}
+
+
+int CKString::hexIntValue() const
+{
+	return ((CKString *)this)->hexIntValue();
+}
+
+
+
+long CKString::longValue()
+{
+	bool		error = false;
+	long		retval = 0;
+
+	/*
+	 * We're going to loop over each character in the String until we
+	 * get to the end. As we're going, we'll be building up
+	 * the return value. If we find a character that's not a digit
+	 * then we'll return what we have to this point, just as atoi()
+	 * would.
+	 */
+	for (int i = 0; i < mSize; i++) {
+		// see if it's not a digit
+		if (!isdigit(mString[i])) {
+			break;
+		} else {
+			// accumulate the value
+			retval = retval * 10 + (mString[i] - '0');
+		}
+	}
+
+	return error ? 0 : retval;
+}
+
+
+long CKString::longValue() const
+{
+	return ((CKString *)this)->longValue();
+}
+
+
+double CKString::doubleValue()
+{
+	double		retval = NAN;
+	if (mString != NULL) {
+		retval = strtod(mString, (char **)NULL);
+	}
+	return retval;
+}
+
+
+double CKString::doubleValue() const
+{
+	return ((CKString *)this)->doubleValue();
+}
+
+
 /********************************************************
  *
  *                Manipulation Methods
  *
  ********************************************************/
+/*
+ * There will be times when the data in a string may not exactly
+ * look like a string, but you need to make an *exact* copy
+ * anyway. This method will take the capacity, size, and data
+ * from the argument and duplicate them so that this guy is a
+ * clone of the original.
+ */
+CKString & CKString::clone( CKString & anOther )
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::clone(CKString &) - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	if (!error) {
+		if (anOther.mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::clone(CKString &) - the argument's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// see if we need to alter out buffer to match the other guy's
+	if (!error) {
+		if (mCapacity < anOther.mCapacity) {
+			// make room for it all and then a little growth
+			char	*him = new char[anOther.mCapacity];
+			if (him == NULL) {
+				error = true;
+				std::ostringstream	msg;
+				msg << "CKString::clone(CKString &) - the existing buffer of " <<
+					mCapacity << " chars was not sufficient to hold the other "
+					"value, and while trying to create more space we failed. "
+					"This is a serious allocation error that needs to be looked "
+					"into.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// clear this puppy out
+				bzero(him, anOther.mCapacity);
+				// delete the old buffer as it's used up
+				delete [] mString;
+				mString = NULL;
+				// save the new buffer for the string
+				mString = him;
+				mCapacity = anOther.mCapacity;
+			}
+		}
+	}
+
+	// now copy over the characters to the string
+	if (!error) {
+		memcpy(mString, anOther.mString, mCapacity);
+		mSize = anOther.mSize;
+	}
+
+	return *this;
+}
+
+
+CKString & CKString::clone( const CKString & anOther )
+{
+	return clone((CKString &)anOther);
+}
+
+
+CKString & CKString::clone( CKString & anOther ) const
+{
+	return ((CKString *)this)->clone(anOther);
+}
+
+
+CKString & CKString::clone( const CKString & anOther ) const
+{
+	return ((CKString *)this)->clone((CKString &)anOther);
+}
+
+
 /*
  * These operators add the different kinds of strings to the
  * beginning of the existing string and return 'true' if successful,
@@ -4980,6 +5256,90 @@ CKStringNode *CKStringList::find( std::string & anSTLString ) const
 CKStringNode *CKStringList::find( const std::string & anSTLString ) const
 {
 	return ((CKStringList *)this)->find((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This is the tokenizer/parser that wasn't in the STL string
+ * class for some unknown reason. It takes a source and a
+ * delimiter and breaks up the source into chunks that are
+ * all separated by the delimiter string. Each chunk is put
+ * into the returned vector for accessing by the caller. Since
+ * the return value is created on the stack, the user needs to
+ * save it if they want it to stay around.
+ */
+CKStringList CKStringList::parseIntoChunks( const CKString & aString,
+											const CKString & aDelim )
+{
+	bool			error = false;
+	CKStringList	retval;
+
+	// first, see if we have anything to do
+	if (!error) {
+		if (aString.length() <= 0) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKStringList::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the source string is 0 and "
+				"that means that there's nothing for me to do. Please make sure "
+				"that the arguments make sense before calling this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	int		delimLength = 0;
+	if (!error) {
+		delimLength = aDelim.length();
+		if (delimLength <= 0) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKStringList::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the delimiter string is 0 "
+				"and that means that there's nothing for me to do. Please make "
+				"sure that the arguments make sense before calling this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now, copy the source to a buffer so I can consume it in the process
+	CKString		buff;
+	if (!error) {
+		buff = aString;
+	}
+
+	/*
+	 * Now loop picking off the parts bettween the delimiters. Do this by
+	 * finding the first delimiter, see if it's located at buff[0], and if
+	 * so, then add an empty string to the vector, otherwise, get the
+	 * substring up to that delimiter and place it at the end of the vector,
+	 * removing it from the buffer as you do this. Then eat up the delimiter
+	 * and do it all again. In the end, there will be one more bit and that
+	 * will simply be added to the end of the vector.
+	 */
+	while (!error) {
+		// find out wherre, if anyplace, the delimiter sits
+		int		pos = buff.find(aDelim);
+		if (pos == -1) {
+			// nothing left to parse out, bail out
+			break;
+		} else if (pos == 0) {
+			// add an empty string to the vector
+			retval.addToEnd(CKString());
+		} else {
+			// pick off the substring up to the delimiter
+			retval.addToEnd(buff.substr(0, pos));
+			// ...and then delete them from the buffer
+			buff.erase(0, pos);
+		}
+
+		// now strip off the delimiter from the buffer
+		buff.erase(0, delimLength);
+	}
+	// if we didn't error out, then add the remaining buff to the end
+	if (!error) {
+		retval.addToEnd(buff);
+	}
+
+	return retval;
 }
 
 
