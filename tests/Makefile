@@ -47,7 +47,7 @@ INCLUDES = -I. -I$(INCLUDE_DIR) -I$(SRC_DIR)
 DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
-LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lCKit -lpthread
+LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lCKit -lsqlapi -lpthread
 LDFLAGS = -fPIC
 
 #
