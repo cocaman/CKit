@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.2 2003/12/03 16:45:30 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.3 2003/12/04 10:47:15 drbob Exp $
  */
 
 //	System Headers
@@ -754,7 +754,9 @@ void CKSocket::shutdownSocket()
 	}
 
 	// Now just shut down the socket
-	shutdown(getSocketHandle(), 2);
+	if (getSocketHandle() != INVALID_SOCKET) {
+		shutdown(getSocketHandle(), 2);
+	}
 
 	// ...and reset the class variables
 	setConnectionEstablished(false);
