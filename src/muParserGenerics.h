@@ -23,8 +23,10 @@
 #include <string>
 #include <stack>
 #include <vector>
+#include <iostream>
 
 #include "muParserException.h"
+#include "CKVariant.h"
 
 /*
  * Because we're using the NAN value in some places in this object,
@@ -778,23 +780,22 @@ class ParserByteCode
 				<<  ", PtrSize:" << mc_iSizePtr << ")\n";
 
 			int i = 0;
-
 			while ( m_vBase[i] != token_type::cmEND ) {
 				std::cout << "IDX[" << m_vBase[i++] << "]\t";
 				switch (m_vBase[i]) {
 					case token_type::cmVAL:
 						std::cout << "VAL "; ++i;
-						std::cout << "[" << *( reinterpret_cast<double*>(&m_vBase[i]) ) << "]\n";
+						std::cout << "[" << *( reinterpret_cast<CKVariant*>(&m_vBase[i]) ) << "]\n";
 						i += mc_iSizeVal;
 						break;
 					case token_type::cmVAR:
 						std::cout << "VAR "; ++i;
-						std::cout << "[ADDR: 0x" << hex << m_vBase[i] << "]\n"; ++i;
+						std::cout << "[ADDR: 0x" << std::hex << m_vBase[i] << std::dec << "]\n"; ++i;
 						break;
 					case token_type::cmFUNC:
 						std::cout << "CALL\t"; ++i;
-						std::cout << "[Arg:" << dec << m_vBase[i] << "]"; ++i;
-						std::cout << "[ADDR: 0x" << hex << m_vBase[i] << "]\n"; ++i;
+						std::cout << "[Arg:" << std::dec << m_vBase[i] << "]"; ++i;
+						std::cout << "[ADDR: 0x" << std::hex << m_vBase[i] << std::dec << "]\n"; ++i;
 						break;
 					case token_type::cmPOSTOP:
 						std::cout << "POSTOP\t"; ++i;
@@ -815,7 +816,7 @@ class ParserByteCode
 				}
 			}
 
-			std::cout << "END" << endl;
+			std::cout << "END" << std::endl;
 		}
 };
 

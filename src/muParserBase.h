@@ -288,8 +288,8 @@ class ParserBase
 		void  ClearFormula();
 
 #if defined(MU_PARSER_DUMP_STACK) | defined(MU_PARSER_DUMP_CMDCODE)
-		void StackDump(const ParserStack<token_type > &a_stVal,
-					   const ParserStack<token_type > &a_stOprt);
+		void StackDump(const ParserStack<token_type> &a_stVal,
+					   const ParserStack<token_type> &a_stOprt) const;
 #endif
 
 		/** \brief Pointer to the parser function.
