@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.19 2005/02/14 15:43:58 drbob Exp $
+ * $Id: CKDataNode.h,v 1.20 2005/02/14 17:07:51 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -163,15 +163,19 @@ class CKDataNode
 		/*
 		 * Since each node can hold many variables (attributes), it's
 		 * sometimes necessary to clean out the old ones. This method
-		 * removes the named variable from this node if it exists.
+		 * removes the named variable from this node if it exists. If the
+		 * flag indicates that this is to be "deep" (recursive), then
+		 * this variable will be removed from all the child nodes as well.
 		 */
-		virtual void removeVar( const CKString & aName );
+		virtual void removeVar( const CKString & aName, bool aDeepFlag = false );
 		/*
 		 * When you want to clear out all the variables (attributes) from
 		 * this node, call this method and the entire map of variables will
-		 * be cleared out. It's non-reversable, so be carful with this.
+		 * be cleared out. It's non-reversable, so be carful with this. If
+		 * the flag indicates that this is to be "deep" (recursive), then
+		 * all variables will be removed from all child nodes as well.
 		 */
-		virtual void clearVars();
+		virtual void clearVars( bool aDeepFlag = false );
 
 		/*
 		 * This method adds the provided node as a child of the current
