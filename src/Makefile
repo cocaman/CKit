@@ -76,6 +76,7 @@ OBJS = CKUUID.o \
 	CKVariant.o \
 	CKTable.o \
 	CKTimeSeries.o \
+	CKDataNode.o \
 	CKStopwatch.o \
 	CKException.o \
 	CKErrNoException.o
@@ -138,6 +139,7 @@ CKFWTime.o: CKFWTime.h CKException.h
 CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h
 CKVariant.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
 CKTable.o: CKException.h CKTable.h CKVariant.h
+CKDataNode.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
 CKTimeSeries.o: CKException.h CKTable.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKStopwatch.o: CKException.h CKStopwatch.h
 CKErrNoException.o: CKErrNoException.h CKException.h
