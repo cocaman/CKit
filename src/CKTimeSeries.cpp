@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.14 2004/09/28 23:37:56 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.15 2004/11/02 18:32:06 drbob Exp $
  */
 
 //	System Headers
@@ -1405,7 +1405,7 @@ void CKTimeSeries::takeValuesFromCode( const CKString & aCode )
 				"code.");
 		} else {
 			// save it as any other value
-			put(timestamp, value);
+			mTimeseries[timestamp] = value;
 		}
 	}
 
