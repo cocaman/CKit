@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.3 2004/03/05 15:38:36 drbob Exp $
+ * $Id: CKDataNode.h,v 1.4 2004/03/05 20:40:21 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -244,6 +244,15 @@ class CKDataNode
 		 */
 		CKVariant *getVarAtPath( const std::string & aPath );
 		/*
+		 * This method takes a vector of strings as the path as opposed
+		 * to a single string delimited with '/'. This makes it a little
+		 * easier if you're building up the path by data elements and
+		 * you don't really want to make a single string just to store
+		 * the value.
+		 */
+		CKVariant *getVarAtPath( const std::vector<std::string> & aSteps );
+
+		/*
 		 * This method is part of the "pathing" capabilities of this class
 		 * and is intended to store values in nodes in a tree structure.
 		 * If, for example, the path is:
@@ -272,6 +281,32 @@ class CKDataNode
 		 * a currently defined structure.
 		 */
 		void putVarAtPath( const std::string & aPath, const CKVariant & aValue );
+		/*
+		 * This version of the method takes a vector of strings that is
+		 * the path as opposed to a single string delimited by the '/'.
+		 * This is useful when you have the data organized in something
+		 * like a vector and you don't want to put it all together only
+		 * to have this method break it up.
+		 */
+		void putVarAtPath( const std::vector<std::string> & aSteps,
+						   const CKVariant & aValue );
+
+		/*
+		 * This method is very nice in that it takes a single string that
+		 * represents a path and breaks it up into it's components, placing
+		 * each in the returned vector in the proper order. Leading and
+		 * trailing '/' characters are removed and any component in the
+		 * path escaped by double-quotes will be kept intact. This is the
+		 * way for a component of the path to include a '/' character.
+		 */
+		static std::vector<std::string> pathToSteps( const std::string & aPath );
+		/*
+		 * This method is useful in that it takes a vector of path steps,
+		 * or components, and then assembles them into a single string
+		 * that is properly escaped for the presence of '/' characters in
+		 * any one of the steps.
+		 */
+		static std::string stepsToPath( const std::vector<std::string> & aPath );
 
 		/********************************************************
 		 *
@@ -398,8 +433,8 @@ class CKDataNode
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		std::vector<std::string> parseIntoChunks( const std::string & aString,
-												  const std::string & aDelim );
+		static std::vector<std::string> parseIntoChunks( const std::string & aString,
+														 const std::string & aDelim );
 
 	private:
 		/*

@@ -9,10 +9,12 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.2 2004/03/05 15:38:35 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.3 2004/03/05 20:40:19 drbob Exp $
  */
 
 //	System Headers
+// TODO
+#include <iostream>
 #include <sstream>
 
 //	Third-Party Headers
@@ -548,45 +550,70 @@ CKVariant *CKDataNode::getVarAtPath( const std::string & aPath )
 	bool		error = false;
 	CKVariant	*retval = NULL;
 
-	// first, make a copy of the path for our manipulation
-	std::string		path = aPath;
-	// ...and the node to start looking at
+	// first, see if we need to start at the root
 	CKDataNode		*node = this;
-	// next, we need to see if the path starts with a '/' - the root
 	if (!error) {
-		if (path[0] == '/') {
-			// remove the leading slash from the path
-			path.erase(0,1);
-			// ...and travel to the root of this tree
+		if (aPath[0] == '/') {
+			// travel to the root of this tree
 			while (node->mParent != NULL) {
 				node = node->mParent;
 			}
 		}
 	}
 
-	// now we need to parse the path into a series of strings
+	// next, turn the path into a vector of strings
 	std::vector<std::string>	steps;
 	int							stepCnt = 0;
 	if (!error) {
-		steps = parseIntoChunks(path, "/");
+		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKDataNode::getVarAtPath(const std::string &) - the path "
 				"had insufficient steps to create a valid path. Please make sure "
-				"that a valid path is apssed to this method.";
+				"that a valid path is passed to this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// use the other version to get the value
+			retval = node->getVarAtPath(steps);
 		}
 	}
 
-	// now travel down the path of the tree to the right node
+	return retval;
+}
+
+
+/*
+ * This method takes a vector of strings as the path as opposed
+ * to a single string delimited with '/'. This makes it a little
+ * easier if you're building up the path by data elements and
+ * you don't really want to make a single string just to store
+ * the value.
+ */
+CKVariant *CKDataNode::getVarAtPath( const std::vector<std::string> & aSteps )
+{
+	bool		error = false;
+	CKVariant	*retval = NULL;
+
+	// start right where we are now
+	CKDataNode	*node = this;
+
+	// travel down the path of the tree to the right node
+	int		stepCnt = aSteps.size();
 	if (!error) {
 		// the last element of the path is the variable name
-		if (stepCnt > 1) {
+		if (stepCnt < 1) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKDataNode::getVarAtPath(const std::vector<std::string> &) "
+				"- the path had insufficient steps to create a valid path. Please "
+				"make sure that a valid path is passed to this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
 			// OK, we have nodes to move through
 			for (int step = 0; !error && (step < (stepCnt - 1)); step++) {
-				CKDataNode	*next = node->findChild(steps[step]);
+				CKDataNode	*next = node->findChild(aSteps[step]);
 				if (next == NULL) {
 					error = true;
 					// don't exception, just return NULL
@@ -601,7 +628,7 @@ CKVariant *CKDataNode::getVarAtPath( const std::string & aPath )
 
 	// now look into the node for the variable we're looking for
 	if (!error) {
-		retval = node->getVar(steps[stepCnt - 1]);
+		retval = node->getVar(aSteps[stepCnt - 1]);
 	}
 
 	return retval;
@@ -640,60 +667,86 @@ void CKDataNode::putVarAtPath( const std::string & aPath, const CKVariant & aVal
 {
 	bool		error = false;
 
-	// first, make a copy of the path for our manipulation
-	std::string		path = aPath;
-	// ...and the node to start looking at
+	// first, see if we need to start at the root
 	CKDataNode		*node = this;
-	// next, we need to see if the path starts with a '/' - the root
 	if (!error) {
-		if (path[0] == '/') {
-			// remove the leading slash from the path
-			path.erase(0,1);
-			// ...and travel to the root of this tree
+		if (aPath[0] == '/') {
+			// travel to the root of this tree
 			while (node->mParent != NULL) {
 				node = node->mParent;
 			}
 		}
 	}
 
-	// now we need to parse the path into a series of strings
+	// next, turn the path into a vector of strings
 	std::vector<std::string>	steps;
 	int							stepCnt = 0;
 	if (!error) {
-		steps = parseIntoChunks(path, "/");
+		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::putVarAtPath(const std::string &, const CKVariant &)"
-				"- the path had insufficient steps to create a valid path. Please "
-				"make sure that a valid path is apssed to this method.";
+			msg << "CKDataNode::putVarAtPath(const std::string &, const "
+				"CKVariant &) - the path had insufficient steps to create a "
+				"valid path. Please make sure that a valid path is passed to "
+				"this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// use the other version to get the value
+			node->putVarAtPath(steps, aValue);
 		}
 	}
+}
 
-	// now travel down the path of the tree to the right node
+
+/*
+ * This version of the method takes a vector of strings that is
+ * the path as opposed to a single string delimited by the '/'.
+ * This is useful when you have the data organized in something
+ * like a vector and you don't want to put it all together only
+ * to have this method break it up.
+ */
+void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
+							   const CKVariant & aValue )
+{
+	bool		error = false;
+
+	// start right where we are now
+	CKDataNode	*node = this;
+
+	// move down the path step by step...
+	int		stepCnt = aSteps.size();
 	if (!error) {
 		// the last element of the path is the variable name
-		if (stepCnt > 1) {
+		if (stepCnt < 1) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKDataNode::putVarAtPath(const std::vector<std::string> &, "
+				"const CKVariant &) - the path had insufficient steps to create "
+				"a valid path. Please make sure that a valid path is passed to "
+				"this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
 			// OK, we have nodes to move through
 			for (int step = 0; !error && (step < (stepCnt - 1)); step++) {
-				CKDataNode	*next = node->findChild(steps[step]);
+				CKDataNode	*next = node->findChild(aSteps[step]);
 				if (next == NULL) {
 					/*
 					 * With no child of the right name, we need to create
 					 * one and place it in the tree so that we can continue.
 					 * This is one very fast way to build the tree of data.
 					 */
-					next = new CKDataNode(node, steps[step]);
+					next = new CKDataNode(node, aSteps[step]);
 					if (next == NULL) {
 						error = true;
 						std::ostringstream	msg;
-						msg << "CKDataNode::putVarAtPath(const std::string &, const "
-							"CKVariant &) - while trying to extend the tree to include "
-							"the step '" << steps[step] << "' an error occurred and "
-							"that step could not be created. Please check the logs "
-							"but this is likely an allocation error.";
+						msg << "CKDataNode::putVarAtPath(const "
+							"std::vector<std::string> &, const CKVariant &) - "
+							"while trying to extend the tree to include "
+							"the step '" << aSteps[step] << "' an error occurred "
+							"and that step could not be created. Please check the "
+							"logs but this is likely an allocation error.";
 						throw CKException(__FILE__, __LINE__, msg.str());
 					} else {
 						// add this guy as a child of this node
@@ -711,8 +764,116 @@ void CKDataNode::putVarAtPath( const std::string & aPath, const CKVariant & aVal
 
 	// now put into the node's variables the variable we were given
 	if (!error) {
-		node->putVar(steps[stepCnt - 1], aValue);
+		node->putVar(aSteps[stepCnt - 1], aValue);
 	}
+}
+
+
+/*
+ * This method is very nice in that it takes a single string that
+ * represents a path and breaks it up into it's components, placing
+ * each in the returned vector in the proper order. Leading and
+ * trailing '/' characters are removed and any component in the
+ * path escaped by double-quotes will be kept intact. This is the
+ * way for a component of the path to include a '/' character.
+ */
+std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
+{
+	bool						error = false;
+	std::vector<std::string>	retval;
+	bool						done = false;
+
+	// first, strip any leading or trailing '/' characters
+	std::string		cleanPath = aPath;
+	if (!error && !done) {
+		// see if there's a leading '/'
+		if (cleanPath[0] == '/') {
+			cleanPath.erase(0, 1);
+		}
+		// see if there's a trailing '/'
+		int		eos = cleanPath.size() - 1;
+		if (cleanPath[eos] == '/') {
+			cleanPath.erase(eos, 1);
+		}
+	}
+
+	// next, convert the path into a series of raw steps
+	std::vector<std::string>	raw;
+	int							rawCnt;
+	if (!error && !done) {
+		raw = parseIntoChunks(cleanPath, "/");
+		rawCnt = raw.size();
+		if (rawCnt < 1) {
+			done = true;
+		}
+	}
+
+	// now go through the list of raw elements and correct for any escapes
+	if (!error && !done) {
+		for (int i = 0; i < rawCnt; i++) {
+			if (raw[i][0] == '"') {
+				/*
+				 * OK, it's escaped, so find the next one that *ends* in a
+				 * '/' and piece them all together.
+				 */
+				// get the start of the escaped path step
+				std::string		comp = raw[i];
+				// trim off the leading '"'
+				comp.erase(0,1);
+				// now loop on the raw steps until we find a matching bookend
+				for (++i; i < rawCnt; i++) {
+					// add in the '/' and the component
+					comp.append(1, '/');
+					comp.append(raw[i]);
+					// does this end in a '"'?
+					if (raw[i][raw[i].size() - 1] == '"') {
+						comp.erase((comp.size() - 1), 1);
+						break;
+					}
+				}
+				// finally, add it to the path steps
+				retval.push_back(comp);
+			} else {
+				// not escaped, so just add it
+				retval.push_back(raw[i]);
+			}
+		}
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method is useful in that it takes a vector of path steps,
+ * or components, and then assembles them into a single string
+ * that is properly escaped for the presence of '/' characters in
+ * any one of the steps.
+ */
+std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
+{
+	std::string		retval;
+
+	// loop over all the elements adding each as necessary
+	std::vector<std::string>::const_iterator	i;
+	for (i = aPath.begin(); i != aPath.end(); ++i) {
+		// see if we need a delimiter between this and the next step
+		if (i != aPath.begin()) {
+			retval.append(1, '/');
+		}
+
+		// now see if the step needs to be escaped due to a slash		
+		if (i->find('/') != std::string::npos) {
+			// escape this guy as it's got a '/' in it
+			retval.append(1, '"');
+			retval.append(*i);
+			retval.append(1, '"');
+		} else {
+			retval.append(*i);
+		}
+	}
+
+	return retval;
 }
 
 
