@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.3 2003/12/16 18:09:01 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.4 2004/07/27 20:01:28 drbob Exp $
  */
 
 //	System Headers
@@ -88,9 +88,7 @@ CKMailMessage::CKMailMessage( const CKMailMessage & anOther ) :
  */
 CKMailMessage::~CKMailMessage()
 {
-	// clear everything out...
-	mRecipients.clear();
-	mMessageBody.clear();
+	// all the STL containers clear out their own contents
 }
 
 

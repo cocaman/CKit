@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.7 2004/07/13 21:32:46 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.8 2004/07/27 20:01:31 drbob Exp $
  */
 
 //	System Headers
@@ -132,8 +132,7 @@ CKTimeSeries::CKTimeSeries( const CKTimeSeries & anOther ) :
  */
 CKTimeSeries::~CKTimeSeries()
 {
-	// clear out the map just to be kind
-	mTimeseries.clear();
+	// all the STL containers delete their data in the end
 }
 
 
