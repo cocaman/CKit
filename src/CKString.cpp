@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.9 2004/09/28 23:17:00 drbob Exp $
+ * $Id: CKString.cpp,v 1.10 2004/10/04 16:09:22 drbob Exp $
  */
 
 //	System Headers
@@ -3652,6 +3652,7 @@ CKString CKString::toHexString() const
 	CKString	retval = "[";
 
 	// put each byte in the return string
+	CKString	ascii = " = ";
 	for (int i = 0; i < mSize; i++) {
 		if (i != 0) {
 			retval.append(" ");
@@ -3694,8 +3695,14 @@ CKString CKString::toHexString() const
 			case 0x0e: retval.append("e");	break;
 			case 0x0f: retval.append("f");	break;
 		}
+		// now build up the ASCII string as well
+		if (isprint(mString[i])) {
+			ascii.append(mString[i]);
+		} else {
+			ascii.append('.');
+		}
 	}
-	retval.append("]");
+	retval.append(ascii).append("]");
 
 	return retval;
 }
