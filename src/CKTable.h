@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.5 2004/05/19 15:51:49 drbob Exp $
+ * $Id: CKTable.h,v 1.6 2004/07/07 16:01:25 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -473,7 +473,7 @@ class CKTable {
 		 * deallocation of this guy will now become the job of this
 		 * instance and the caller is absolved of any responsibility there.
 		 */
-		void setTable( CKVariant ***aTable );
+		void setTable( CKVariant *aTable );
 		/*
 		 * This method sets an array of std::string values to be the column
 		 * headers for the current table. It's important to note that there
@@ -505,15 +505,16 @@ class CKTable {
 		 */
 		void setNumColumns( int aCount );
 		/*
-		 * This method returns the array of arrays of pointers of
-		 * CKVariants so that it can be used in this class. In general,
-		 * this is a dangerous thing, and it needs to be used carefully,
-		 * but it's important as we're trying to stick to using just the
-		 * setters and getters. This method returns a pointer to the
-		 * actual data and sould therefore be used very carefully as it
-		 * could change underneath the caller if they aren't careful.
+		 * This method returns the array of CKVariants that comprises the
+		 * table's row-major data storage so that it can be used in this
+		 * class. In general, this is a dangerous thing, and it needs to
+		 * be used carefully, but it's important as we're trying to stick
+		 * to using just the setters and getters. This method returns a
+		 * pointer to the actual data and sould therefore be used very
+		 * carefully as it could change underneath the caller if they aren't
+		 * careful.
 		 */
-		CKVariant ***getTable() const;
+		CKVariant *getTable() const;
 		/*
 		 * This method returns the actual array of std::string values that
 		 * are the column headers for this table. The number of elements
@@ -609,14 +610,15 @@ class CKTable {
 
 	private:
 		/*
-		 * This is the pointer to a list of row pointers that in turn point
-		 * to lists of column objects that all together create the table's
-		 * main datastructure. All this allocation/deallocation is handled
-		 * in the private methods so there's no real reason for a user to
-		 * have to worry about how all these things are created. It's all
-		 * encapsulated pretty nicely.
+		 * This is the pointer to a row-major storage of the data in the
+		 * table. The index of any element in the table (i,j) is simply
+		 * [i*mNumColumns + j] where i and j start indexing at zero.
+		 * All the allocation/deallocation is handled in the private
+		 * methods so there's no real reason for a user to have to worry
+		 * about how all these things are created. It's all encapsulated
+		 * pretty nicely.
 		 */
-		CKVariant	***mTable;
+		CKVariant	*mTable;
 		/*
 		 * This is a vector of std::string values that are the column
 		 * headers. The reason for picking the std::string is that it allows
@@ -655,16 +657,26 @@ class CKTable {
 		 ********************************************************/
 		/*
 		 * This private method takes care of dealing with the intelligent
-		 * allocation of the pointers of pointers of pointers. It's not all
-		 * that complex, but it's nice to have it in one place that's
-		 * insulated from all the other methods in this class. This method
-		 * will throw an exception if the number of rows and/or columns make
-		 * no sense, or if there's an error in the allocation of the storage.
+		 * allocation of the table's data. It's not all that complex, but
+		 * it's nice to have it in one place that's insulated from all the
+		 * other methods in this class. This method will throw an exception
+		 * if the number of rows and/or columns make no sense, or if there's
+		 * an error in the allocation of the storage.
 		 */
 		void createTable( int aNumRows, int aNumColumns );
 		/*
+		 * This private method takes care of dealing with the intelligent
+		 * allocation of the table's data. It's not all that complex, but
+		 * it's nice to have it in one place that's insulated from all the
+		 * other methods in this class. This method will throw an exception
+		 * if the number of row labels or column headers make no sense, or
+		 * if there's an error in the allocation of the storage.
+		 */
+		void createTable( const std::vector<std::string> & aRowLabels,
+						  const std::vector<std::string> & aColHeaders );
+		/*
 		 * This private method takes care of dealing with the careful
-		 * deallocation of the pointers of pointers of pointers. It's not all
+		 * deallocation of the table's data structure. It's not all
 		 * that complex, but it's nice to have it in one place that's
 		 * insulated from all the other methods in this class.
 		 */
