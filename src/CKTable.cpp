@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.20 2004/12/16 10:39:16 drbob Exp $
+ * $Id: CKTable.cpp,v 1.21 2005/01/20 15:55:03 drbob Exp $
  */
 
 //	System Headers
@@ -516,6 +516,97 @@ void CKTable::setStringValue( const CKString & aRowLabel, const CKString & aColH
 }
 
 
+void CKTable::setStringValue( int aRow, int aCol, const CKString *aStringValue )
+{
+	// first, make sure we have a place to put this data
+	if ((aRow < 0) || (aRow >= mNumRows) ||
+		(aCol < 0) || (aCol >= mNumColumns)) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(int, int, const CKString *) - the "
+			"provided location: " << aRow << ", " << aCol << " lies outside "
+			"the currently defined table: " << mNumRows << " by " <<
+			mNumColumns;
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// ...and that we have a table structure that matches
+	if (mTable == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(int, int, const CKString *) - there "
+			"is no currently defined table structure in this class. This is a "
+			"serious data integrity problem that needs to be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// now set it intelligently
+	mTable[aRow * mNumColumns + aCol].setStringValue(aStringValue);
+}
+
+
+void CKTable::setStringValue( int aRow, const CKString & aColHeader, const CKString *aStringValue )
+{
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(int, const CKString &, "
+			"const CKString *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setStringValue(aRow, col, aStringValue);
+}
+
+
+void CKTable::setStringValue( const CKString & aRowLabel, int aCol, const CKString *aStringValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(const CKString &, int, "
+			"const CKString *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setStringValue(row, aCol, aStringValue);
+}
+
+
+void CKTable::setStringValue( const CKString & aRowLabel, const CKString & aColHeader, const CKString *aStringValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(const CKString &, const CKString &, "
+			"const CKString *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setStringValue(const CKString &, const CKString &, "
+			"const CKString *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setStringValue(row, col, aStringValue);
+}
+
+
 /*
  * This method sets the value stored in this location as a date of the
  * form YYYYMMDD - stored as a long.
@@ -894,6 +985,102 @@ void CKTable::setTimeSeriesValue( const CKString & aRowLabel, const CKString & a
 
 	// then call the index-based method
 	setTimeSeriesValue(row, col, aTimeSeriesValue);
+}
+
+
+/*
+ * This sets the value stored in this location as a price, but
+ * a local copy will be made so that the caller doesn't have to worry
+ * about holding on to the parameter, and is free to delete it.
+ */
+void CKTable::setPriceValue( int aRow, int aCol, const CKPrice *aPriceValue )
+{
+	// first, make sure we have a place to put this data
+	if ((aRow < 0) || (aRow >= mNumRows) ||
+		(aCol < 0) || (aCol >= mNumColumns)) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(int, int, const CKPrice *) - the "
+			"provided location: " << aRow << ", " << aCol << " lies outside "
+			"the currently defined table: " << mNumRows << " by " <<
+			mNumColumns;
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// ...and that we have a table structure that matches
+	if (mTable == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(int, int, const CKPrice *) - there "
+			"is no currently defined table structure in this class. This is a "
+			"serious data integrity problem that needs to be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// now set it intelligently
+	mTable[aRow * mNumColumns + aCol].setPriceValue(aPriceValue);
+}
+
+
+void CKTable::setPriceValue( int aRow, const CKString & aColHeader, const CKPrice *aPriceValue )
+{
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(int, const CKString &, "
+			"const CKPrice *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setPriceValue(aRow, col, aPriceValue);
+}
+
+
+void CKTable::setPriceValue( const CKString & aRowLabel, int aCol, const CKPrice *aPriceValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(const CKString &, int, "
+			"const CKPrice *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setPriceValue(row, aCol, aPriceValue);
+}
+
+
+void CKTable::setPriceValue( const CKString & aRowLabel, const CKString & aColHeader, const CKPrice *aPriceValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(const CKString &, const CKString &, "
+			"const CKPrice *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setPriceValue(const CKString &, const CKString &, "
+			"const CKPrice *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setPriceValue(row, col, aPriceValue);
 }
 
 
@@ -1481,7 +1668,7 @@ long CKTable::getDateValue( const CKString & aRowLabel, const CKString & aColHea
  * outside the scope of this class, then they need to make a copy,
  * or call the getValueAsString() method that returns a copy.
  */
-const char *CKTable::getStringValue( int aRow, int aCol ) const
+const CKString *CKTable::getStringValue( int aRow, int aCol ) const
 {
 	// first, make sure we have a place to put this data
 	if ((aRow < 0) || (aRow >= mNumRows) ||
@@ -1514,7 +1701,7 @@ const char *CKTable::getStringValue( int aRow, int aCol ) const
 }
 
 
-const char *CKTable::getStringValue( int aRow, const CKString & aColHeader ) const
+const CKString *CKTable::getStringValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
@@ -1531,7 +1718,7 @@ const char *CKTable::getStringValue( int aRow, const CKString & aColHeader ) con
 }
 
 
-const char *CKTable::getStringValue( const CKString & aRowLabel, int aCol ) const
+const CKString *CKTable::getStringValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -1548,7 +1735,7 @@ const char *CKTable::getStringValue( const CKString & aRowLabel, int aCol ) cons
 }
 
 
-const char *CKTable::getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const
+const CKString *CKTable::getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -1770,6 +1957,105 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( const CKString & aRowLabel, con
 
 	// then call the index-based method
 	return getTimeSeriesValue(row, col);
+}
+
+
+/*
+ * This method returns the actual price value of the data that
+ * this location is holding. If the user wants to use this value
+ * outside the scope of this class, then they need to make a copy.
+ */
+const CKPrice *CKTable::getPriceValue( int aRow, int aCol ) const
+{
+	// first, make sure we have a place to put this data
+	if ((aRow < 0) || (aRow >= mNumRows) ||
+		(aCol < 0) || (aCol >= mNumColumns)) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(int, int) - the provided "
+			"location: " << aRow << ", " << aCol << " lies outside the currently "
+			"defined table: " << mNumRows << " by " << mNumColumns;
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// ...and that we have a table structure that matches
+	if (mTable == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(int, int) - there is no currently "
+			"defined table structure in this class. This is a serious data "
+			"integrity problem that needs to be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// don't forget to make sure the type matches
+	if (getType(aRow, aCol) != ePriceVariant) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(int, int) - the provided "
+			"location: " << aRow << ", " << aCol << " does not contain a "
+			"price value: " << getValue(aRow, aCol);
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// now get what they are looking for
+	return mTable[aRow * mNumColumns + aCol].getPriceValue();
+}
+
+
+const CKPrice *CKTable::getPriceValue( int aRow, const CKString & aColHeader ) const
+{
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(const CKString &, const CKString &) "
+			"- there is no currently defined column header '" << aColHeader <<
+			"' please make sure the column headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getPriceValue(aRow, col);
+}
+
+
+const CKPrice *CKTable::getPriceValue( const CKString & aRowLabel, int aCol ) const
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(const CKString &, const CKString &) "
+			"- there is no currently defined row label '" << aRowLabel <<
+			"' please make sure the row labels are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getPriceValue(row, aCol);
+}
+
+
+const CKPrice *CKTable::getPriceValue( const CKString & aRowLabel, const CKString & aColHeader ) const
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(const CKString &, const CKString &) "
+			"- there is no currently defined row label '" << aRowLabel <<
+			"' please make sure the row labels are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getPriceValue(const CKString &, const CKString &) "
+			"- there is no currently defined column header '" << aColHeader <<
+			"' please make sure the column headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getPriceValue(row, col);
 }
 
 

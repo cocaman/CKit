@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.16 2004/12/22 10:50:23 drbob Exp $
+ * $Id: CKDataNode.h,v 1.17 2005/01/20 15:54:55 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -153,25 +153,25 @@ class CKDataNode
 		 * with it, make a copy. If there is no variable with this name the
 		 * method will return a NULL.
 		 */
-		CKVariant *getVar( const CKString & aName );
+		virtual CKVariant *getVar( const CKString & aName );
 		/*
 		 * Each node can have many variables (attributes) stored in a map
 		 * as a CKString name and CKVariant value. This method places a
 		 * value into that map for this instance at the name provided.
 		 */
-		void putVar( const CKString & aName, const CKVariant & aValue );
+		virtual void putVar( const CKString & aName, const CKVariant & aValue );
 		/*
 		 * Since each node can hold many variables (attributes), it's
 		 * sometimes necessary to clean out the old ones. This method
 		 * removes the named variable from this node if it exists.
 		 */
-		void removeVar( const CKString & aName );
+		virtual void removeVar( const CKString & aName );
 		/*
 		 * When you want to clear out all the variables (attributes) from
 		 * this node, call this method and the entire map of variables will
 		 * be cleared out. It's non-reversable, so be carful with this.
 		 */
-		void clearVars();
+		virtual void clearVars();
 
 		/*
 		 * This method adds the provided node as a child of the current
@@ -189,7 +189,7 @@ class CKDataNode
 		 * of the application instance to decide where the memory management
 		 * is going to be.
 		 */
-		void addChild( CKDataNode *aNode );
+		virtual void addChild( CKDataNode *aNode );
 		/*
 		 * This method removes the provided node from the list of child
 		 * nodes of this node - if it's actually in the list. If it's
@@ -197,7 +197,7 @@ class CKDataNode
 		 * node to NULL out it's parent node so that there's no confusion
 		 * on the issue.
 		 */
-		void removeChild( const CKDataNode *aNode );
+		virtual void removeChild( const CKDataNode *aNode );
 		/*
 		 * This method returns the complete list (as a vector) of all the
 		 * child nodes identifying names. This is a very handy way to
@@ -253,7 +253,7 @@ class CKDataNode
 		 * part of. So, even if this node is *not* in the path, the value
 		 * will be returned if it's in the tree.
 		 */
-		CKVariant *getVarAtPath( const CKString & aPath );
+		virtual CKVariant *getVarAtPath( const CKString & aPath );
 		/*
 		 * This method takes a vector of strings as the path as opposed
 		 * to a single string delimited with '/'. This makes it a little
@@ -261,7 +261,7 @@ class CKDataNode
 		 * you don't really want to make a single string just to store
 		 * the value.
 		 */
-		CKVariant *getVarAtPath( const CKStringList & aSteps );
+		virtual CKVariant *getVarAtPath( const CKStringList & aSteps );
 
 		/*
 		 * This method is part of the "pathing" capabilities of this class
@@ -291,7 +291,7 @@ class CKDataNode
 		 * any value in any node in that same tree without having to assume
 		 * a currently defined structure.
 		 */
-		void putVarAtPath( const CKString & aPath, const CKVariant & aValue );
+		virtual void putVarAtPath( const CKString & aPath, const CKVariant & aValue );
 		/*
 		 * This version of the method takes a vector of strings that is
 		 * the path as opposed to a single string delimited by the '/'.
@@ -299,8 +299,8 @@ class CKDataNode
 		 * like a vector and you don't want to put it all together only
 		 * to have this method break it up.
 		 */
-		void putVarAtPath( const CKStringList & aSteps,
-						   const CKVariant & aValue );
+		virtual void putVarAtPath( const CKStringList & aSteps,
+								   const CKVariant & aValue );
 
 		/*
 		 * This method takes a string that is a series of node identifying
@@ -324,7 +324,7 @@ class CKDataNode
 		 * part of. So, even if this node is *not* in the path, the value
 		 * will be returned if it's in the tree.
 		 */
-		CKDataNode *getNodeAtPath( const CKString & aPath );
+		virtual CKDataNode *getNodeAtPath( const CKString & aPath );
 		/*
 		 * This version of the method takes a vector of strings that is
 		 * the path as opposed to a single string delimited by the '/'.
@@ -332,7 +332,7 @@ class CKDataNode
 		 * like a vector and you don't want to put it all together only
 		 * to have this method break it up.
 		 */
-		CKDataNode *getNodeAtPath( const CKStringList & aSteps );
+		virtual CKDataNode *getNodeAtPath( const CKStringList & aSteps );
 
 		/*
 		 * This method takes a string that is a series of node identifying
@@ -358,7 +358,7 @@ class CKDataNode
 		 * part of. So, even if this node is *not* in the path, the node
 		 * will be placed correctly if the path is in the tree.
 		 */
-		void putNodeAtPath( const CKString & aPath, CKDataNode *aNode );
+		virtual void putNodeAtPath( const CKString & aPath, CKDataNode *aNode );
 		/*
 		 * This version of the method takes a vector of strings that is
 		 * the path as opposed to a single string delimited by the '/'.
@@ -366,7 +366,7 @@ class CKDataNode
 		 * like a vector and you don't want to put it all together only
 		 * to have this method break it up.
 		 */
-		void putNodeAtPath( const CKStringList & aSteps, CKDataNode *aNode );
+		virtual void putNodeAtPath( const CKStringList & aSteps, CKDataNode *aNode );
 
 		/*
 		 * This method returns a vector of the node identifiers in this
