@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 	n->putVarAtPath("MainB/SubB/price", CKVariant((double) 11.2));
 	n->putVarAtPath("MainB/SubC/price", CKVariant((double) 11.3));
 	n->putVarAtPath("MainB/\"R/V\"/price", CKVariant((double) 22.2));
+	n->putVarAtPath("MainC/SubA/title2/subbookQ/symbolW/price", CKVariant((double) 1.3));
 	std::cout << "Sectors:" << std::endl;
 	std::cout << "-------" << std::endl;
 	std::cout << (*n) << std::endl;
@@ -47,6 +48,26 @@ int main(int argc, char *argv[]) {
 		std::cout << "MainB/\"R/V\"/price = " << "NULL" << std::endl;
 	} else {
 		std::cout << "MainB/\"R/V\"/price = " << (*a) << std::endl;
+	}
+
+	CKDataNode	*d = NULL;
+	d = n->findChild("MainC");
+	if (d != NULL) {
+		d = d->findChild("SubA");
+		if (d != NULL) {
+			d = d->findChild("title2");
+			if (d != NULL) {
+				d = d->findChild("subbookQ");
+				if (d != NULL) {
+					d = d->findChild("symbolW");
+					if (d != NULL) {
+						std::cout << "Path to 'symbolW' should be: "
+							"'Sectors/MainC/SubA/title2/subbookQ/symbolW':" <<
+							std::endl << "   " << d->getPath() << std::endl;
+					}
+				}
+			}
+		}
 	}
 
 	std::cout << std::endl;
