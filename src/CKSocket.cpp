@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.18 2005/01/13 10:32:41 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.19 2005/02/17 14:43:39 drbob Exp $
  */
 
 //	System Headers
@@ -1667,7 +1667,7 @@ int CKSocket::poll( int aFD, int aTimeoutInMillis, bool anEmptyIsError,
 		}
 	} else if (results == 0) {
 		retval = POLL_TIMEOUT;
-	} else if ((results < 0) && ((errno == EAGAIN) || (errno == EINTR))) {
+	} else if ((results <= 0) && ((errno == EAGAIN) || (errno == EINTR))) {
 		retval = POLL_INTERRUPT;
 	} else if (results < 0) {
 		retval = POLL_ERROR;
