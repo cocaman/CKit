@@ -87,6 +87,7 @@ OBJS = CKUUID.o \
 	CKPrice.o \
 	CKDataNode.o \
 	CKIndexNode.o \
+	CKMultiIndexNode.o \
 	CKStopwatch.o \
 	CKException.o \
 	CKErrNoException.o \
@@ -182,6 +183,9 @@ CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o: CKString.h CKVector.h CKStackLocker.h CKException.h
 CKIndexNode.o: CKIndexNode.h CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKIndexNode.o: CKString.h CKVector.h CKStackLocker.h CKException.h
+CKMultiIndexNode.o: CKIndexNode.h CKDataNode.h CKVariant.h CKTimeSeries.h
+CKMultiIndexNode.o: CKFWMutex.h
+CKMultiIndexNode.o: CKString.h CKVector.h CKStackLocker.h CKException.h
 CKStopwatch.o: CKException.h CKString.h CKFWMutex.h 
 CKStopwatch.o: CKStopwatch.h CKVector.h CKStackLocker.h
 CKException.o: CKException.h CKString.h CKFWMutex.h

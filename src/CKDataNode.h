@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.18 2005/02/09 17:45:08 drbob Exp $
+ * $Id: CKDataNode.h,v 1.19 2005/02/14 15:43:58 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -602,6 +602,7 @@ class CKDataNode
 
 	private:
 		friend class CKIndexNode;
+		friend class CKMultiIndexNode;
 
 		/*
 		 * This is the parent of this node, and is just another node in
