@@ -9,12 +9,15 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.1 2004/03/02 19:20:13 drbob Exp $
+ * $Id: CKDataNode.h,v 1.2 2004/03/02 19:34:45 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
 
 //	System Headers
+#ifdef GPP2
+#include <algo.h>
+#endif
 #include <string>
 #include <list>
 #include <vector>
