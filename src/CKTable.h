@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.6 2004/07/07 16:01:25 drbob Exp $
+ * $Id: CKTable.h,v 1.7 2004/07/24 19:22:00 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -85,6 +85,14 @@ class CKTable {
 		 * class.
 		 */
 		CKTable( int aNumRows, int aNumColumns );
+		/*
+		 * This version of the constructor for this class takes two lists -
+		 * one for the list of row labels and the other for the list of
+		 * column headers. These lists not only define the structure of the
+		 * table, but also the row labels and column headers.
+		 */
+		CKTable( const std::vector<std::string> aRowLabels,
+				 const std::vector<std::string> aColumnHeaders );
 		/*
 		 * This constructor is interesting in that it takes the data as
 		 * it comes from another CKTable's generateCodeFromValues() method
@@ -522,7 +530,7 @@ class CKTable {
 		 * to have this list outside the scope of this class they need to
 		 * make a copy of it and that includes all the strings in it.
 		 */
-		const std::vector<std::string> *getColumnHeaders() const;
+		const std::string *getColumnHeaders() const;
 		/*
 		 * This method returns the actual array of std::string values that
 		 * are the row labels for this table. The number of elements
@@ -530,7 +538,7 @@ class CKTable {
 		 * to have this list outside the scope of this class they need to
 		 * make a copy of it and that includes all the strings in it.
 		 */
-		const std::vector<std::string> *getRowLabels() const;
+		const std::string *getRowLabels() const;
 
 		/********************************************************
 		 *
@@ -618,37 +626,37 @@ class CKTable {
 		 * about how all these things are created. It's all encapsulated
 		 * pretty nicely.
 		 */
-		CKVariant	*mTable;
+		CKVariant		*mTable;
 		/*
-		 * This is a vector of std::string values that are the column
+		 * This is a array of std::string values that are the column
 		 * headers. The reason for picking the std::string is that it allows
 		 * us a lot of freedom in the assignment, sizing and memory
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		std::vector<std::string>	mColumnHeaders;
+		std::string		*mColumnHeaders;
 		/*
-		 * This is a vector of std::string values that are the row
+		 * This is a array of std::string values that are the row
 		 * labels. The reason for picking the std::string is that it allows
 		 * us a lot of freedom in the assignment, sizing and memory
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		std::vector<std::string>	mRowLabels;
+		std::string		*mRowLabels;
 		/*
 		 * This is the current number of rows expressed in the table's
 		 * data structure. It has been used in the creation of the data
 		 * table, above, and if the value is -1, then this indicates that
 		 * no table has been defined.
 		 */
-		int			mNumRows;
+		int				mNumRows;
 		/*
 		 * This is the current number of columns expressed in the table's
 		 * data structure. It has been used in the creation of the data
 		 * table, above, and if the value is -1, then this indicates that
 		 * no table has been defined.
 		 */
-		int			mNumColumns;
+		int				mNumColumns;
 
 		/********************************************************
 		 *
