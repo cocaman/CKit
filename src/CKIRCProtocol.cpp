@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.7 2004/08/31 21:23:35 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.8 2004/09/02 20:50:58 drbob Exp $
  */
 
 //	System Headers
@@ -1192,10 +1192,7 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 	}
 
 	// now, copy the source to a buffer so I can consume it in the process
-	std::string		buff;
-	if (!error) {
-		buff = aString;
-	}
+	std::string		buff(aString);
 
 	/*
 	 * Now loop picking off the parts bettween the delimiters. Do this by
@@ -1214,7 +1211,7 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back(std::string(""));
+			retval.push_back("");
 		} else {
 			// pick off the substring up to the delimiter
 			retval.push_back(buff.substr(0, pos));
