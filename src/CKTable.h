@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.15 2004/09/28 15:45:56 drbob Exp $
+ * $Id: CKTable.h,v 1.16 2004/12/16 10:39:17 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -459,6 +459,25 @@ class CKTable {
 		 */
 		virtual CKString toString() const;
 
+		/********************************************************
+		 *
+		 *               Text/String Parsing Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method is used in the creation of the encoded strings that
+		 * assist in the translation of the objects from the C++ to Java
+		 * environments. Basically, the CKString buffer that's passed in
+		 * contains delimiters that are '\x01' but that need to be changed
+		 * to a printable ASCII character. This method scans the entire
+		 * string for the presence of delimiters and then selects one
+		 * character that's not used in the string and replaces all the
+		 * "placeholder" delimiters with this value and returns. If it was
+		 * impossible to find a delimiter, this method will return false
+		 * otherwise it will return true.
+		 */
+		static bool chooseAndApplyDelimiter( CKString & aBuff );
+
 	protected:
 		friend class CKTimeSeries;
 		friend class CKVariant;
@@ -532,25 +551,6 @@ class CKTable {
 		 * make a copy of it and that includes all the strings in it.
 		 */
 		const CKString *getRowLabels() const;
-
-		/********************************************************
-		 *
-		 *               Text/String Parsing Methods
-		 *
-		 ********************************************************/
-		/*
-		 * This method is used in the creation of the encoded strings that
-		 * assist in the translation of the objects from the C++ to Java
-		 * environments. Basically, the CKString buffer that's passed in
-		 * contains delimiters that are '\x01' but that need to be changed
-		 * to a printable ASCII character. This method scans the entire
-		 * string for the presence of delimiters and then selects one
-		 * character that's not used in the string and replaces all the
-		 * "placeholder" delimiters with this value and returns. If it was
-		 * impossible to find a delimiter, this method will return false
-		 * otherwise it will return true.
-		 */
-		static bool chooseAndApplyDelimiter( CKString & aBuff );
 
 	private:
 		/*
