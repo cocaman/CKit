@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.4 2004/09/22 12:08:38 drbob Exp $
+ * $Id: CKString.h,v 1.5 2004/09/22 13:48:33 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -37,7 +37,7 @@
  * that this to the size of the string, we'll have to allocate more and
  * then this won't be the size. But for starters, this is a good size.
  */
-#define	DEFAULT_STARTING_SIZE		8
+#define	DEFAULT_STARTING_SIZE		4
 /*
  * When the buffer has to grow for this string, this is the default
  * increment that it uses. Of course, this is *above* the necessary size
@@ -45,7 +45,7 @@
  * the DEFAULT_INCREMENT_SIZE to make sure that we have at least a little
  * growing room.
  */
-#define	DEFAULT_INCREMENT_SIZE		16
+#define	DEFAULT_INCREMENT_SIZE		8
 
 
 /*
