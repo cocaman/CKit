@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.17 2004/12/07 20:03:39 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.18 2004/12/08 17:34:57 drbob Exp $
  */
 
 //	System Headers
@@ -366,7 +366,7 @@ double CKTimeSeries::getLastValue()
 	mTimeseriesMutex.lock();
 	// get the first pair and that's it
 	if (!mTimeseries.empty()) {
-		std::map<double, double>::iterator	i = mTimeseries.end();
+		std::map<double, double>::reverse_iterator	i = mTimeseries.rbegin();
 		retval = (*i).second;
 	}
 	// unlock up this guy for changes
@@ -412,7 +412,7 @@ double CKTimeSeries::getLastDate()
 	mTimeseriesMutex.lock();
 	// get the first pair and that's it
 	if (!mTimeseries.empty()) {
-		std::map<double, double>::iterator	i = mTimeseries.end();
+		std::map<double, double>::reverse_iterator	i = mTimeseries.rbegin();
 		retval = (*i).first;
 	}
 	// unlock up this guy for changes
