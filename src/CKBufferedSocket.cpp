@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.2 2003/12/01 15:44:15 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.3 2003/12/02 13:29:39 drbob Exp $
  */
 
 //	System Headers
@@ -66,12 +66,31 @@ CKBufferedSocket::CKBufferedSocket( const std::string & aHost, int aPort ) :
  * constructor is made for just this type of operation. It takes
  * the CKSocket and creates a new CKBufferedSocket so that you
  * can take advantage of the buffered reads, etc.
+ *
+ * The wrinkle is that if this is all you do you're in trouble
+ * when the original CKSocket is deleted as it will close out
+ * the connection, just as you'd expect. So what we do with this
+ * constructor is to "incapacitate" the incoming CKSocket so that
+ * when it's deleted it will NOT disconnect the communication and
+ * then the transfer to this newly created CKBufferedSocket will
+ * have been complete.
  */
-CKBufferedSocket::CKBufferedSocket( const CKSocket & anOther ) :
+CKBufferedSocket::CKBufferedSocket( CKSocket & anOther ) :
 	CKSocket(anOther),
 	mReadTimeout(DEFAULT_READ_TIMEOUT),
 	mPendingData()
 {
+	/*
+	 * Since we've now established the buffered socket we need to
+	 * totally disable this existing socket. The easiest way to do
+	 * that is to set a few key variables to their 'base' state.
+	 *
+	 * This act requires that we be a friend of the CKSocket class.
+	 */
+	anOther.setHostname("");
+	anOther.setSocketHandle(INVALID_SOCKET);
+	anOther.setActivelyListening(false);
+	anOther.setConnectionEstablished(false);
 }
 
 

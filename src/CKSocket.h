@@ -5,7 +5,7 @@
  *              order to be more generally useful, we need more advanced
  *              features and more object-oriented behaviors.
  *
- * $Id: CKSocket.h,v 1.1 2003/11/21 18:08:11 drbob Exp $
+ * $Id: CKSocket.h,v 1.2 2003/12/02 13:29:40 drbob Exp $
  */
 #ifndef __CKSOCKET_H
 #define __CKSOCKET_H
@@ -542,6 +542,14 @@ class CKSocket
 		int poll( int aFD, int aTimeoutInMillis, int anEvents = POLLIN );
 
 	private:
+	
+		/*
+		 * We need this because in at least one of the CKBufferedSocket's
+		 * constructors we access the protected methods of this class, and
+		 * that scope means we need to be a friend of this class.
+		 */
+		friend class CKBufferedSocket;
+
 		/*
 		 * This is the name of the host that this connection is going to be
 		 * with - if it hasn't already been established. In the case of a
