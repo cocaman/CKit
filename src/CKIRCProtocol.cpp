@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.1 2003/11/21 18:08:07 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.2 2003/12/03 16:45:23 drbob Exp $
  */
 
 //	System Headers
@@ -608,7 +608,7 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 			/*
 			 * The connection was good, so let's set the read timeout to
 			 * the default value which is understandably short given the
-			 * quasi-polling nature of the IRC Listener.
+			 * quasi-polling nature of the IRC Listener
 			 */
 			mCommPort.setReadTimeout(DEFAULT_IRC_READ_TIMEOUT);
 		}
@@ -780,7 +780,7 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
  * of housekeeping messages without having to put that into
  * your responder's code.
  *
- * If this messages is handled in this method, then this method
+ * If this message is handled in this method, then this method
  * will return true, otherwise, it hasn't been handled and
  * needs to be passed to all the responders for their input.
  */

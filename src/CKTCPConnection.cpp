@@ -8,7 +8,7 @@
  *                       which in turn is used in other higher-level classes
  *                       in CKit.
  *
- * $Id: CKTCPConnection.cpp,v 1.1 2003/11/21 18:08:11 drbob Exp $
+ * $Id: CKTCPConnection.cpp,v 1.2 2003/12/03 16:45:32 drbob Exp $
  */
 
 //	System Headers
@@ -94,7 +94,7 @@ CKTCPConnection & CKTCPConnection::operator=( const CKTCPConnection & anOther )
 {
 	// the super's '=' operator is good enough for me
 	CKBufferedSocket::operator=(anOther);
-
+	
 	return *this;
 }
 
@@ -130,7 +130,7 @@ bool CKTCPConnection::traceData() const
 	if (traceOutgoingData() || traceIncomingData()) {
 		retval = true;
 	}
-
+	
 	return retval;
 }
 

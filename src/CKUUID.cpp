@@ -9,7 +9,7 @@
  *              possibility of including a hashed class name so that the UUID
  *              can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.cpp,v 1.1 2003/11/21 18:08:11 drbob Exp $
+ * $Id: CKUUID.cpp,v 1.2 2003/12/03 16:45:33 drbob Exp $
  */
 
 //	System Headers

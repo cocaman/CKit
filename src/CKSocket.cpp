@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.1 2003/11/21 18:08:10 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.2 2003/12/03 16:45:30 drbob Exp $
  */
 
 //	System Headers
@@ -34,11 +34,11 @@
 //	Private Constants
 /*
  * Solaris doesn't have the same INADDR_NONE definition as do Linux and
- * Darwin. This means that the easiest thing to do is to add the definition
+ * Darwin. This means the easiest thing to do is to add the definition
  * here and then use it in the code.
  */
 #ifdef __sun__
-#define	INADDR_NONE				(unsigned long)(-1)
+#define	INADDR_NONE			(unsigned long)(-1)
 #endif
 
 //	Private Datatypes
@@ -260,6 +260,51 @@ CKSocket::CKSocket( int aService, int aProtocol ) :
 	if (!createAndBindListener(aService, aProtocol)) {
 		std::ostringstream	msg;
 		msg << "CKSocket::CKSocket(int, int) - a socket could not be created "
+			"in the proper mode for listening. This is a serious problem and "
+			"needs to be looked into as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+}
+
+
+/*
+ * This form of the constructor sets up the CKSocket into a state
+ * that it is ready to receive connections from other hosts. In
+ * this case, a socket is created for listening on the provided port,
+ * sith the service and protocol provided, and bound to the filesystem,
+ */
+CKSocket::CKSocket( int aPort, int aService, int aProtocol ) :
+	mHostname(),
+	mPort(-1),
+	mSocketHandle(INVALID_SOCKET),
+	mReadBufferSize(DEFAULT_READ_BUFFER_SIZE),
+	mWaitForIncomingConnectionTimeout(DEFAULT_WAIT_FOR_INCOMING_TIMEOUT),
+	mActivelyListening(false),
+	mConnectionEstablished(false),
+	mTraceOutgoingData(false),
+	mTraceIncomingData(false),
+	mIsBlockingForTransferredData(false)
+{
+#ifdef WIN32
+	/*
+	 * The default behavior for sockets on NT is that
+	 * they do non-blocking reads and buffered writes
+	 * so they are "intelligent".
+	 */
+	setIsBlockingForTransferredData(false);
+#else
+	/*
+	 * The default behavior for sockets on Unix is that
+	 * they are blocking read and write. This is not
+	 * as intelligent as NT, but workable.
+	 */
+	setIsBlockingForTransferredData(true);
+#endif
+
+	// let's set ourselves up as a listener
+	if (!createAndBindListener(aPort, aService, aProtocol)) {
+		std::ostringstream	msg;
+		msg << "CKSocket::CKSocket(int, int, int) - a socket could not be created "
 			"in the proper mode for listening. This is a serious problem and "
 			"needs to be looked into as soon as possible.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -882,8 +927,8 @@ CKSocket *CKSocket::socketByAcceptingConnectionFromListener()
 	 * connection
 	 */
 	if (!error) {
-		if (poll(getSocketHandle(),
-					1000 * getWaitForIncomingConnectionTimeout()) == POLL_OK) {
+		int	p = poll(getSocketHandle(), 1000 * getWaitForIncomingConnectionTimeout());
+		if (p == POLL_OK) {
 			// get the size of the empty socket address struct
 			socklen_t	newSocketAddrLength = sizeof(newSocketAddr);
 			// try to get a waiting connection
@@ -899,13 +944,21 @@ CKSocket *CKSocket::socketByAcceptingConnectionFromListener()
 					"problem that needs to be looked into.";
 				throw CKException(__FILE__, __LINE__, msg.str());
 			}
+		} else if (p == POLL_TIMEOUT) {
+			error = true;
+			/*
+			 * This should return a NULL but there's nothing exceptional about
+			 * a timeout - it could be just the way things are supposed to
+			 * happen a lot of the time.
+			 */
 		} else {
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSocket::socketByAcceptingConnectionFromListener() - a socket "
 				"connection could not be established to a waiting host connection "
-				"before timing out or being interrupted. This may mean that no "
-				"remote host was requesting a connection.";
+				"before being interrupted, or an error occurring. This may mean "
+				"that no remote host was requesting a connection, or worse. "
+				"(poll()=" << p << " & errno=" << errno << ")";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
@@ -1061,7 +1114,7 @@ bool CKSocket::doNotBlockForTransferredData()
 /*
  * This method takes an argument that indicates if the socket
  * should block (or not) for the transferred data. Primarily,
- * this is for reads, but it's possible that very large writes
+ * this is for reads, but it's possible taht very large writes
  * could block, if necessary. In any case, this method is
  * here in case you need it.
  */
@@ -1104,10 +1157,10 @@ bool CKSocket::setBlockingForTransferredData( bool aShouldBlock )
 		if (ret < 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSocket::setBlockingForTransferredData(bool) - the "
-				"socket connection's options could not be altered. This "
-				"is a serious problem. Errno=" << errno <<
-				"(" << strerror(errno) << ")";
+			msg << "CKSocket::setBlockingForTransferredData(bool) - the socket "
+				"connection's options could not be altered. This is a "
+				"serious problem. Errno=" << errno << "(" << strerror(errno) <<
+				")";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
 			setIsBlockingForTransferredData(aShouldBlock);
@@ -1281,12 +1334,12 @@ std::string CKSocket::readAvailableData()
 bool CKSocket::waitForData( float aTimeoutInSec )
 {
 	bool	retval = false;
-
+	
 	if (poll(getSocketHandle(), (int)(1000 * aTimeoutInSec)) == POLL_OK) {
 		// something is there *before* the timeout
 		retval = true;
 	}
-
+	
 	return retval;
 }
 
@@ -1440,9 +1493,11 @@ const SOCKET CKSocket::getSocketHandle() const
  * POLL_INTERRUPT. And if something happened that we need to do
  * something about in the interval, POLL_OK is returned.
  */
-int CKSocket::poll( int aFD, int aTimeoutInMillis, int anEvents )
+int CKSocket::poll( int aFD, int aTimeoutInMillis, bool anEmptyIsError,
+					int anEvents )
 {
-	int		retval = POLL_OK;
+	int				retval = POLL_OK;
+	static char		buff[128];
 
 	// build up the structure we'll need to do the polling
 	struct pollfd	fds;
@@ -1455,6 +1510,21 @@ int CKSocket::poll( int aFD, int aTimeoutInMillis, int anEvents )
 		((fds.revents & POLLHUP) != 0) ||
 		((fds.revents & POLLNVAL) != 0)) {
 		retval = POLL_ERROR;
+	} else if (((fds.revents & POLLIN) != 0) && anEmptyIsError) {
+		/*
+		 * An interesting thing happens with sockets... let's say that we have
+		 * a connection from a client to this socket, and that client dies for
+		 * whatever reason without closing things down properly. What will
+		 * happen is that ::poll() will say data is ready to read when it
+		 * really isn't. So how do we check? We peek at the data so as to
+		 * preserve the data on the socket, but we need to see if there is
+		 * really anything there. If not, then it's an error and flag it as
+		 * such.
+		 */
+		int bytesRead = recv(aFD, buff, 127, MSG_PEEK);
+		if (bytesRead <= 0) {
+			retval = POLL_ERROR;
+		}
 	} else if (results == 0) {
 		retval = POLL_TIMEOUT;
 	} else if ((results < 0) && ((errno == EAGAIN) || (errno == EINTR))) {

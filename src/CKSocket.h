@@ -5,7 +5,7 @@
  *              order to be more generally useful, we need more advanced
  *              features and more object-oriented behaviors.
  *
- * $Id: CKSocket.h,v 1.2 2003/12/02 13:29:40 drbob Exp $
+ * $Id: CKSocket.h,v 1.3 2003/12/03 16:45:32 drbob Exp $
  */
 #ifndef __CKSOCKET_H
 #define __CKSOCKET_H
@@ -31,6 +31,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
+
 
 //	Third-Party Headers
 
@@ -159,6 +160,13 @@ class CKSocket
 		 * listen mode for incoming connections.
 		 */
 		CKSocket( int aService, int aProtocol );
+		/*
+		 * This form of the constructor sets up the CKSocket into a state
+		 * that it is ready to receive connections from other hosts. In
+		 * this case, a socket is created for listening on the provided port,
+		 * sith the service and protocol provided, and bound to the filesystem,
+		 */
+		CKSocket( int aPort, int aService, int aProtocol );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -428,7 +436,7 @@ class CKSocket
 		/*
 		 * This method takes an argument that indicates if the socket
 		 * should block (or not) for the transferred data. Primarily,
-		 * this is for reads, but it's possible that very large writes
+		 * this is for reads, but it's possible taht very large writes
 		 * could block, if necessary. In any case, this method is
 		 * here in case you need it.
 		 */
@@ -539,10 +547,11 @@ class CKSocket
 		 * POLL_INTERRUPT. And if something happened that we need to do
 		 * something about in the interval, POLL_OK is returned.
 		 */
-		int poll( int aFD, int aTimeoutInMillis, int anEvents = POLLIN );
+		int poll( int aFD, int aTimeoutInMillis, bool anEmptyIsError = false,
+				  int anEvents = POLLIN );
 
 	private:
-	
+
 		/*
 		 * We need this because in at least one of the CKBufferedSocket's
 		 * constructors we access the protected methods of this class, and

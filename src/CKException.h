@@ -5,8 +5,8 @@
  *                 of exception handling and this forms a nice basis for that,
  *                 and is also very close to the base exception class
  *                 for the MarketMash Server.
- *
- * $Id: CKException.h,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * 
+ * $Id: CKException.h,v 1.2 2003/12/03 16:45:15 drbob Exp $
  */
 #ifndef __CKEXCEPTION_H
 #define __CKEXCEPTION_H
@@ -91,7 +91,7 @@ class CKException
 		 * operator on all classes.
 		 */
 		virtual const CKException & operator=( const CKException & anException );
-
+  
 		/********************************************************
 		 *
 		 *                Accessor Methods
@@ -129,23 +129,23 @@ class CKException
 		 * to dig into them.
 		 */
 		CKException( const char *aExceptionName, const char *aFileName, int aLineNumber, const std::string & aMessage );
-
-	private:
+ 
+	private:  
 		/*
 		 * This is the name of the exception and defaults to the class name
-		 * and for all subclasses the value needs to be set in the
+		 * and for all subclasses the value needs to be set in the 
 		 * constructors.
 		 */
 		char			*mExceptionName;
 		/*
 		 * This is the name of the file that the exception was believed to
-		 * have been thrown - or NULL in the case that the user didn't
+		 * have been thrown - or NULL in the case that the user didn't 
 		 * provide it to this class.
 		 */
 		char			*mFileName;
 		/*
 		 * This is the line number in the file that the exception was believed
-		 * to have been thrown - or -1 in the case that the user didn't
+		 * to have been thrown - or -1 in the case that the user didn't 
 		 * provide it to this class.
 		 */
 		int				mLineNumber;

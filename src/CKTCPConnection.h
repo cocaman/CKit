@@ -7,7 +7,7 @@
  *                     the CKTelnetConnection class which in turn is used
  *                     in other higher-level classes in CKit.
  *
- * $Id: CKTCPConnection.h,v 1.1 2003/11/21 18:08:11 drbob Exp $
+ * $Id: CKTCPConnection.h,v 1.2 2003/12/03 16:45:33 drbob Exp $
  */
 #ifndef __CKTCPCONNECTION_H
 #define __CKTCPCONNECTION_H

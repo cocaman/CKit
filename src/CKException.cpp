@@ -4,8 +4,8 @@
  *                   projects are going to need. It's also a simplified
  *                   version of the base exception class used in the MarketMash
  *                   Server.
- *
- * $Id: CKException.cpp,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * 
+ * $Id: CKException.cpp,v 1.2 2003/12/03 16:45:15 drbob Exp $
  */
 
 //	System Headers
@@ -162,7 +162,7 @@ std::string CKException::getMessage() const
  *                Utility Methods
  *
  ********************************************************/
-
+ 
 /*
  * This method writes out the relavent details from the exception
  * to the provided stream. This is nice in that it writes out only

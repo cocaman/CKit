@@ -4,8 +4,8 @@
  *                        when there's a system call that updates errno, and
  *                        you want to pass that information up to the caller
  *                        for them to decode as they see fit.
- *
- * $Id: CKErrNoException.cpp,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * 
+ * $Id: CKErrNoException.cpp,v 1.2 2003/12/03 16:45:15 drbob Exp $
  */
 
 //	System Headers
@@ -63,7 +63,7 @@ CKErrNoException::CKErrNoException( const CKErrNoException & anOther ) :
 CKErrNoException::~CKErrNoException()
 {
 }
-
+  
 
 /*
  * When we want to process the result of an equality we need to
@@ -74,7 +74,7 @@ const CKErrNoException & CKErrNoException::operator=( const CKErrNoException & a
 {
 	CKException::operator=( anOther );
 	mErrNo = anOther.mErrNo;
-
+  
 	return *this;
 }
 
@@ -98,7 +98,7 @@ const CKErrNoException & CKErrNoException::operator=( const CKErrNoException & a
  */
 std::ostream & CKErrNoException::printOut( std::ostream & anOStream )
 {
-	CKException::printOut( anOStream );
+	CKException::printOut( anOStream );  
 	anOStream << " - " << strerror( mErrNo );
 
 	return anOStream;

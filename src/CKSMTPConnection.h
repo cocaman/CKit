@@ -12,7 +12,7 @@
  *                      takes place during a connection. So, if you can, scan
  *                      the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.h,v 1.1 2003/11/21 18:08:09 drbob Exp $
+ * $Id: CKSMTPConnection.h,v 1.2 2003/12/03 16:45:29 drbob Exp $
  */
 #ifndef __CKSMTPCONNECTION_H
 #define __CKSMTPCONNECTION_H
@@ -39,14 +39,13 @@
  * have that as the default we'll be using.
  */
 #define	DEFAULT_SMTP_PORT			25
-
 #ifdef __linux__
 /*
- * On Linux, there is no standard definition of the maximum length of
+ * On Linux, there is no standard definition for the maximum length of
  * a file name. So, in order to make the code as transportable as possible
  * we'll adopt the Solaris/Darwin definition and use that.
  */
-#define MAXHOSTNAMELEN		255
+#define MAXHOSTNAMELEN			255
 #endif
 
 //	Public Datatypes
@@ -248,7 +247,7 @@ class CKSMTPConnection :
 		 * parsed from the latest data coming from the SMTP server.
 		 */
 		int getState() const;
-
+		
 		/*
 		 * As part of the SMTP protocol, the client and the server
 		 * say "hello" to one another and exchange such things as who
