@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.5 2004/09/22 13:48:33 drbob Exp $
+ * $Id: CKString.h,v 1.6 2004/09/28 15:45:51 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -18,6 +18,39 @@
 #include <ostream>
 #endif
 #include <string>
+/*
+ * Because we're using the NAN value in some places in this object,
+ * we need to make sure that it's defined for all the platforms that
+ * will be using this object.
+ */
+#ifdef __linux__
+#define __USE_ISOC99 1
+#endif
+#include <math.h>
+/*
+ * Oddly enough, Sun doesn't seem to have NAN defined, so we need to
+ * do that here so that things run more smoothly. This is very interesting
+ * because Sun has isnan() defined, but no obvious way to set a value.
+ */
+#ifdef __sun__
+#ifndef NAN
+#define	NAN	(__extension__ ((union { unsigned __l __attribute__((__mode__(__SI__))); \
+			float __d; }) { __l: 0x7fc00000UL }).__d)
+#endif
+#endif
+/*
+ * This is most odd, but it seems that at least on Darwin (Mac OS X)
+ * there's a problem with the definition of isnan(). So... to make it
+ * easier on all parties, I'm simply going to repeat the definition
+ * that's in Linux and Darwin here, and it should get picked up even
+ * if the headers fail us.
+ */
+#ifdef __MACH__
+#ifndef isnan
+#define	isnan(x)	((sizeof(x) == sizeof(double)) ? __isnand(x) : \
+					(sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#endif
+#endif
 
 //	Third-Party Headers
 #include <CKFWMutex.h>
@@ -214,6 +247,15 @@ class CKString
 		CKString & prepend( double aDouble );
 
 		/*
+		 * When you want to fill an existing string with a repeated value,
+		 * this is a good way to do it. It replaces what's in the string
+		 * and in it's place puts the requested number of copies of the
+		 * given character.
+		 */
+		CKString & fill( char aChar, int aCount );
+		CKString & fill( char aChar, int aCount ) const;
+
+		/*
 		 * When you need to remove (erase) a section of the string, this
 		 * method is the one to call. You give it a starting index and
 		 * optionally a number of characters to delete and they will be
@@ -304,11 +346,41 @@ class CKString
 		bool clear();
 		bool clear() const;
 
+		/*
+		 * There are times that you might want to see the numeric
+		 * representation of the contents of this string. These methods
+		 * make that easy enough to do and take care of all the dirty
+		 * work for us.
+		 */
+		int intValue();
+		int intValue() const;
+
+		int hexIntValue();
+		int hexIntValue() const;
+
+		long longValue();
+		long longValue() const;
+
+		double doubleValue();
+		double doubleValue() const;
+
 		/********************************************************
 		 *
 		 *                Manipulation Methods
 		 *
 		 ********************************************************/
+		/*
+		 * There will be times when the data in a string may not exactly
+		 * look like a string, but you need to make an *exact* copy
+		 * anyway. This method will take the capacity, size, and data
+		 * from the argument and duplicate them so that this guy is a
+		 * clone of the original.
+		 */
+		CKString & clone( CKString & anOther );
+		CKString & clone( const CKString & anOther );
+		CKString & clone( CKString & anOther ) const;
+		CKString & clone( const CKString & anOther ) const;
+
 		/*
 		 * These operators add the different kinds of strings to the
 		 * beginning of the existing string and return 'true' if successful,
@@ -1302,6 +1374,18 @@ class CKStringList
 		CKStringNode *find( const std::string & anSTLString );
 		CKStringNode *find( std::string & anSTLString ) const;
 		CKStringNode *find( const std::string & anSTLString ) const;
+
+		/*
+		 * This is the tokenizer/parser that wasn't in the STL string
+		 * class for some unknown reason. It takes a source and a
+		 * delimiter and breaks up the source into chunks that are
+		 * all separated by the delimiter string. Each chunk is put
+		 * into the returned vector for accessing by the caller. Since
+		 * the return value is created on the stack, the user needs to
+		 * save it if they want it to stay around.
+		 */
+		static CKStringList parseIntoChunks( const CKString & aString,
+											 const CKString & aDelim );
 
 		/********************************************************
 		 *

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.15 2004/09/25 17:02:01 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.16 2004/09/28 15:45:59 drbob Exp $
  */
 
 //	System Headers
@@ -224,9 +224,7 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 			 */
 			if (isTable(aValue)) {
 				// this could be a table or a timeseries... check the value
-				char	*scanner = (char *)&(aValue[1]);
-				double	v = CKTable::parseDoubleFromBufferToDelim(scanner,
-																  aValue[0]);
+				long	v = strtol(&(aValue[1]), (char **)NULL, 10);
 				if ((v > 19760000) && (v < 20100000)) {
 					// make a time series from the string representation
 					CKTimeSeries	ts(aValue);
@@ -239,9 +237,9 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 					setTableValue(&tbl);
 				}
 			} else if (isDate(aValue)) {
-				setDateValue((long)atoi(aValue));
+				setDateValue(strtol(aValue, (char **)NULL, 10));
 			} else if (isDouble(aValue)) {
-				setDoubleValue(atof(aValue));
+				setDoubleValue(strtod(aValue, (char **)NULL));
 			} else {
 				// everything else is a string
 				setStringValue(aValue);
@@ -251,10 +249,10 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 			setStringValue(aValue);
 			break;
 		case eNumberVariant:
-			setDoubleValue(atof(aValue));
+			setDoubleValue(strtod(aValue, (char **)NULL));
 			break;
 		case eDateVariant:
-			setDateValue(atol(aValue));
+			setDateValue(strtol(aValue, (char **)NULL, 10));
 			break;
 		case eTableVariant:
 			{
@@ -644,12 +642,14 @@ bool CKVariant::isDate( const char *aValue )
 
 	// check the components of the value as well
 	if (!error) {
-		double		v = atof(aValue);
+		double	v = strtod(aValue, (char **)NULL);
+		int		year = (int)(v/10000);
+		int		month = (int)((v - year*10000)/100);
+		int		day = (int)(v - (year*100 + month)*100);
 
-		if ((floor(v/10000) < 1900) ||
-			(floor(v/10000) > 2100) ||
-			(v - floor(v/10000)*10000 <  101) ||
-			(v - floor(v/10000)*10000 > 1231)) {
+		if ((year < 1980) || (year > 2010) ||
+			(month < 1) || (month > 12) ||
+			(day < 1) || (day > 31)) {
 			error = true;
 		}
 	}
@@ -748,16 +748,9 @@ std::string CKVariant::getValueAsSTLString() const
  * it makes sense to encode the value's data into a (char *) that
  * can be converted to a Java String and then the Java object can
  * interpret it and "reconstitue" the object from this coding.
- *
- * This method returns a character array that the caller is
- * responsible for calling 'delete []' on. This is useful as these
- * codes are used outside the scope of this class and so a copy
- * is far more useful.
  */
-char *CKVariant::generateCodeFromValues() const
+CKString CKVariant::generateCodeFromValues() const
 {
-	char	*retval = NULL;
-
 	CKString buff;
 	switch (getType()) {
 		case eUnknownVariant:
@@ -776,52 +769,19 @@ char *CKVariant::generateCodeFromValues() const
 			if (mTableValue == NULL) {
 				buff.append("U:");
 			} else {
-				char *code = mTableValue->generateCodeFromValues();
-				if (code == NULL) {
-					throw CKException(__FILE__, __LINE__, "CKVariant::"
-						"generateCodeFromValues() - the code for the table value "
-						"of this variant could not be obtained and that's a serious "
-						"problem that needs to be looked at.");
-				} else {
-					buff.append("T:").append(code);
-					delete [] code;
-					code = NULL;
-				}
+				buff.append("T:").append(mTableValue->generateCodeFromValues());
 			}
 			break;
 		case eTimeSeriesVariant:
 			if (mTimeSeriesValue == NULL) {
 				buff.append("U:");
 			} else {
-				char *code = mTimeSeriesValue->generateCodeFromValues();
-				if (code == NULL) {
-					throw CKException(__FILE__, __LINE__, "CKVariant::"
-						"generateCodeFromValues() - the code for the timeseries value "
-						"of this variant could not be obtained and that's a serious "
-						"problem that needs to be looked at.");
-				} else {
-					buff.append("L:").append(code);
-					delete [] code;
-					code = NULL;
-				}
+				buff.append("L:").append(mTimeSeriesValue->generateCodeFromValues());
 			}
 			break;
 	}
 
-	// now create a new buffer to hold all this
-	retval = new char[buff.size() + 1];
-	if (retval == NULL) {
-		throw CKException(__FILE__, __LINE__, "CKVariant::generateCodeFromValues"
-			"() - the space to hold the codified representation of this "
-			"value could not be created. This is a serious allocation "
-			"error.");
-	} else {
-		// copy over the string's contents
-		bzero(retval, buff.size() + 1);
-		strncpy(retval, buff.c_str(), buff.size());
-	}
-
-	return retval;
+	return buff;
 }
 
 
@@ -832,26 +792,26 @@ char *CKVariant::generateCodeFromValues() const
  * that are needed to populate this value. The argument is left
  * untouched, and is the responsible of the caller to free.
  */
-void CKVariant::takeValuesFromCode( const char *aCode )
+void CKVariant::takeValuesFromCode( const CKString & aCode )
 {
 	switch (aCode[0]) {
 		case 'U':
 			clearValue();
 			break;
 		case 'S':
-			setValueAsType(eStringVariant, &(aCode[2]));
+			setValueAsType(eStringVariant, aCode.substr(2).c_str());
 			break;
 		case 'N':
-			setValueAsType(eNumberVariant, &(aCode[2]));
+			setValueAsType(eNumberVariant, aCode.substr(2).c_str());
 			break;
 		case 'D':
-			setValueAsType(eDateVariant, &(aCode[2]));
+			setValueAsType(eDateVariant, aCode.substr(2).c_str());
 			break;
 		case 'T':
-			setValueAsType(eTableVariant, &(aCode[2]));
+			setValueAsType(eTableVariant, aCode.substr(2).c_str());
 			break;
 		case 'L':
-			setValueAsType(eTimeSeriesVariant, &(aCode[2]));
+			setValueAsType(eTimeSeriesVariant, aCode.substr(2).c_str());
 			break;
 	}
 }

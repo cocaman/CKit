@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.12 2004/09/25 16:14:40 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.13 2004/09/28 15:45:57 drbob Exp $
  */
 
 //	System Headers
@@ -93,16 +93,16 @@ CKTimeSeries::CKTimeSeries( const CKVector<long> & aDateSeries,
  * This is very useful for serializing the table's data from one
  * host to another across a socket, for instance.
  */
-CKTimeSeries::CKTimeSeries( const char *aCode ) :
+CKTimeSeries::CKTimeSeries( const CKString & aCode ) :
 	mTimeseries(),
 	mTimeseriesMutex()
 {
 	// first, make sure we have something to do
-	if (aCode == NULL) {
+	if (aCode.empty()) {
 		std::ostringstream	msg;
 		msg << "CKTimeSeries::CKTimeSeries(const char *) - the provided "
-			"argument is NULL and that means that nothing can be done. Please "
-			"make sure that the argument is not NULL before calling this "
+			"argument is empty and that means that nothing can be done. Please "
+			"make sure that the argument is not empty before calling this "
 			"constructor.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
@@ -1289,13 +1289,8 @@ double CKTimeSeries::getEndingDate()
  * it makes sense to encode the value's data into a (char *) that
  * can be converted to a Java String and then the Java object can
  * interpret it and "reconstitue" the object from this coding.
- *
- * This method returns a character array that the caller is
- * responsible for calling 'delete []' on. This is useful as these
- * codes are used outside the scope of this class and so a copy
- * is far more useful.
  */
-char *CKTimeSeries::generateCodeFromValues() const
+CKString CKTimeSeries::generateCodeFromValues() const
 {
 	// start by getting a buffer to build up this value
 	CKString buff;
@@ -1313,24 +1308,12 @@ char *CKTimeSeries::generateCodeFromValues() const
 		} else {
 			// this will be YYYYMMDD.hhmmssss on the output
 			char	dateVal[20];
-			snprintf(dateVal, 20, "%17.8lf", (*i).first);
+			bzero(dateVal, 20);
+			snprintf(dateVal, 19, "%17.8lf", (*i).first);
 			buff.append(dateVal).append("\x01");
 		}
 		// finish it off with the value in scientific notation
 		buff.append((*i).second).append("\x01");
-	}
-
-	// now create a new buffer to hold all this
-	char	*retval = new char[buff.size() + 1];
-	if (retval == NULL) {
-		throw CKException(__FILE__, __LINE__, "CKTimeSeries::generateCodeFromValues"
-			"() - the space to hold the codified representation of this "
-			"table could not be created. This is a serious allocation "
-			"error.");
-	} else {
-		// copy over the string's contents
-		bzero(retval, buff.size() + 1);
-		strncpy(retval, buff.c_str(), buff.size());
 	}
 
 	/*
@@ -1339,21 +1322,15 @@ char *CKTimeSeries::generateCodeFromValues() const
 	 * for the existence of a series of possible delimiters, and as soon as
 	 * we find one that's not used in the string we'll use that guy.
 	 */
-	if (retval != NULL) {
-		if (!CKTable::chooseAndApplyDelimiter(retval)) {
-			// free up the space I had created
-			delete [] retval;
-			retval = NULL;
-			// and throw the exception
-			throw CKException(__FILE__, __LINE__, "CKTimeSeries::generateCodeFrom"
-				"Values() - while trying to find an acceptable delimiter for "
-				"the data in the timeseries we ran out of possibles before finding "
-				"one that wasn't being used in the text of the code. This is "
-				"a serious problem that the developers need to look into.");
-		}
+	if (!CKTable::chooseAndApplyDelimiter(buff)) {
+		throw CKException(__FILE__, __LINE__, "CKTimeSeries::generateCodeFrom"
+			"Values() - while trying to find an acceptable delimiter for "
+			"the data in the timeseries we ran out of possibles before finding "
+			"one that wasn't being used in the text of the code. This is "
+			"a serious problem that the developers need to look into.");
 	}
 
-	return retval;
+	return buff;
 }
 
 
@@ -1364,14 +1341,14 @@ char *CKTimeSeries::generateCodeFromValues() const
  * that are needed to populate this value. The argument is left
  * untouched, and is the responsible of the caller to free.
  */
-void CKTimeSeries::takeValuesFromCode( const char *aCode )
+void CKTimeSeries::takeValuesFromCode( const CKString & aCode )
 {
 	// first, see if we have anything to do
-	if (aCode == NULL) {
+	if (aCode.empty()) {
 		throw CKException(__FILE__, __LINE__, "CKTimeSeries::takeValuesFromCode("
-			"const char *) - the passed-in code is NULL which means that "
+			"const char *) - the passed-in code is empty which means that "
 			"there's nothing I can do. Please make sure that the argument is "
-			"not NULL before calling this method.");
+			"not empty before calling this method.");
 	}
 
 	// lock up this guy against changes
@@ -1386,22 +1363,37 @@ void CKTimeSeries::takeValuesFromCode( const char *aCode )
 	 * get it.
 	 */
 	char	delim = aCode[0];
-	// ...and start the scanner just after the delimiter
-	char	*scanner = (char *)&(aCode[1]);
+	// ...and parse this guy into chunks
+	int		bit = 0;
+	CKStringList	chunks = CKStringList::parseIntoChunks(aCode, delim);
+	if (chunks.size() < 1) {
+		std::ostringstream	msg;
+		msg << "CKTimeSeries::takeValuesFromCode(const CKString &) - the code: '" <<
+			aCode << "' does not represent a valid timeseries encoding. Please "
+			"check on it's source as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
 
 	/*
-	 * Next thing is the row count and then the columnn count.
-	 * Get them right off...
+	 * Next thing is the count of time/value pairs in the series.
 	 */
-	int cnt = CKTable::parseIntFromBufferToDelim(scanner, delim);
+	int cnt = chunks[bit++].intValue();
+	// see if we have enough to fill in this table
+	if (chunks.size() < (1 + 2*cnt)) {
+		std::ostringstream	msg;
+		msg << "CKTimeSeries::takeValuesFromCode(const CKString &) - the code: '" <<
+			aCode << "' does not represent a valid timeseries encoding. Please "
+			"check on it's source as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
 
 	/*
 	 * Next, we need to read off the pairs of timestamps and values.
 	 * both are doubles, the timestamp in the form YYYYMMDD.hhmmssss.
 	 */
 	for (int i = 0; i < cnt; i++) {
-		double	timestamp = CKTable::parseDoubleFromBufferToDelim(scanner, delim);
-		double	value = CKTable::parseDoubleFromBufferToDelim(scanner, delim);
+		double	timestamp = chunks[bit++].doubleValue();
+		double	value = chunks[bit++].doubleValue();
 		if (timestamp == NAN) {
 			// unlock up this guy for changes
 			mTimeseriesMutex.unlock();

@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.17 2004/09/25 16:14:39 drbob Exp $
+ * $Id: CKTable.cpp,v 1.18 2004/09/28 15:45:52 drbob Exp $
  */
 
 //	System Headers
@@ -126,7 +126,7 @@ CKTable::CKTable( const CKStringList aRowLabels,
  * useful for serializing the table's data from one host to
  * another across a socket, for instance.
  */
-CKTable::CKTable( const char *aCode ) :
+CKTable::CKTable( const CKString & aCode ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
 	mRowLabels(NULL),
@@ -134,11 +134,11 @@ CKTable::CKTable( const char *aCode ) :
 	mNumColumns(-1)
 {
 	// first, make sure we have something to do
-	if (aCode == NULL) {
+	if (aCode.empty()) {
 		std::ostringstream	msg;
 		msg << "CKTable::CKTable(const char *) - the provided argument is "
-			"NULL and that means that nothing can be done. Please make sure "
-			"that the argument is not NULL before calling this constructor.";
+			"empty and that means that nothing can be done. Please make sure "
+			"that the argument is not empty before calling this constructor.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
 		// load in the values from the code
@@ -2253,13 +2253,8 @@ CKString CKTable::getValueAsString( const CKString & aRowLabel, const CKString &
  * it makes sense to encode the table's data into a (char *) that
  * can be converted to a Java String and then the Java object can
  * interpret it and "reconstitue" the object from this coding.
- *
- * This method returns a character array that the caller is
- * responsible for calling 'delete []' on. This is useful as these
- * codes are used outside the scope of this class and so a copy
- * is far more useful.
  */
-char *CKTable::generateCodeFromValues() const
+CKString CKTable::generateCodeFromValues() const
 {
 	/*
 	 * OK... this is interesting because I happen to like the idea
@@ -2291,29 +2286,7 @@ char *CKTable::generateCodeFromValues() const
 	// now loop over the data and write it all out in an easy manner
 	int		cnt = mNumRows * mNumColumns;
 	for (int i = 0; i < cnt; ++i)  {
-		char *code = mTable[i].generateCodeFromValues();
-		if (code == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFromValues"
-				"() - the code for the variant in this table could not be obtained. "
-				"This is a serious problem that needs to be looked into.");
-		} else {
-			buff.append(code).append("\x01");
-			delete [] code;
-			code = NULL;
-		}
-	}
-
-	// now create a new buffer to hold all this
-	char	*retval = new char[buff.size() + 1];
-	if (retval == NULL) {
-		throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFromValues"
-			"() - the space to hold the codified representation of this "
-			"table could not be created. This is a serious allocation "
-			"error.");
-	} else {
-		// copy over the string's contents
-		bzero(retval, buff.size() + 1);
-		strncpy(retval, buff.c_str(), buff.size());
+		buff.append(mTable[i].generateCodeFromValues()).append("\x01");
 	}
 
 	/*
@@ -2322,21 +2295,15 @@ char *CKTable::generateCodeFromValues() const
 	 * for the existence of a series of possible delimiters, and as soon as
 	 * we find one that's not used in the string we'll use that guy.
 	 */
-	if (retval != NULL) {
-		if (!chooseAndApplyDelimiter(retval)) {
-			// free up the space I had created
-			delete [] retval;
-			retval = NULL;
-			// and throw the exception
-			throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFrom"
-				"Values() - while trying to find an acceptable delimiter for "
-				"the data in the table we ran out of possibles before finding "
-				"one that wasn't being used in the text of the code. This is "
-				"a serious problem that the developers need to look into.");
-		}
+	if (!chooseAndApplyDelimiter(buff)) {
+		throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFrom"
+			"Values() - while trying to find an acceptable delimiter for "
+			"the data in the table we ran out of possibles before finding "
+			"one that wasn't being used in the text of the code. This is "
+			"a serious problem that the developers need to look into.");
 	}
 
-	return retval;
+	return buff;
 }
 
 
@@ -2347,14 +2314,14 @@ char *CKTable::generateCodeFromValues() const
  * that are needed to populate this table. The argument is left
  * untouched, and is the responsible of the caller to free.
  */
-void CKTable::takeValuesFromCode( const char *aCode )
+void CKTable::takeValuesFromCode( const CKString & aCode )
 {
 	// first, see if we have anything to do
-	if (aCode == NULL) {
+	if (aCode.empty()) {
 		throw CKException(__FILE__, __LINE__, "CKTable::takeValuesFromCode("
-			"const char *) - the passed-in code is NULL which means that "
+			"const CKString &) - the passed-in code is empty which means that "
 			"there's nothing I can do. Please make sure that the argument is "
-			"not NULL before calling this method.");
+			"not empty before calling this method.");
 	}
 
 	/*
@@ -2364,36 +2331,41 @@ void CKTable::takeValuesFromCode( const char *aCode )
 	 * get it.
 	 */
 	char	delim = aCode[0];
-	// ...and start the scanner just after the delimiter
-	char	*scanner = (char *)&(aCode[1]);
+	// ...and parse this guy into chunks
+	int		bit = 0;
+	CKStringList	chunks = CKStringList::parseIntoChunks(aCode, delim);
+	if (chunks.size() < 3) {
+		std::ostringstream	msg;
+		msg << "CKTable::takeValuesFromCode(const CKString &) - the code: '" <<
+			aCode << "' does not represent a valid table encoding. Please check "
+			"on it's source as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
 
 	/*
 	 * Next thing is the row count and then the columnn count.
 	 * Get them right off...
 	 */
-	int rowCnt = parseIntFromBufferToDelim(scanner, delim);
-	int colCnt = parseIntFromBufferToDelim(scanner, delim);
-	// also, create the table for this size
-	createTable( rowCnt, colCnt );
+	int rowCnt = chunks[bit++].intValue();
+	int colCnt = chunks[bit++].intValue();
+	// see if we have enough to fill in this table
+	if (chunks.size() < (2 + rowCnt + colCnt + rowCnt * colCnt)) {
+		std::ostringstream	msg;
+		msg << "CKTable::takeValuesFromCode(const CKString &) - the code: '" <<
+			aCode << "' does not represent a valid table encoding. Please check "
+			"on it's source as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// OK, we have a good size, create the table for this guy
+		createTable( rowCnt, colCnt );
+	}
 
 	/*
 	 * Next, we need to read off the column headers that we need to
 	 * apply to this newly constructed table
 	 */
 	for (int j = 0; j < colCnt; j++) {
-		char	*value = parseStringFromBufferToDelim(scanner, delim);
-		if (value == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKTable::takeValues"
-				"FromCode(const char *) - while trying to read the column "
-				"header, a NULL was read. This is a serious problem in the "
-				"code.");
-		} else {
-			// set the header
-			mColumnHeaders[j] = value;
-			// ...and drop the parsed string as we no longer need it
-			delete [] value;
-			value = NULL;
-		}
+		mColumnHeaders[j] = chunks[bit++];
 	}
 
 	/*
@@ -2401,19 +2373,7 @@ void CKTable::takeValuesFromCode( const char *aCode )
 	 * apply to this newly constructed table
 	 */
 	for (int i = 0; i < rowCnt; i++) {
-		char	*value = parseStringFromBufferToDelim(scanner, delim);
-		if (value == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKTable::takeValues"
-				"FromCode(const char *) - while trying to read the row "
-				"label, a NULL was read. This is a serious problem in the "
-				"code.");
-		} else {
-			// set the label
-			mRowLabels[i] = value;
-			// ...and drop the parsed string as we no longer need it
-			delete [] value;
-			value = NULL;
-		}
+		mRowLabels[i] = chunks[bit++];
 	}
 
 	/*
@@ -2421,19 +2381,7 @@ void CKTable::takeValuesFromCode( const char *aCode )
 	 */
 	int		cnt = rowCnt * colCnt;
 	for (int i = 0; i < cnt; i++)  {
-		char	*value = parseStringFromBufferToDelim(scanner, delim);
-		if (value == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKTable::takeValues"
-				"FromCode(const char *) - while trying to read the value "
-				"of the next element in the table code we ran into "
-				"a NULL. This is a serious problem in the code.");
-		} else {
-			// reconstitute a CKVariant based on the data and add it in
-			mTable[i].takeValuesFromCode(value);
-			// ...and drop the value as we no longer need it
-			delete [] value;
-			value = NULL;
-		}
+		mTable[i].takeValuesFromCode(chunks[bit++]);
 	}
 }
 
@@ -2806,216 +2754,9 @@ const CKString *CKTable::getRowLabels() const
  *
  ********************************************************/
 /*
- * This method looks at the character buffer and parses out the
- * integer value from the start of the buffer to the first instance
- * of the character 'delim' and then returns that value. The
- * buffer contents itself is untouched.
- *
- * On exit, the argument 'buff' will be moved to one character
- * PAST the delimiter so that it's ready for another call to this
- * method, if needed.
- */
-int CKTable::parseIntFromBufferToDelim( char * & aBuff, char aDelim )
-{
-	bool		error = false;
-	int			retval = 0;
-
-	/*
-	 * We're going to loop over each character in 'buff' until we
-	 * get to the 'delim'. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a digit
-	 * then we'll return a 0, just as atoi() would.
-	 */
-	while (*aBuff != aDelim) {
-		// see if it's not a digit
-		if (!isdigit(*aBuff)) {
-			error = true;
-		} else {
-			// accumulate the value
-			retval = retval * 10 + (*aBuff - '0');
-		}
-
-		// always scan to the delimiter regardless
-		++aBuff;
-	}
-
-	// make sure we move past the delimiter in the buffer
-	++aBuff;
-
-	return error ? 0 : retval;
-}
-
-
-/*
- * This method looks at the character buffer and parses out the
- * hexadecimal integer value from the start of the buffer to the
- * first instance of the character 'delim' and then returns that
- * value. The buffer contents itself is untouched.
- *
- * On exit, the argument 'buff' will be moved to one character
- * PAST the delimiter so that it's ready for another call to this
- * method, if needed.
- */
-int CKTable::parseHexIntFromBufferToDelim( char * & aBuff, char aDelim )
-{
-	bool		error = false;
-	int			retval = 0;
-
-	/*
-	 * We're going to loop over each character in 'buff' until we
-	 * get to the 'delim'. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a hex
-	 * digit then we'll return a 0, just as atoi() would.
-	 */
-	while ((*aBuff != aDelim) && (*aBuff != '\0')) {
-		// see if it's not a digit
-		if (!isxdigit(*aBuff)) {
-			error = true;
-		} else {
-			// accumulate the value based on the digit itself
-			if (isdigit(*aBuff)) {
-				retval = retval * 16 + (*aBuff - '0');
-			} else {
-				retval = retval * 16 + (toupper(*aBuff) - 'A' + 10);
-			}
-		}
-
-		// always scan to the delimiter regardless
-		++aBuff;
-	}
-
-	// make sure we move past the delimiter in the buffer
-	++aBuff;
-
-	return error ? 0 : retval;
-}
-
-
-/*
- * This method looks at the character buffer and parses out the
- * long integer value from the start of the buffer to the first
- * instance of the character 'delim' and then returns that value.
- * The buffer contents itself is untouched.
- *
- * On exit, the argument 'buff' will be moved to one character
- * PAST the delimiter so that it's ready for another call to this
- * method, if needed.
- */
-long CKTable::parseLongFromBufferToDelim( char * & aBuff, char aDelim )
-{
-	bool		error = false;
-	long		retval = 0;
-
-	/*
-	 * We're going to loop over each character in 'buff' until we
-	 * get to the 'delim'. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a digit
-	 * then we'll return a 0, just as atoi() would.
-	 */
-	while (*aBuff != aDelim) {
-		// see if it's not a digit
-		if (!isdigit(*aBuff)) {
-			error = true;
-		} else {
-			// accumulate the value
-			retval = retval * 10 + (*aBuff - '0');
-		}
-
-		// always scan to the delimiter regardless
-		++aBuff;
-	}
-
-	// make sure we move past the delimiter in the buffer
-	++aBuff;
-
-	return error ? 0 : retval;
-}
-
-
-/*
- * This method looks at the character buffer and parses out the
- * double value from the start of the buffer to the first
- * instance of the character 'delim' and then returns that value.
- * The buffer contents itself is untouched.
- *
- * On exit, the argument 'buff' will be moved to one character
- * PAST the delimiter so that it's ready for another call to this
- * method, if needed.
- */
-double CKTable::parseDoubleFromBufferToDelim( char * & aBuff, char aDelim )
-{
-	bool		error = false;
-	double		retval = NAN;
-
-	// first thing is to get the string that is the value
-	char *strVal = parseStringFromBufferToDelim(aBuff, aDelim);
-	if (strVal == NULL) {
-		error = true;
-		// simply return a 'NaN' value no need to log
-	} else {
-		// convert this to a doublw
-		retval = atof(strVal);
-		// ...and drop the used storage as we're done with it
-		delete [] strVal;
-		strVal = NULL;
-	}
-
-	return error ? NAN : retval;
-}
-
-
-/*
- * This method looks at the character buffer and parses out the
- * charater string value from the start of the buffer to the first
- * instance of the character 'delim' and then returns *a copy* of
- * that value. The buffer contents itself is untouched, and calling
- * 'delete []' on the returned value is the responsibility of the
- * caller of this method.
- *
- * On exit, the argument 'buff' will be moved to one character
- * PAST the delimiter so that it's ready for another call to this
- * method, if needed.
- */
-char *CKTable::parseStringFromBufferToDelim( char * & aBuff, char aDelim )
-{
-	char		*retval = NULL;
-
-	/*
-	 * What we're going to do is put a placeholder at the location
-	 * in the buffer that we start, and then scan to the other
-	 * delimiter - moving the buffer pointer as we go. Then, when
-	 * we've hit the delimiter we'll create a string, copy in the
-	 * contents and NULL terminate it.
-	 */
-	char	*anchor = aBuff;
-	int		cnt = 0;
-	while (*aBuff != aDelim) {
-		// add one to the length we'll need
-		++cnt;
-		// ...and move the buffer over a character
-		++aBuff;
-	}
-
-	// now create the correct sized buffer to return
-	retval = new char[cnt + 1];
-	if (retval != NULL) {
-		// copy over the string contents
-		memcpy( retval, anchor, cnt );
-		// ...and don't forget to NULL terminate it
-		retval[cnt] = '\0';
-	}
-
-	// make sure we move past the delimiter in the buffer
-	++aBuff;
-
-	return retval;
-}
-
-
-/*
  * This method is used in the creation of the encoded strings that
  * assist in the translation of the objects from the C++ to Java
- * environments. Basically, the (char *) buffer that's passed in
+ * environments. Basically, the CKString buffer that's passed in
  * contains delimiters that are '\x01' but that need to be changed
  * to a printable ASCII character. This method scans the entire
  * string for the presence of delimiters and then selects one
@@ -3024,80 +2765,46 @@ char *CKTable::parseStringFromBufferToDelim( char * & aBuff, char aDelim )
  * impossible to find a delimiter, this method will return false
  * otherwise it will return true.
  */
-bool CKTable::chooseAndApplyDelimiter( char *aBuff )
+bool CKTable::chooseAndApplyDelimiter( CKString & aBuff )
 {
 	bool	error = false;
 
 	// first, see if we have anything to do
-	int		len = 0;
 	if (!error) {
-		if (aBuff == NULL) {
+		if (aBuff.empty()) {
 			error = true;
 			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
-				"(char *) - the passed-in buffer is NULL and that means that "
+				"(char *) - the passed-in buffer is empty and that means that "
 				"there's nothing I can do. Please make sure that the argument to "
-				"this method is not NULL before calling.");
-		} else {
-			// get the length of the buffer
-			len = (int)strlen(aBuff);
+				"this method is not empty before calling.");
 		}
 	}
-
-	// these are out list of possible delimiters in a reasonable order
-	char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
-	int		passCnt = (int)strlen(delimiters);
-	// this will be set when we find one of these acceptable
-	int		goodDelim = -1;
 
 	/*
 	 * Let's check each of the possible delimiters in turn, and if
 	 * one passes, then let's flag that and we can replace it next.
 	 */
 	if (!error) {
-		for ( int pass = 0; (goodDelim < 0) && (pass < passCnt); ++pass ) {
-			// get the next test delimiter and reset the 'hit' flag
-			char	testDelim = delimiters[pass];
-			int		hit = 0;
-			// scan the string and see if the delimiter appears anywhere
-			for ( int i = 0; i < len; ++i ) {
-				if (aBuff[i] == testDelim) {
-					++hit;
-					break;
-				}
-			}
-
-			/*
-			 * If the delimiter was unused, then flag it and break out
-			 * of the loop.
-			 */
-			if (hit == 0) {
-				goodDelim = pass;
+		bool	replaced = false;
+		// these are out list of possible delimiters in a reasonable order
+		char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
+		int		passCnt = (int)strlen(delimiters);
+		// check each and replace if it's not found
+		for (int pass = 0; pass < passCnt; ++pass) {
+			if (aBuff.find(delimiters[pass]) == -1) {
+				aBuff.replace('\x01', delimiters[pass]);
+				replaced = true;
 				break;
 			}
 		}
-	}
-
-	/*
-	 * Decision time... if we have a good delimiter then let's replace
-	 * all the '\x01' values with the value at delimiters[goodDelim].
-	 * If it turns out we don't have a good delimiter, then let's throw
-	 * an exception as we can't possibly create the code without one.
-	 */
-	if (!error) {
-		if (goodDelim == -1) {
+		// see if we failed
+		if (!replaced) {
 			error = true;
 			throw CKException(__FILE__, __LINE__, "CKTable::chooseAndApplyDelimiter"
 				"(char *) - while trying to find an acceptable delimiter for the "
 				"data in this string we ran out of possibles before finding one "
 				"that wasn't being used in the text of the code. This is a serious "
 				"problem that the developers need to look into.");
-		} else {
-			// OK... time to replace the placeholder with the delimiter
-			for ( int i = 0; i < len; ++i ) {
-				if (aBuff[i] == '\x01') {
-					aBuff[i] = delimiters[goodDelim];
-				}
-			}
 		}
 	}
 

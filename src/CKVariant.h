@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.10 2004/09/20 17:59:11 drbob Exp $
+ * $Id: CKVariant.h,v 1.11 2004/09/28 15:46:00 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -287,13 +287,8 @@ class CKVariant
 		 * it makes sense to encode the value's data into a (char *) that
 		 * can be converted to a Java String and then the Java object can
 		 * interpret it and "reconstitue" the object from this coding.
-		 *
-		 * This method returns a character array that the caller is
-		 * responsible for calling 'delete []' on. This is useful as these
-		 * codes are used outside the scope of this class and so a copy
-		 * is far more useful.
 		 */
-		virtual char *generateCodeFromValues() const;
+		virtual CKString generateCodeFromValues() const;
 		/*
 		 * This method takes a code that could have been written with the
 		 * generateCodeFromValues() method on either the C++ or Java
@@ -301,7 +296,7 @@ class CKVariant
 		 * that are needed to populate this value. The argument is left
 		 * untouched, and is the responsible of the caller to free.
 		 */
-		virtual void takeValuesFromCode( const char *aCode );
+		virtual void takeValuesFromCode( const CKString & aCode );
 		/*
 		 * This method checks to see if the two CKVariants are equal to one
 		 * another based on the values they represent and *not* on the actual

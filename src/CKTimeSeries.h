@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.11 2004/09/25 16:14:40 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.12 2004/09/28 15:45:58 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -110,7 +110,7 @@ class CKTimeSeries
 		 * This is very useful for serializing the table's data from one
 		 * host to another across a socket, for instance.
 		 */
-		CKTimeSeries( const char *aCode );
+		CKTimeSeries( const CKString & aCode );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -373,7 +373,7 @@ class CKTimeSeries
 		/*
 		 * This method adds or subtracts the count of days from the given
 		 * date and returns the resulting date to the caller. This is nice
-		 * because to add days to a date, make the count positive, to 
+		 * because to add days to a date, make the count positive, to
 		 * subtract days from a date, make the count negative. The method
 		 * respects leap years, etc.
 		 */
@@ -402,13 +402,8 @@ class CKTimeSeries
 		 * it makes sense to encode the value's data into a (char *) that
 		 * can be converted to a Java String and then the Java object can
 		 * interpret it and "reconstitue" the object from this coding.
-		 *
-		 * This method returns a character array that the caller is
-		 * responsible for calling 'delete []' on. This is useful as these
-		 * codes are used outside the scope of this class and so a copy
-		 * is far more useful.
 		 */
-		virtual char *generateCodeFromValues() const;
+		virtual CKString generateCodeFromValues() const;
 		/*
 		 * This method takes a code that could have been written with the
 		 * generateCodeFromValues() method on either the C++ or Java
@@ -416,7 +411,7 @@ class CKTimeSeries
 		 * that are needed to populate this value. The argument is left
 		 * untouched, and is the responsible of the caller to free.
 		 */
-		virtual void takeValuesFromCode( const char *aCode );
+		virtual void takeValuesFromCode( const CKString & aCode );
 		/*
 		 * This method checks to see if the two CKTimeSeries are equal to one
 		 * another based on the values they represent and *not* on the actual

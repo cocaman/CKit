@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.18 2004/09/25 16:14:37 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.19 2004/09/28 15:45:42 drbob Exp $
  */
 
 //	System Headers
@@ -877,7 +877,7 @@ CKStringList CKDataNode::pathToSteps( const CKString & aPath )
 	CKStringList	raw;
 	int				rawCnt = 0;
 	if (!error && !done) {
-		raw = parseIntoChunks(cleanPath, "/");
+		raw = CKStringList::parseIntoChunks(cleanPath, "/");
 		rawCnt = raw.size();
 		if (rawCnt < 1) {
 			done = true;
@@ -1514,90 +1514,6 @@ CKFWMutex *CKDataNode::getKidsMutex()
 CKVector<CKDataNode*> *CKDataNode::getKids()
 {
 	return & mKids;
-}
-
-
-/*
- * This is the tokenizer/parser that wasn't in the STL string
- * class for some unknown reason. It takes a source and a
- * delimiter and breaks up the source into chunks that are
- * all separated by the delimiter string. Each chunk is put
- * into the returned vector for accessing by the caller. Since
- * the return value is created on the stack, the user needs to
- * save it if they want it to stay around.
- */
-CKStringList CKDataNode::parseIntoChunks( const CKString & aString,
-										  const CKString & aDelim )
-{
-	bool			error = false;
-	CKStringList	retval;
-
-	// first, see if we have anything to do
-	if (!error) {
-		if (aString.length() <= 0) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKDataNode::parseIntoChunks(const CKString &, "
-				"const CKString &) - the length of the source string is 0 and "
-				"that means that there's nothing for me to do. Please make sure "
-				"that the arguments make sense before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-	int		delimLength = 0;
-	if (!error) {
-		delimLength = aDelim.length();
-		if (delimLength <= 0) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKDataNode::parseIntoChunks(const CKString &, "
-				"const CKString &) - the length of the delimiter string is 0 "
-				"and that means that there's nothing for me to do. Please make "
-				"sure that the arguments make sense before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
-	// now, copy the source to a buffer so I can consume it in the process
-	CKString		buff;
-	if (!error) {
-		buff = aString;
-	}
-
-	/*
-	 * Now loop picking off the parts bettween the delimiters. Do this by
-	 * finding the first delimiter, see if it's located at buff[0], and if
-	 * so, then add an empty string to the vector, otherwise, get the
-	 * substring up to that delimiter and place it at the end of the vector,
-	 * removing it from the buffer as you do this. Then eat up the delimiter
-	 * and do it all again. In the end, there will be one more bit and that
-	 * will simply be added to the end of the vector.
-	 */
-	while (!error) {
-		// find out wherre, if anyplace, the delimiter sits
-		int		pos = buff.find(aDelim);
-		if (pos == -1) {
-			// nothing left to parse out, bail out
-			break;
-		} else if (pos == 0) {
-			// add an empty string to the vector
-			retval.addToEnd(CKString());
-		} else {
-			// pick off the substring up to the delimiter
-			retval.addToEnd(buff.substr(0, pos));
-			// ...and then delete them from the buffer
-			buff.erase(0, pos);
-		}
-
-		// now strip off the delimiter from the buffer
-		buff.erase(0, delimLength);
-	}
-	// if we didn't error out, then add the remaining buff to the end
-	if (!error) {
-		retval.addToEnd(buff);
-	}
-
-	return retval;
 }
 
 

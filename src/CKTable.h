@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.14 2004/09/25 16:14:40 drbob Exp $
+ * $Id: CKTable.h,v 1.15 2004/09/28 15:45:56 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -101,7 +101,7 @@ class CKTable {
 		 * useful for serializing the table's data from one host to
 		 * another across a socket, for instance.
 		 */
-		CKTable( const char *aCode );
+		CKTable( const CKString & aCode );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -416,13 +416,8 @@ class CKTable {
 		 * it makes sense to encode the table's data into a (char *) that
 		 * can be converted to a Java String and then the Java object can
 		 * interpret it and "reconstitue" the object from this coding.
-		 *
-		 * This method returns a character array that the caller is
-		 * responsible for calling 'delete []' on. This is useful as these
-		 * codes are used outside the scope of this class and so a copy
-		 * is far more useful.
 		 */
-		virtual char *generateCodeFromValues() const;
+		virtual CKString generateCodeFromValues() const;
 		/*
 		 * This method takes a code that could have been written with the
 		 * generateCodeFromValues() method on either the C++ or Java
@@ -430,7 +425,7 @@ class CKTable {
 		 * that are needed to populate this table. The argument is left
 		 * untouched, and is the responsible of the caller to free.
 		 */
-		virtual void takeValuesFromCode( const char *aCode );
+		virtual void takeValuesFromCode( const CKString & aCode );
 		/*
 		 * When this table needs to be resized, a call to this method will
 		 * do the trick. It's important to note that all the data that can
@@ -544,66 +539,9 @@ class CKTable {
 		 *
 		 ********************************************************/
 		/*
-		 * This method looks at the character buffer and parses out the
-		 * integer value from the start of the buffer to the first instance
-		 * of the character 'delim' and then returns that value. The
-		 * buffer contents itself is untouched.
-		 *
-		 * On exit, the argument 'buff' will be moved to one character
-		 * PAST the delimiter so that it's ready for another call to this
-		 * method, if needed.
-		 */
-		static int parseIntFromBufferToDelim( char * & aBuff, char aDelim );
-		/*
-		 * This method looks at the character buffer and parses out the
-		 * hexadecimal integer value from the start of the buffer to the
-		 * first instance of the character 'delim' and then returns that
-		 * value. The buffer contents itself is untouched.
-		 *
-		 * On exit, the argument 'buff' will be moved to one character
-		 * PAST the delimiter so that it's ready for another call to this
-		 * method, if needed.
-		 */
-		static int parseHexIntFromBufferToDelim( char * & aBuff, char aDelim );
-		/*
-		 * This method looks at the character buffer and parses out the
-		 * long integer value from the start of the buffer to the first
-		 * instance of the character 'delim' and then returns that value.
-		 * The buffer contents itself is untouched.
-		 *
-		 * On exit, the argument 'buff' will be moved to one character
-		 * PAST the delimiter so that it's ready for another call to this
-		 * method, if needed.
-		 */
-		static long parseLongFromBufferToDelim( char * & aBuff, char aDelim );
-		/*
-		 * This method looks at the character buffer and parses out the
-		 * double value from the start of the buffer to the first
-		 * instance of the character 'delim' and then returns that value.
-		 * The buffer contents itself is untouched.
-		 *
-		 * On exit, the argument 'buff' will be moved to one character
-		 * PAST the delimiter so that it's ready for another call to this
-		 * method, if needed.
-		 */
-		static double parseDoubleFromBufferToDelim( char * & aBuff, char aDelim );
-		/*
-		 * This method looks at the character buffer and parses out the
-		 * charater string value from the start of the buffer to the first
-		 * instance of the character 'delim' and then returns *a copy* of
-		 * that value. The buffer contents itself is untouched, and calling
-		 * 'delete []' on the returned value is the responsibility of the
-		 * caller of this method.
-		 *
-		 * On exit, the argument 'buff' will be moved to one character
-		 * PAST the delimiter so that it's ready for another call to this
-		 * method, if needed.
-		 */
-		static char *parseStringFromBufferToDelim( char * & aBuff, char aDelim );
-		/*
 		 * This method is used in the creation of the encoded strings that
 		 * assist in the translation of the objects from the C++ to Java
-		 * environments. Basically, the (char *) buffer that's passed in
+		 * environments. Basically, the CKString buffer that's passed in
 		 * contains delimiters that are '\x01' but that need to be changed
 		 * to a printable ASCII character. This method scans the entire
 		 * string for the presence of delimiters and then selects one
@@ -612,7 +550,7 @@ class CKTable {
 		 * impossible to find a delimiter, this method will return false
 		 * otherwise it will return true.
 		 */
-		static bool chooseAndApplyDelimiter( char *aBuff );
+		static bool chooseAndApplyDelimiter( CKString & aBuff );
 
 	private:
 		/*
