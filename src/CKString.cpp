@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.11 2004/10/12 19:22:52 drbob Exp $
+ * $Id: CKString.cpp,v 1.12 2004/11/29 21:38:15 drbob Exp $
  */
 
 //	System Headers
@@ -578,7 +578,7 @@ CKString & CKString::append( double aDouble )
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
-	snprintf(c, 79, "%f", aDouble);
+	snprintf(c, 79, "%.16g", aDouble);
 	return append(c);
 }
 
@@ -869,7 +869,7 @@ bool CKString::erase( int aStartingIndex,  int aLength )
 	if (!error) {
 		if (aLength < 0) {
 			// it's a 'to the end' call
-			bzero(&(mString[aStartingIndex]), (mSize - aLength));
+			bzero(&(mString[aStartingIndex]), (mSize - aStartingIndex));
 			mSize = aStartingIndex;
 		} else {
 			// it's within the string, so it's a left shift
