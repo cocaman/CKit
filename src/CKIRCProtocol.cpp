@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.15 2004/09/25 17:02:01 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.16 2004/12/06 15:19:51 drbob Exp $
  */
 
 //	System Headers
@@ -688,6 +688,29 @@ void CKIRCProtocol::sendMessage( const CKString & aDest, const CKString & aMsg )
 				"there's nothing I can do. Please make sure that there is a valid "
 				"destination before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	/*
+	 * Make sure we have a connection to this IRC server, if not, then
+	 * see if we did, and if we did, then reconnect.
+	 */
+	if (!error) {
+		if (!isConnected() && !mHostname.empty() && !mNickname.empty()) {
+			if (!connect()) {
+				error = true;
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
+					" - while trying to send the message to the IRC server, the "
+					"connection to the IRC server at " << mHostname << ":" << mPort <<
+					" seemed to be down, and trying to re-establish it was not possible. "
+					"Please check into this as soon as possible.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// send the NICK and USER commands to get things going
+				doNICK(mNickname);
+				doUSER(mNickname, mUserHost, mUserServer, mNickname);
+			}
 		}
 	}
 
