@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.21 2005/02/04 10:37:32 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.22 2005/02/09 00:12:50 drbob Exp $
  */
 
 //	System Headers
@@ -775,6 +775,106 @@ bool CKTimeSeries::fillInDailyValues()
 }
 
 
+/*
+ * This method will sum the values of this time series from the
+ * starting date (YYYYMMDD.hhmmssss) through the ending date -
+ * inclusive of the dates and return that one value. All NAN values
+ * will be skipped in the summing so as not to throw off the sum.
+ * Additionally, the default values for the starting and ending
+ * date will span the entire series so if you want the sum of the
+ * entire series just call sum().
+ */
+double CKTimeSeries::sum( double aStartDate, double anEndDate )
+{
+	bool		error = false;
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	CKStackLocker	lockem(&mTimeseriesMutex);
+
+	// next, make sure we have numbers to sum
+	if (!error) {
+		if (mTimeseries.size() == 0) {
+			error = true;
+			// nothing to do, return the NAN
+		}
+	}
+
+	// get the limits on this guy because we'll be needing them
+	double		first = NAN;
+	double		last = NAN;
+	if (!error && ((aStartDate > 0) || (anEndDate > 0))) {
+		// get the first date in the series (map)
+		std::map<double, double>::iterator	i = mTimeseries.begin();
+		first = (*i).first;
+		// ...and the last
+		std::map<double, double>::reverse_iterator	j = mTimeseries.rbegin();
+		last = (*j).first;
+	}
+
+	// get the starting iterator for the summing
+	std::map<double, double>::iterator	i;
+	if (!error) {
+		if (aStartDate > 0) {
+			// see if it's simply before the start
+			if (aStartDate < first) {
+				i = mTimeseries.begin();
+			} else if (aStartDate > last) {
+				// this is off the end of the series
+				error = true;
+				std::ostringstream	msg;
+				msg << "CKTimeSeries::sum(double, double) - the starting date: " <<
+					aStartDate << " does not lie within the range of this series: " <<
+					first << " to " << last << ". Please make "
+					"sure to either pick a date in the series or default to the "
+					"starting point of the series.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+				// find the date closest to this date in the series
+				double	realStartDate = aStartDate;
+				while ((i = mTimeseries.find(realStartDate)) == mTimeseries.end()) {
+					// move up a date and try it again
+					realStartDate = addDays(realStartDate, 1);
+					// see if this is beyond the end of the series
+					if (realStartDate > last) {
+						error = true;
+						std::ostringstream	msg;
+						msg << "CKTimeSeries::sum(double, double) - the passed-ing "
+							"starting date: " << aStartDate << " was not in the series "
+							"and moving up to find the first date that is in the series "
+							"ran us off the end of the series. This is a serious problem "
+							"and needs to be looked into as soon as possible.";
+						throw CKException(__FILE__, __LINE__, msg.str());
+					}
+				}
+			}
+		} else {
+			// just start at the beginning of the series
+			i = mTimeseries.begin();
+		}
+	}
+
+	// let's do the sum of all the requested values
+	if (!error) {
+		// zero out the sum as we'll need this to be not a NAN
+		retval = 0.0;
+		// start at the point we determined already and move up from there
+		for (; i != mTimeseries.end(); ++i) {
+			// see if this point is past the end we're interested in
+			if ((anEndDate > 0) && ((*i).first > anEndDate)) {
+				break;
+			}
+			// if it's not a NAN, then add it in
+			if (!isnan((*i).second)) {
+				retval += (*i).second;
+			}
+		}
+	}
+
+	return retval;
+}
+
+
 /********************************************************
  *
  *                Simple Series Math Methods
@@ -959,7 +1059,7 @@ bool CKTimeSeries::multiply( CKTimeSeries & aSeries )
 	/*
 	 * We're going to scan 'his' data and look for each date of his
 	 * in 'my' data. If the point exists, we'll multiply it in, if it doesn't
-	 * then we'll leave it out as anything times 0 is zero. This is going 
+	 * then we'll leave it out as anything times 0 is zero. This is going
 	 * to take some time, but it's the way to make sure that the dates
 	 * line up.
 	 */
@@ -1029,7 +1129,7 @@ bool CKTimeSeries::divide( CKTimeSeries & aSeries )
 	/*
 	 * We're going to scan 'his' data and look for each date of his
 	 * in 'my' data. If the point exists, we'll divide it in, if it doesn't
-	 * then we'll leave it out as zero over anything is zero. This is going 
+	 * then we'll leave it out as zero over anything is zero. This is going
 	 * to take some time, but it's the way to make sure that the dates
 	 * line up.
 	 */

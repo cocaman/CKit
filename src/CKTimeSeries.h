@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.16 2005/02/04 10:37:32 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.17 2005/02/09 00:12:50 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -287,6 +287,17 @@ class CKTimeSeries
 		bool fillInValues( int anInterval, double aStartDate,
 						   double anEndDate, int maxFillsWarning = DEFAULT_MAX_FILLS );
 		bool fillInDailyValues();
+
+		/*
+		 * This method will sum the values of this time series from the
+		 * starting date (YYYYMMDD.hhmmssss) through the ending date -
+		 * inclusive of the dates and return that one value. All NAN values
+		 * will be skipped in the summing so as not to throw off the sum.
+		 * Additionally, the default values for the starting and ending
+		 * date will span the entire series so if you want the sum of the
+		 * entire series just call sum().
+		 */
+		double sum( double aStartDate = -1, double anEndDate = -1 );
 
 		/********************************************************
 		 *
