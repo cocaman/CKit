@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.11 2004/09/20 16:19:51 drbob Exp $
+ * $Id: CKTable.h,v 1.12 2004/09/20 17:59:06 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -405,15 +405,12 @@ class CKTable {
 		 ********************************************************/
 		/*
 		 * This method returns a copy of the current value as contained in
-		 * a string and it is the responsibility of the caller to call
-		 * 'delete []' on the results. It's also possible that this method
-		 * will return NULL, so you have better check the return value
-		 * before assuming anything.
+		 * a string. This is returned as a CKString as it's easy to use.
 		 */
-		char *getValueAsString( int aRow, int aCol ) const;
-		char *getValueAsString( int aRow, const CKString & aColHeader ) const;
-		char *getValueAsString( const CKString & aRowLabel, int aCol ) const;
-		char *getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const;
+		CKString getValueAsString( int aRow, int aCol ) const;
+		CKString getValueAsString( int aRow, const CKString & aColHeader ) const;
+		CKString getValueAsString( const CKString & aRowLabel, int aCol ) const;
+		CKString getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * In order to simplify the move of this object from C++ to Java
 		 * it makes sense to encode the table's data into a (char *) that

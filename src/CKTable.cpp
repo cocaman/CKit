@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.14 2004/09/20 16:19:47 drbob Exp $
+ * $Id: CKTable.cpp,v 1.15 2004/09/20 17:58:56 drbob Exp $
  */
 
 //	System Headers
@@ -2159,12 +2159,9 @@ bool CKTable::merge( const CKTable & aTable )
  ********************************************************/
 /*
  * This method returns a copy of the current value as contained in
- * a string and it is the responsibility of the caller to call
- * 'delete []' on the results. It's also possible that this method
- * will return NULL, so you have better check the return value
- * before assuming anything.
+ * a string. This is returned as a CKString as it's easy to use.
  */
-char *CKTable::getValueAsString( int aRow, int aCol ) const
+CKString CKTable::getValueAsString( int aRow, int aCol ) const
 {
 	// first, make sure we have a place to put this data
 	if ((aRow < 0) || (aRow >= mNumRows) ||
@@ -2189,7 +2186,7 @@ char *CKTable::getValueAsString( int aRow, int aCol ) const
 }
 
 
-char *CKTable::getValueAsString( int aRow, const CKString & aColHeader ) const
+CKString CKTable::getValueAsString( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
@@ -2206,7 +2203,7 @@ char *CKTable::getValueAsString( int aRow, const CKString & aColHeader ) const
 }
 
 
-char *CKTable::getValueAsString( const CKString & aRowLabel, int aCol ) const
+CKString CKTable::getValueAsString( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -2223,7 +2220,7 @@ char *CKTable::getValueAsString( const CKString & aRowLabel, int aCol ) const
 }
 
 
-char *CKTable::getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const
+CKString CKTable::getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
