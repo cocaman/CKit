@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.3 2004/02/27 14:37:48 drbob Exp $
+ * $Id: CKVariant.h,v 1.4 2004/05/19 15:51:53 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -21,10 +21,10 @@
 //	Third-Party Headers
 
 //	Other Headers
+#include "CKTimeSeries.h"
 
 //	Forward Declarations
 class CKTable;
-class CKTimeSeries;
 
 //	Public Constants
 /*
@@ -238,6 +238,36 @@ class CKVariant
 		 *                Utility Methods
 		 *
 		 ********************************************************/
+		/*
+		 * When parsing the incoming data, it's important to be able
+		 * to tell what the data coming back is. That's the purpose of this
+		 * function - if the data (string) can be represented as a double
+		 * without problems then we return true, otherwise we return false.
+		 */
+		static bool isDouble( const char *aValue );
+		/*
+		 * When parsing the incoming data, it's important to be able
+		 * to tell what the data coming back is. That's the purpose of this
+		 * function - if the data (string) can be represented as an integer
+		 * without problems then we return true, otherwise we return false.
+		 */
+		static bool isInteger( const char *aValue );
+		/*
+		 * When parsing the incoming data, it's important to be able
+		 * to tell what the data coming back is. That's the purpose of this
+		 * function - if the data (string) can be represented as an integer
+		 * of the form YYYYMMDD without problems then we return true,
+		 * otherwise we return false.
+		 */
+		static bool isDate( const char *aValue );
+		/*
+		 * When parsing the incoming data, it's important to be able
+		 * to tell what the data coming back is. That's the purpose of this
+		 * function - if the data (string) can be represented as a table
+		 * without problems then we return true, otherwise we return false.
+		 */
+		static bool isTable( const char *aValue );
+
 		/*
 		 * This method returns a copy of the current value as contained in 
 		 * a string and it is the responsibility of the caller to call

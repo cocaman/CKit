@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.4 2004/05/11 19:17:04 drbob Exp $
+ * $Id: CKTable.cpp,v 1.5 2004/05/19 15:51:45 drbob Exp $
  */
 
 //	System Headers
@@ -173,7 +173,7 @@ CKTable & CKTable::operator=( const CKTable & anOther )
 		// finally we need to copy all the values from the table to us
 		for (int i = 0; i < anOther.mNumRows; i++) {
 			for (int j = 0; j < anOther.mNumColumns; j++) {
-				setValue(i, j, anOther.getValue(i, j));
+				mTable[i][j] = anOther.mTable[i][j];
 			}
 		}
 	}
@@ -289,7 +289,7 @@ void CKTable::setValue( const std::string & aRowLabel, const std::string & aColH
  * the most general form of the setter for this instance.
  */
 void CKTable::setValueAsType( int aRow, int aCol, CKVariantType aType,
-		const char *aValue )
+							  const char *aValue )
 {
 	// first, make sure we have a place to put this data
 	if ((aRow < 0) || (aRow >= mNumRows) ||
@@ -317,7 +317,7 @@ void CKTable::setValueAsType( int aRow, int aCol, CKVariantType aType,
 
 
 void CKTable::setValueAsType( int aRow, const std::string & aColHeader,
-		CKVariantType aType, const char *aValue )
+							  CKVariantType aType, const char *aValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
@@ -336,7 +336,7 @@ void CKTable::setValueAsType( int aRow, const std::string & aColHeader,
 
 
 void CKTable::setValueAsType( const std::string & aRowLabel, int aCol,
-		CKVariantType aType, const char *aValue )
+							  CKVariantType aType, const char *aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -355,7 +355,7 @@ void CKTable::setValueAsType( const std::string & aRowLabel, int aCol,
 
 
 void CKTable::setValueAsType( const std::string & aRowLabel, const std::string & aColHeader,
-		CKVariantType aType, const char *aValue )
+							  CKVariantType aType, const char *aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -762,6 +762,102 @@ void CKTable::setTableValue( const std::string & aRowLabel, const std::string & 
 
 	// then call the index-based method
 	setTableValue(row, col, aTableValue);
+}
+
+
+/*
+ * This sets the value stored in this location as a time series, but
+ * a local copy will be made so that the caller doesn't have to worry
+ * about holding on to the parameter, and is free to delete it.
+ */
+void CKTable::setTimeSeriesValue( int aRow, int aCol, const CKTimeSeries *aTimeSeriesValue )
+{
+	// first, make sure we have a place to put this data
+	if ((aRow < 0) || (aRow >= mNumRows) ||
+		(aCol < 0) || (aCol >= mNumColumns)) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(int, int, const CKTimeSeries *) - the "
+			"provided location: " << aRow << ", " << aCol << " lies outside "
+			"the currently defined table: " << mNumRows << " by " <<
+			mNumColumns;
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// ...and that we have a table structure that matches
+	if (mTable == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(int, int, const CKTimeSeries *) - there "
+			"is no currently defined table structure in this class. This is a "
+			"serious data integrity problem that needs to be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// now set it intelligently
+	mTable[aRow][aCol]->setTimeSeriesValue(aTimeSeriesValue);
+}
+
+
+void CKTable::setTimeSeriesValue( int aRow, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue )
+{
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(int, const std::string &, "
+			"const CKTimeSeries *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setTimeSeriesValue(aRow, col, aTimeSeriesValue);
+}
+
+
+void CKTable::setTimeSeriesValue( const std::string & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(const std::string &, int, "
+			"const CKTimeSeries *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setTimeSeriesValue(row, aCol, aTimeSeriesValue);
+}
+
+
+void CKTable::setTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue )
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(const std::string &, const std::string &, "
+			"const CKTimeSeries *) - there is no currently defined row "
+			"label '" << aRowLabel << "' please make sure the row labels are "
+			"properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::setTimeSeriesValue(const std::string &, const std::string &, "
+			"const CKTimeSeries *) - there is no currently defined "
+			"column header '" << aColHeader << "' please make sure the column "
+			"headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	setTimeSeriesValue(row, col, aTimeSeriesValue);
 }
 
 
@@ -1521,6 +1617,105 @@ const CKTable *CKTable::getTableValue( const std::string & aRowLabel, const std:
 
 
 /*
+ * This method returns the actual time series value of the data that
+ * this location is holding. If the user wants to use this value
+ * outside the scope of this class, then they need to make a copy.
+ */
+const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, int aCol ) const
+{
+	// first, make sure we have a place to put this data
+	if ((aRow < 0) || (aRow >= mNumRows) ||
+		(aCol < 0) || (aCol >= mNumColumns)) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(int, int) - the provided "
+			"location: " << aRow << ", " << aCol << " lies outside the currently "
+			"defined table: " << mNumRows << " by " << mNumColumns;
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// ...and that we have a table structure that matches
+	if (mTable == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(int, int) - there is no currently "
+			"defined table structure in this class. This is a serious data "
+			"integrity problem that needs to be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+	// don't forget to make sure the type matches
+	if (getType(aRow, aCol) != eTimeSeriesVariant) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(int, int) - the provided "
+			"location: " << aRow << ", " << aCol << " does not contain a time "
+			"series value: " << getValue(aRow, aCol);
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// now get what they are looking for
+	return mTable[aRow][aCol]->getTimeSeriesValue();
+}
+
+
+const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, const std::string & aColHeader ) const
+{
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+			"- there is no currently defined column header '" << aColHeader <<
+			"' please make sure the column headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getTimeSeriesValue(aRow, col);
+}
+
+
+const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, int aCol ) const
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+			"- there is no currently defined row label '" << aRowLabel <<
+			"' please make sure the row labels are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getTimeSeriesValue(row, aCol);
+}
+
+
+const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+{
+	// convert the row label to a row index
+	int		row = getRowForLabel(aRowLabel);
+	if (row < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+			"- there is no currently defined row label '" << aRowLabel <<
+			"' please make sure the row labels are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// convert the column header to a column index
+	int		col = getColumnForHeader(aColHeader);
+	if (col < 0) {
+		std::ostringstream	msg;
+		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+			"- there is no currently defined column header '" << aColHeader <<
+			"' please make sure the column headers are properly defined.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	// then call the index-based method
+	return getTimeSeriesValue(row, col);
+}
+
+
+/*
  * This method returns the actual std::string value that is the
  * column header for the provided column number assuming that it
  * actually exists in the table. As such, if the user wants this
@@ -1759,6 +1954,147 @@ std::vector<CKVariant> CKTable::getColumn( const std::string & aColumnHeader ) c
 
 	// then call the index-based method
 	return getColumn(col);
+}
+
+
+/********************************************************
+ *
+ *            Table Manipulation Methods
+ *
+ ********************************************************/
+/*
+ * This method allows the user to merge two tables into one larger
+ * table by adding the rows and columns from the argument to the
+ * main instance itself. This is very useful when you have several
+ * tables that need to be combined into one table that share
+ * either a common set of column headers and/or a common set of
+ * row labels.
+ */
+bool CKTable::merge( const CKTable & aTable )
+{
+	bool		error = false;
+
+	/*
+	 * We need to save the old size of the table as well as have
+	 * a baseline for the new table. To do this, we make two copies
+	 * of the dimensions - one will remain the same, the other will
+	 * be increased for new rows and/or columns from the argument.
+	 */
+	int			oldRows = mNumRows;
+	int			oldCols = mNumColumns;
+	int			endingRows = mNumRows;
+	int			endingCols = mNumColumns;
+
+	/*
+	 * The first thing to do is to calculate what the new size of
+	 * the resulting table needs to be. We do this by seeing how
+	 * name of the row labels on aTable are empty, or not in the
+	 * row labels for this table. We then do the same for the
+	 * column headers.
+	 */
+	// do the new columns first...
+	std::vector<std::string>	newColumnHeaders;
+	if (!error) {
+		unsigned int	cnt = aTable.mColumnHeaders.size();
+		for (unsigned int i = 0; i < cnt; i++) {
+			std::string		label = aTable.mColumnHeaders[i];
+			if (label == "") {
+				endingCols++;
+			} else if (getColumnForHeader(label) == -1) {
+				endingCols++;
+				newColumnHeaders.push_back(label);
+			}
+		}
+	}
+	// now do the new rows...
+	std::vector<std::string>	newRowLabels;
+	if (!error) {
+		unsigned int	cnt = aTable.mRowLabels.size();
+		for (unsigned int i = 0; i < cnt; i++) {
+			std::string		label = aTable.mRowLabels[i];
+			if (label == "") {
+				endingRows++;
+			} else if (getRowForLabel(label) == -1) {
+				endingRows++;
+				newRowLabels.push_back(label);
+			}
+		}
+	}
+
+	// now we need to resize the table to be the right overall size
+	if (!error) {
+		resizeTable(endingRows, endingCols);
+		if ((mNumRows != endingRows) || (mNumColumns != endingCols)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::mergeInTable(const CKTable &) - the end result should "
+				"have been a table " << endingRows << "x" << endingCols << " in size "
+				"yet the final size is not this. That suggests an allocation error "
+				"that needs to be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now we can put in the new column headers and row labels
+	if (!error) {
+		// do the column headers first
+		for (unsigned int i = 0; i < newColumnHeaders.size(); i++) {
+			mColumnHeaders[oldCols + i] = newColumnHeaders[i];
+		}
+		// now do the row labels next
+		for (unsigned int i = 0; i < newRowLabels.size(); i++) {
+			mRowLabels[oldRows + i] = newRowLabels[i];
+		}
+	}
+
+	/*
+	 * OK, to fill in all the data we need to be careful. Some tables
+	 * have all the rows and columns labeled so it's easy, look up the
+	 * row and column labels from the source and place it in the new
+	 * labeled location in the new table. However, there are some cases
+	 * where the rows aren't labeled - or the columns. This means that
+	 * we need to allow for both tables to be partially labeled. So,
+	 * when we look to the source for the data we need to also look at
+	 * it's labeling. If it's not there (a "") then we need to
+	 * autoincrement the target row or label and put it in the table.
+	 * Thie should work for all cases.
+	 */
+	if (!error) {
+		// blank entries are past the original table
+		int	blankRow = oldRows;
+		int	blankCol = oldCols;
+		// these will be the new locations in the merged table
+		std::vector<int>	targetRow;
+		std::vector<int>	targetCol;
+
+		// map all the rows from the source to the new table
+		for (int row = 0; row < aTable.mNumRows; row++) {
+			std::string		label = aTable.mRowLabels[row];
+			if (label == "") {
+				targetRow.push_back(blankRow++);
+			} else {
+				targetRow.push_back(getRowForLabel(label));
+			}
+		}
+		// now do the same for all the columns in the source
+		for (int col = 0; col < aTable.mNumColumns; col++) {
+			std::string		label = aTable.mColumnHeaders[col];
+			if (label == "") {
+				targetCol.push_back(blankCol++);
+			} else {
+				targetCol.push_back(getColumnForHeader(label));
+			}
+		}
+
+		// now use these maps to go from the source to the new table
+		for (int row = 0; row < aTable.mNumRows; row++) {
+			for (int col = 0; col < aTable.mNumColumns; col++) {
+				(*mTable[targetRow[row]][targetCol[col]]) = (*aTable.mTable[row][col]);
+			}
+		}
+	}
+
+	return !error;
 }
 
 
@@ -2177,17 +2513,19 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	if (mTable != NULL) {
 		int		copyCols = MIN(mNumColumns, aNumColumns);
 		int		copyRows = MIN(mNumRows, aNumRows);
-		for (int i = 0; i < copyCols; ++i) {
-			for (int j = 0; j < copyRows; ++j) {
+		int		i;
+		int		j;
+		for (i = 0; i < copyRows; ++i) {
+			for (j = 0; j < copyCols; ++j) {
 				*(table[i][j]) = *(mTable[i][j]);
 			}
 		}
 		// ...now the column headers
-		for (int i = 0; i < copyCols; ++i) {
+		for (i = 0; i < copyCols; ++i) {
 			headers[i] = mColumnHeaders[i];
 		}
 		// ...and finally the row labels
-		for (int j = 0; j < copyRows; ++j) {
+		for (j = 0; j < copyRows; ++j) {
 			labels[j] = mRowLabels[j];
 		}
 	}
@@ -2279,21 +2617,26 @@ std::string CKTable::toString() const
 	// make sure we have something to show...
 	if ((mNumRows > 0) && (mNumColumns > 0) && (mTable != NULL)) {
 		// first, put out the column headers
-		retval.append("\t");
-		for (int j = 0; j < getNumColumns(); j++) {
-			retval.append(j == 0 ? "" : "\t").append(mColumnHeaders[j]);
+		retval += "\t";
+		for (int j = 0; j < mNumColumns; j++) {
+			retval += (j == 0 ? "" : "\t") + mColumnHeaders[j];
 		}
-		retval.append("\n");
+		retval += "\n";
 
 		// now put out the data in the table
 		for (int i = 0; i < mNumRows; i++) {
 			// slap the row label first
-			retval.append(mRowLabels[i]).append("\t");
+			retval += mRowLabels[i] + "\t";
 			// ...and then the rest of the data for the row
-			for (int j = 0; j < getNumColumns(); j++) {
-				retval.append(j == 0 ? "" : "\t").append(mTable[i][j]->toString());
+			for (int j = 0; j < mNumColumns; j++) {
+				retval += (j == 0 ? "" : "\t");
+				if (mTable[i][j] == NULL) {
+					retval += "<NULL>";
+				} else {
+					retval += mTable[i][j]->toString();
+				}
 			}
-			retval.append("\n");
+			retval += "\n";
 		}
 	}
 
@@ -2775,7 +3118,7 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 	}
 
 	// next, make sure that we drop what might already be there
-	if (getTable() != NULL) {
+	if (mTable != NULL) {
 		dropTable();
 	}
 
@@ -2871,7 +3214,7 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 	 * values that will be the row labels.
 	 */
 	std::vector<std::string>	labels;
-	for (int i = 0; i < aNumColumns; i++) {
+	for (int i = 0; i < aNumRows; i++) {
 		labels.push_back(std::string());
 	}
 
@@ -2896,32 +3239,26 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 void CKTable::dropTable()
 {
 	// first, see if we have anything to do
-	if (mTable == NULL) {
-		std::ostringstream	msg;
-		msg << "CKTable::dropTable() - the passed-in table reference is "
-			"NULL and that is a major problem. Please make sure that you don't "
-			"call this method with a NULL.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	}
-
-	// now start at the columns and work our way out, deleting as we go
-	for (int i = 0; i < mNumRows; i++) {
-		if (mTable[i] != NULL) {
-			for (int j = 0; j < mNumColumns; j++) {
-				// if we have an element at this location, delete it
-				if (mTable[i][j] != NULL) {
-					delete mTable[i][j];
-					mTable[i][j] = NULL;
+	if (mTable != NULL) {
+		// now start at the columns and work our way out, deleting as we go
+		for (int i = 0; i < mNumRows; i++) {
+			if (mTable[i] != NULL) {
+				for (int j = 0; j < mNumColumns; j++) {
+					// if we have an element at this location, delete it
+					if (mTable[i][j] != NULL) {
+						delete mTable[i][j];
+						mTable[i][j] = NULL;
+					}
 				}
+				// now delete the array of pointers that is a 'row'
+				delete [] mTable[i];
+				mTable[i] = NULL;
 			}
-			// now delete the array of pointers that is a 'row'
-			delete [] mTable[i];
-			mTable[i] = NULL;
 		}
+		// finally, delete the primary column of row pointers
+		delete [] mTable;
+		setTable(NULL);
 	}
-	// finally, delete the primary column of row pointers
-	delete [] mTable;
-	setTable(NULL);
 
 	// also drop the array of column headers
 	mColumnHeaders.clear();

@@ -53,7 +53,7 @@ LDFLAGS = -fPIC
 #
 # These are the main targets that we'll be making
 #
-APPS = uuid smtp ftp chat nan node
+APPS = uuid smtp ftp chat nan node table
 all: $(APPS)
 
 clean:
@@ -82,5 +82,8 @@ nan: nan.cpp $(LIB_FILE)
 
 node: node.cpp $(LIB_FILE)
 	$(CXX) $(CXXFLAGS) $(DEBUG) node.cpp -o node $(LIBS) $(LDFLAGS)
+
+table: table.cpp $(LIB_FILE)
+	$(CXX) $(CXXFLAGS) $(DEBUG) table.cpp -o table $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE

@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.5 2004/05/11 19:17:08 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.6 2004/05/19 15:51:50 drbob Exp $
  */
 
 //	System Headers
@@ -294,6 +294,25 @@ std::vector<double> CKTimeSeries::get( const std::vector<double> & aDateSeries )
 
 
 /*
+ * This method takes today's date and marches back in time the
+ * provided number of days to arrive at the value to return.
+ * This is nice in that 0 will get the latest value and 1 will
+ * get the value yesterday, and n will get you the value n days
+ * ago.
+ */
+double CKTimeSeries::getDaysBack( int aDayCnt )
+{
+	double		retval = NAN;
+
+	// first, get today's date offset the requested amount
+	double		date = addDays(getCurrentDate(), -1 * aDayCnt);
+	retval = get(date);
+
+	return retval;
+}
+
+
+/*
  * This method gets the complete series of dates for the current
  * timeseries but as just the day (YYYYMMDD) portion of the date.
  * This is useful if the data is daily data anyway and you're
@@ -488,6 +507,93 @@ std::vector<double> CKTimeSeries::interpolate( const std::vector<double> & aDate
 	}
 
 	return retval;
+}
+
+
+/*
+ * This method, and it's convenience method, fill in the values
+ * in the time series by starting at the point furthest back in time
+ * and "filling in" any values that don't exist on the given interval.
+ * For example, the convenience method call this guy with the argument
+ * of 1 - meaning that the resulting time series will be assured to
+ * have values that are no more than one day apart in time - filling
+ * in the 'new' values with the one from the most recent past.
+ *
+ * This is very useful when a group of time series values need to be
+ * consistent in their interval and not miss any points in the
+ * series.
+ */
+bool CKTimeSeries::fillInValues( int anInterval, double aStartDate,
+								 double anEndDate, int maxFillsWarning )
+{
+	bool		error = false;
+
+	// see if we have to figure out the limits
+	if (!error) {
+		if (aStartDate < 0) {
+			aStartDate = getStartingDate();
+		}
+	}
+	if (!error) {
+		if (anEndDate < 0) {
+			anEndDate = getEndingDate();
+		}
+	}
+
+	// make sure we have something to do
+	if (!error) {
+		if (anEndDate < aStartDate) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTimeSeries::fillInValues(double, double, double, int) - the "
+				"ending date: " << anEndDate << " is before the starting date: " <<
+				aStartDate << " and this makes no sense at all. Please make sure "
+				"that the date interval makes sense.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// start at the start - where else?
+	double		date = aStartDate;
+	double		lastValue = NAN;
+	double		value = NAN;
+	int			fills = 0;
+	while (!error && (date <= anEndDate)) {
+		// get the value for this day
+		value = get(date);
+		// see if it's empty...
+		if (isnan(value)) {
+			// if we have a good value, use it - else force a NAN for spacing
+			if (isnan(lastValue)) {
+				put(date, value);
+			} else {
+				// put in the last good value and update the number of fills
+				put(date, lastValue);
+				fills++;
+				if (fills > maxFillsWarning) {
+					char	buff[512];
+					snprintf(buff, 511, "CKTimeSeries::fillInValues(double, double, "
+						"double, int) - we have filled in %17.8lf with %lf "
+						" which is consecutive fill #%d", date, lastValue, fills);
+					std::cerr << buff << std::endl;
+				}
+			}
+		} else {
+			lastValue = value;
+			fills = 0;
+		}
+		// now increment the date properly
+		date = addDays(date, anInterval);
+	}
+
+	return !error;
+}
+
+
+bool CKTimeSeries::fillInDailyValues()
+{
+	// dates of '-1' mean "use what's in the time series as limits"
+	return fillInValues(1, -1.0, -1.0);
 }
 
 
@@ -699,24 +805,35 @@ bool CKTimeSeries::subtractAverage()
 
 /*
  * This method takes the value at each point in the timeseries and
- * first divides it by the first point in the series and then takes
+ * divides it by the previous point in the series and then takes
  * the natural log of the result and keeps that value. This is
- * essentially computing the price returns of the data series and
- * since this is getting used in financial applications this is a
- * pretty obvious thing to do.
+ * essentially computing the daily price returns of the data series
+ * and since this is getting used in financial applications this is
+ * a pretty obvious thing to do.
  */
-bool CKTimeSeries::computeReturns()
+bool CKTimeSeries::computeDailyReturns()
 {
 	bool		error = false;
 
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
-	// for each value in the series, divide by the divisor
-	std::map<double, double>::iterator	i = mTimeseries.begin();
-	double		baseline = i->second;
-	for (; i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second = log(i->second / baseline);
+	// save the previous value as the divisor
+	double		previous = NAN;
+	// for each value in the series, divide by the previous value
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		// hold on to the value as it's going to be 'previous' soon
+		double	value = i->second;
+		// if the 'previous' is NAN, then this is too...
+		if (isnan(previous)) {
+			i->second = NAN;
+		} else if (!isnan(value)) {
+			// OK, got good data to divide, so do it
+			i->second = log(value / previous);
+		}
+		// now update the 'previous' with the last good value
+		if (!isnan(value)) {
+			previous = value;
 		}
 	}
 	// unlock up this guy for changes
@@ -923,6 +1040,237 @@ CKTimeSeries & CKTimeSeries::operator/=( double aDivisor )
  *                Utility Methods
  *
  ********************************************************/
+/*
+ * This method is very useful when you want to get the current
+ * date and time in the proper format and data type for some kind
+ * of operation. There's not a lot to do but it's nice to have a
+ * method that will create the current date and time as a double
+ * of the format YYYYMMDD.hhmmssss with a resolution of hundredths
+ * of a second.
+ */
+double CKTimeSeries::getCurrentTimestamp()
+{
+	double		retval = 0;
+
+	time_t		now_t = time(NULL);
+	struct tm	now;
+	localtime_r(&now_t, &now);
+
+	// make a double of the form YYYYMMDD.hhmmss
+	retval = ((now.tm_year + 1900) * 100.0 + (now.tm_mon + 1)) * 100.0 +
+			 now.tm_mday +
+			 (now.tm_hour  + ((now.tm_min + (now.tm_sec/100.0)) / 100.0)) / 100.0;
+
+	return retval;
+}
+
+
+/*
+ * This method gets the current date as a double of the format
+ * YYYYMMDD which is nice for certain values like the close price
+ * or other daily numbers. This is a conveninence method that calls
+ * the more generic method and then drops off the hours, minutes,
+ * and seconds.
+ */
+double CKTimeSeries::getCurrentDate()
+{
+	return floor(getCurrentTimestamp());
+}
+
+
+/*
+ * This method adds or subtracts the count of days from the given
+ * date and returns the resulting date to the caller. This is nice
+ * because to add days to a date, make the count positive, to 
+ * subtract days from a date, make the count negative. The method
+ * respects leap years, etc.
+ */
+double CKTimeSeries::addDays( double aDate, int aCnt )
+{
+	bool		done = false;
+	double		retval = 0;
+
+	// first, see if we have anything to do
+	if (!done) {
+		if (aCnt == 0) {
+			retval = aDate;
+			done = true;
+		}
+	}
+
+	// next, get the components as year, month, date, and time
+	int		year = 0;
+	int		month = 0;
+	int		day = 0;
+	double	time = 0.0;
+	if (!done) {
+		year = (int) floor(aDate / 10000.0);
+		month = (int) floor((aDate - year * 10000) / 100.0);
+		day = (int) floor(aDate - year * 10000 - month * 100);
+		time = aDate - floor(aDate);
+	}
+
+	/*
+	 * I need to break this guy up now based on whether we are moving
+	 * forward or backward in time. It just means different tests and
+	 * limit conditions, but the same kind of logic prevails.
+	 */
+	if (!done) {
+		if (aCnt > 0) {
+			int		lastDayInMonth = 0;
+			while (aCnt > 0) {
+				// get the last day in this current month
+				lastDayInMonth = 31;
+				if ((month == 4) || (month == 6) ||
+					(month == 9) || (month == 11)) {
+					lastDayInMonth = 30;
+				} else if (month == 2) {
+					lastDayInMonth = 28;
+					if ((year % 4) == 0) {
+						lastDayInMonth = 29;
+						if ((year % 100) == 0) {
+							lastDayInMonth = 28;
+							if ((year % 400) == 0) {
+								lastDayInMonth = 29;
+							}
+						}
+					}
+				}
+
+				// see if the interval is passing the month boundary
+				if (day + aCnt > lastDayInMonth) {
+					// consume those days left in this month
+					aCnt -= (lastDayInMonth - day + 1);
+					day = 1;
+					month++;
+					// is the new month crossing the year boundary?
+					if (month == 13) {
+						month = 1;
+						year++;
+					}
+				} else {
+					// the move is within this month and we're all done
+					day += aCnt;
+					aCnt = 0;
+				}
+			}
+		} else {
+			int		lastDayInPrevMonth = 0;
+			while (aCnt < 0) {
+				// get the last day in the month before us in the calendar
+				lastDayInPrevMonth = 31;
+				if ((month == 5) || (month == 7) ||
+					(month == 10) || (month == 12)) {
+					lastDayInPrevMonth = 30;
+				} else if (month == 3) {
+					lastDayInPrevMonth = 28;
+					if ((year % 4) == 0) {
+						lastDayInPrevMonth = 29;
+						if ((year % 100) == 0) {
+							lastDayInPrevMonth = 28;
+							if ((year % 400) == 0) {
+								lastDayInPrevMonth = 29;
+							}
+						}
+					}
+				}
+
+				// see if the interval is corring into the prev. month
+				if (day + aCnt < 1) {
+					// consume those days left in this month
+					aCnt += day;
+					day = lastDayInPrevMonth;
+					month--;
+					// is the new month crossing the year boundary?
+					if (month == 0) {
+						month = 12;
+						year--;
+					}
+				} else {
+					// the move is within this month and we're all done
+					day += aCnt;
+					aCnt = 0;
+				}
+			}
+		}
+
+		// let's put this back together for a date
+		retval = (year * 100.0 + month) * 100.0 + day + time;
+	}
+
+	return retval;
+}
+
+
+/*
+ * These are convenience methods that call the more general addDays()
+ * method to move a number of days up or back in the calendar. These
+ * are nice in case you have a simple request.
+ */
+double CKTimeSeries::moveBackDays( double aDate, int aCnt )
+{
+	return addDays(aDate, -1 * aCnt);
+}
+
+
+double CKTimeSeries::moveUpDays( double aDate, int aCnt )
+{
+	return addDays(aDate, aCnt);
+}
+
+
+double CKTimeSeries::moveBackADay( double aDate )
+{
+	return addDays(aDate, -1);
+}
+
+
+double CKTimeSeries::moveUpADay( double aDate )
+{
+	return addDays(aDate, 1);
+}
+
+
+/*
+ * These methods allow the caller to get the very first date in the
+ * series as well as the very last date in the series. This is nice
+ * because we can then determine what date range this series covers
+ * and what to operate on, for instance.
+ */
+double CKTimeSeries::getStartingDate()
+{
+	double		retval;
+
+	// lock this guy up so it doesn't change
+	mTimeseriesMutex.lock();
+	// now get the first pair in the map
+	std::map<double, double>::iterator	i;
+	i = mTimeseries.begin();
+	retval = i->first;
+	// ...and unlock as we're done
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+double CKTimeSeries::getEndingDate()
+{
+	double		retval;
+
+	// lock this guy up so it doesn't change
+	mTimeseriesMutex.lock();
+	// now get the last pair in the map
+	std::map<double, double>::reverse_iterator	i;
+	i = mTimeseries.rbegin();
+	retval = i->first;
+	// ...and unlock as we're done
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
 /*
  * In order to simplify the move of this object from C++ to Java
  * it makes sense to encode the value's data into a (char *) that
