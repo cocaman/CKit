@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.10 2004/10/04 16:09:22 drbob Exp $
+ * $Id: CKString.cpp,v 1.11 2004/10/12 19:22:52 drbob Exp $
  */
 
 //	System Headers
@@ -2934,7 +2934,7 @@ CKString & CKString::trimRight()
 
 CKString & CKString::trimRight() const
 {
-	return ((CKString *)this)->trim();
+	return ((CKString *)this)->trimRight();
 }
 
 
@@ -2978,7 +2978,7 @@ CKString & CKString::trimLeft()
 
 CKString & CKString::trimLeft() const
 {
-	return ((CKString *)this)->trim();
+	return ((CKString *)this)->trimLeft();
 }
 
 
