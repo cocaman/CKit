@@ -6,12 +6,13 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.1 2004/09/14 15:39:50 drbob Exp $
+ * $Id: CKString.cpp,v 1.2 2004/09/14 19:45:40 drbob Exp $
  */
 
 //	System Headers
 #include <sstream>
 #include <string.h>
+#include <strings.h>
 #include <stdio.h>
 #include <ctype.h>
 
