@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.22 2005/02/09 00:12:50 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.23 2005/02/14 22:35:49 drbob Exp $
  */
 
 //	System Headers
@@ -414,6 +414,45 @@ double CKTimeSeries::getLastDate()
 	if (!mTimeseries.empty()) {
 		std::map<double, double>::reverse_iterator	i = mTimeseries.rbegin();
 		retval = (*i).first;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method can be used to add in a single date/value point to
+ * the time series, and returns the *new* value of that date/time
+ * to the caller in case they are keeping track of the actual value
+ * being summed. Say you're building up a time series data set and
+ * you want to add in points as they come in from some source. This
+ * single method saves you locking the set, getting the existing
+ * value, creating the sum, and then setting that sum back into the
+ * series. It's much more efficient.
+ */
+double CKTimeSeries::add( double aDateTime, double aValue )
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// see if it exists in the map
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.find(aDateTime);
+		if (i != mTimeseries.end()) {
+			(*i).second += aValue;
+			retval = (*i).second;
+		} else {
+			// this date/time isn't in the series, so this is a new point
+			mTimeseries[aDateTime] = aValue;
+			retval = aValue;
+		}
+	} else {
+		// the series is empty, so this is the first value
+		mTimeseries[aDateTime] = aValue;
+		retval = aValue;
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();

@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.17 2005/02/09 00:12:50 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.18 2005/02/14 22:35:51 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -216,6 +216,18 @@ class CKTimeSeries
 		 * This is an easy way to get the "ending time" of the series.
 		 */
 		double getLastDate();
+
+		/*
+		 * This method can be used to add in a single date/value point to
+		 * the time series, and returns the *new* value of that date/time
+		 * to the caller in case they are keeping track of the actual value
+		 * being summed. Say you're building up a time series data set and
+		 * you want to add in points as they come in from some source. This
+		 * single method saves you locking the set, getting the existing
+		 * value, creating the sum, and then setting that sum back into the
+		 * series. It's much more efficient.
+		 */
+		double add( double aDateTime, double aValue );
 
 		/*
 		 * This method gets the complete series of dates for the current
