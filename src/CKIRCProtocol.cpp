@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.14 2004/09/25 16:14:39 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.15 2004/09/25 17:02:01 drbob Exp $
  */
 
 //	System Headers
@@ -1483,7 +1483,7 @@ void CKIRCProtocol::doPONG()
 	CKString		cmd = "PONG ";
 	char	host[MAXHOSTNAMELEN];
 	if (gethostname(host, MAXHOSTNAMELEN) < 0) {
-		strcpy(host, "localhost");
+		strncpy(host, "localhost", MAXHOSTNAMELEN);
 	}
 	cmd += host;
 	executeCommand(cmd);
