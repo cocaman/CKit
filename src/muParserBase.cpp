@@ -1327,7 +1327,7 @@ ParserBase::value_type ParserBase::ParseString() const
 		}
 
 #if defined(MU_PARSER_DUMP_STACK)
-		StackDump(stVal, ops);
+		StackDump(stVal, stOpt);
 #endif
 	} // while (true)
 
@@ -1503,10 +1503,11 @@ void ParserBase::EnableByteCode(bool a_bIsOn)
 //------------------------------------------------------------------------------
 /** \brief Dump stack content.
 */
-void ParserBase::StackDump( const ParserStack<token_type > &a_stVal,
-							const ParserStack<token_type > &a_stOprt )
+void ParserBase::StackDump( const ParserStack<token_type> &a_stVal,
+							const ParserStack<token_type> &a_stOprt ) const
 {
-	ParserStack<token_type> stOprt(a_stOprt), stVal(a_stVal);
+	ParserStack<token_type> stOprt(a_stOprt);
+	ParserStack<token_type> stVal(a_stVal);
 	int iErrc;
 
 	cout << "\nValue stack:\n";

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.20 2005/02/07 19:06:42 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.21 2005/02/07 21:54:35 drbob Exp $
  */
 
 //	System Headers
@@ -214,22 +214,22 @@ CKVariant & CKVariant::operator=( CKVariant & anOther )
 			clearValue();
 			break;
 		case eStringVariant:
-			setStringValue(anOther.getStringValue());
+			setStringValue(anOther.mStringValue);
 			break;
 		case eNumberVariant:
-			setDoubleValue(anOther.getDoubleValue());
+			setDoubleValue(anOther.mDoubleValue);
 			break;
 		case eDateVariant:
-			setDateValue(anOther.getDateValue());
+			setDateValue(anOther.mDateValue);
 			break;
 		case eTableVariant:
-			setTableValue(anOther.getTableValue());
+			setTableValue(anOther.mTableValue);
 			break;
 		case eTimeSeriesVariant:
-			setTimeSeriesValue(anOther.getTimeSeriesValue());
+			setTimeSeriesValue(anOther.mTimeSeriesValue);
 			break;
 		case ePriceVariant:
-			setPriceValue(anOther.getPriceValue());
+			setPriceValue(anOther.mPriceValue);
 			break;
 	}
 
