@@ -6,7 +6,7 @@
  *                 and is also very close to the base exception class
  *                 for the MarketMash Server.
  * 
- * $Id: CKException.h,v 1.4 2004/09/11 02:15:17 drbob Exp $
+ * $Id: CKException.h,v 1.5 2004/09/11 21:07:43 drbob Exp $
  */
 #ifndef __CKEXCEPTION_H
 #define __CKEXCEPTION_H

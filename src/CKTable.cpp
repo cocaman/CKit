@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.11 2004/09/11 02:15:23 drbob Exp $
+ * $Id: CKTable.cpp,v 1.12 2004/09/11 21:07:49 drbob Exp $
  */
 
 //	System Headers

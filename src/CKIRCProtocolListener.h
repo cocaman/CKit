@@ -6,7 +6,7 @@
  *                           user the protocol is presenting are interpreted
  *                           and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.h,v 1.4 2004/09/11 02:15:20 drbob Exp $
+ * $Id: CKIRCProtocolListener.h,v 1.5 2004/09/11 21:07:46 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOLLISTENER_H
 #define __CKIRCPROTOCOLLISTENER_H

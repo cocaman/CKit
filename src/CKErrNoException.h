@@ -6,7 +6,7 @@
  *                      This is basically the same class as it's namesake in
  *                      the MarketMash Server.
  * 
- * $Id: CKErrNoException.h,v 1.4 2004/09/11 02:15:17 drbob Exp $
+ * $Id: CKErrNoException.h,v 1.5 2004/09/11 21:07:43 drbob Exp $
  */
 #ifndef __CKERRNO_EXCEPTION_H
 #define __CKERRNO_EXCEPTION_H

@@ -6,7 +6,7 @@
  *                    communications. It's used in the Mail Delivery system
  *                    as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.h,v 1.4 2004/09/11 02:15:22 drbob Exp $
+ * $Id: CKSMTPDelivery.h,v 1.5 2004/09/11 21:07:48 drbob Exp $
  */
 #ifndef __CKSMTPDELIVERY_H
 #define __CKSMTPDELIVERY_H

@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.8 2004/09/11 02:15:17 drbob Exp $
+ * $Id: CKDataNode.h,v 1.9 2004/09/11 21:07:43 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H

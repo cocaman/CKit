@@ -12,7 +12,7 @@
  *                          set that as the default prior to sending any
  *                          messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.h,v 1.4 2004/09/11 02:15:21 drbob Exp $
+ * $Id: CKMailDeliverySystem.h,v 1.5 2004/09/11 21:07:47 drbob Exp $
  */
 #ifndef __CKMAILDELIVERYSYSTEM_H
 #define __CKMAILDELIVERYSYSTEM_H

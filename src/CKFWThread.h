@@ -2,7 +2,7 @@
  * CKFWThread.h - this file defines the simple thread that can
  *                be used in a large number of applications.
  *
- * $Id: CKFWThread.h,v 1.5 2004/09/11 02:15:19 drbob Exp $
+ * $Id: CKFWThread.h,v 1.6 2004/09/11 21:07:44 drbob Exp $
  */
 #ifndef __CKFW_THREAD_H
 #define __CKFW_THREAD_H

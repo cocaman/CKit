@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.9 2004/09/11 02:15:20 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.10 2004/09/11 21:07:46 drbob Exp $
  */
 
 //	System Headers

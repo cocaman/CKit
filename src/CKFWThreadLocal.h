@@ -1,7 +1,7 @@
 /*
  * CKFWThreadLocal.h
  *
- * $Id: CKFWThreadLocal.h,v 1.4 2004/09/11 02:15:19 drbob Exp $
+ * $Id: CKFWThreadLocal.h,v 1.5 2004/09/11 21:07:45 drbob Exp $
  */
 #ifndef __CKFW_THREAD_LOCAL_H
 #define __CKFW_THREAD_LOCAL_H

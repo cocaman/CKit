@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.8 2004/09/11 02:15:23 drbob Exp $
+ * $Id: CKTable.h,v 1.9 2004/09/11 21:07:49 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H

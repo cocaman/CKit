@@ -16,7 +16,7 @@
  *                       itself up when it's done and there will be no
  *                       long-lasting effects of the spawned processing thread.
  * 
- * $Id: CKIRCProtocolExec.h,v 1.3 2004/09/11 02:15:20 drbob Exp $
+ * $Id: CKIRCProtocolExec.h,v 1.4 2004/09/11 21:07:46 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOLEXEC_H
 #define __CKIRCPROTOCOLEXEC_H

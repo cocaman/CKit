@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.6 2004/09/11 02:15:24 drbob Exp $
+ * $Id: CKVariant.h,v 1.7 2004/09/11 21:07:51 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H

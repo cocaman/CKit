@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple mutex that can be used in a
  *               large number of applications.
  *
- * $Id: CKFWMutex.h,v 1.4 2004/09/11 02:15:18 drbob Exp $
+ * $Id: CKFWMutex.h,v 1.5 2004/09/11 21:07:44 drbob Exp $
  */
 #ifndef __CKFW_MUTEX_H
 #define __CKFW_MUTEX_H
