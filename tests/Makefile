@@ -5,24 +5,28 @@
 # compile on a few different systems.
 #
 ifeq ($(shell uname),SunOS)
-CXX = /sbcimp/run/pd/gcc/3.2.1/bin/g++ -g
+CXX = g++ -g
 CXX_DEFS =
 LIB_EXT = so
+ifeq ($(shell uname -r),5.6)
+OS_LIBS = -lsocket -lnsl -lposix4
+else
 OS_LIBS = -lsocket -lnsl -lrt
+endif
 SHARED = -shared
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
 CXX_DEFS =
 LIB_EXT = dylib
-OS_LIBS = 
+OS_LIBS =
 SHARED = -dynamiclib
 endif
 ifeq ($(shell uname),Linux)
 CXX = g++
 CXX_DEFS = -DGPP2
 LIB_EXT = so
-OS_LIBS = 
+OS_LIBS =
 SHARED = -shared
 endif
 
@@ -47,13 +51,13 @@ INCLUDES = -I. -I$(INCLUDE_DIR) -I$(SRC_DIR)
 DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
-LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lCKit -lsqlapi -lpthread
+LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
 LDFLAGS = -fPIC
 
 #
 # These are the main targets that we'll be making
 #
-APPS = uuid smtp ftp chat nan node table stringTest
+APPS = uuid smtp ftp chat nan node stringTest vectorTest
 all: $(APPS)
 
 clean:
@@ -83,10 +87,10 @@ nan: nan.cpp $(LIB_FILE)
 node: node.cpp $(LIB_FILE)
 	$(CXX) $(CXXFLAGS) $(DEBUG) node.cpp -o node $(LIBS) $(LDFLAGS)
 
-table: table.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) table.cpp -o table $(LIBS) $(LDFLAGS)
-
 stringTest: stringTest.cpp $(LIB_FILE)
 	$(CXX) $(CXXFLAGS) $(DEBUG) stringTest.cpp -o stringTest $(LIBS) $(LDFLAGS)
+
+vectorTest: vectorTest.cpp ../src/CKVector.h $(LIB_FILE)
+	$(CXX) $(CXXFLAGS) $(DEBUG) vectorTest.cpp -o vectorTest $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE
