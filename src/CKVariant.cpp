@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.9 2004/09/11 02:15:24 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.10 2004/09/11 21:07:50 drbob Exp $
  */
 
 //	System Headers
@@ -853,7 +853,7 @@ void CKVariant::takeValuesFromCode( const char *aCode )
 {
 	switch (aCode[0]) {
 		case 'U':
-			setValueAsType(eUnknownVariant, &(aCode[2]));
+			clearValue();
 			break;
 		case 'S':
 			setValueAsType(eStringVariant, &(aCode[2]));

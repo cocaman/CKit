@@ -3,7 +3,7 @@
  *                        a certain period of time before giving up and
  *                        returning to the caller.
  *
- * $Id: CKFWTimedSemaphore.h,v 1.4 2004/09/11 02:15:19 drbob Exp $
+ * $Id: CKFWTimedSemaphore.h,v 1.5 2004/09/11 21:07:45 drbob Exp $
  */
 #ifndef __CKFW_TIMEDSEMAPHORE_H
 #define __CKFW_TIMEDSEMAPHORE_H

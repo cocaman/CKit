@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.10 2004/09/11 02:15:16 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.11 2004/09/11 21:07:42 drbob Exp $
  */
 
 //	System Headers

@@ -10,7 +10,7 @@
  *                 This means that the list of split times it a "scan once"
  *                 scheme, but that's not a real limitation for this guy.
  * 
- * $Id: CKStopwatch.h,v 1.3 2004/09/11 02:15:23 drbob Exp $
+ * $Id: CKStopwatch.h,v 1.4 2004/09/11 21:07:48 drbob Exp $
  */
 #ifndef __CKSTOPWATCH_H
 #define __CKSTOPWATCH_H

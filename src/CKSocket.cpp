@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.13 2004/09/11 02:15:22 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.14 2004/09/11 21:07:48 drbob Exp $
  */
 
 //	System Headers

@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.6 2004/09/11 02:15:17 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.7 2004/09/11 21:07:43 drbob Exp $
  */
 
 //	System Headers

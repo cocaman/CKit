@@ -8,13 +8,14 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.8 2004/07/27 20:01:31 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.9 2004/09/11 21:07:50 drbob Exp $
  */
 
 //	System Headers
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
+#include <strings.h>
 
 //	Third-Party Headers
 
@@ -241,9 +242,11 @@ double CKTimeSeries::get( double aDateTime )
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
 	// see if it exists in the map
-	std::map<double, double>::iterator	i = mTimeseries.find(aDateTime);
-	if (i != mTimeseries.end()) {
-		retval = (*i).second;
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.find(aDateTime);
+		if (i != mTimeseries.end()) {
+			retval = (*i).second;
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -277,9 +280,13 @@ std::vector<double> CKTimeSeries::get( const std::vector<double> & aDateSeries )
 	if (cnt > 0) {
 		std::map<double, double>::iterator	i;
 		for (unsigned int d = 0; d < cnt; d++) {
-			i = mTimeseries.find(aDateSeries[d]);
-			if (i != mTimeseries.end()) {
-				retval.push_back((*i).second);
+			if (!mTimeseries.empty()) {
+				i = mTimeseries.find(aDateSeries[d]);
+				if (i != mTimeseries.end()) {
+					retval.push_back((*i).second);
+				} else {
+					retval.push_back(NAN);
+				}
 			} else {
 				retval.push_back(NAN);
 			}
@@ -326,9 +333,11 @@ std::vector<long> CKTimeSeries::getDates()
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
 	// get all the keys from the map no matter what
-	std::map<double, double>::iterator	i;
-	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		retval.push_back((long) (*i).first);
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i;
+		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+			retval.push_back((long) (*i).first);
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -349,9 +358,11 @@ std::vector<double> CKTimeSeries::getDateTimes()
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
 	// get all the keys from the map no matter what
-	std::map<double, double>::iterator	i;
-	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		retval.push_back((*i).first);
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i;
+		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+			retval.push_back((*i).first);
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -574,6 +585,7 @@ bool CKTimeSeries::fillInValues( int anInterval, double aStartDate,
 			// see if we've passed the magic number of fills
 			if (fills > maxFillsWarning) {
 				char	buff[512];
+				bzero(buff, 512);
 				snprintf(buff, 511, "CKTimeSeries::fillInValues(double, double, "
 					"double, int) - we have filled in %17.8lf with %lf "
 					" which is consecutive fill #%d", date, lastValue, fills);
