@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.1 2004/03/02 19:20:12 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.2 2004/03/05 15:38:35 drbob Exp $
  */
 
 //	System Headers
@@ -1051,6 +1051,18 @@ CKFWMutex *CKDataNode::getVarsMutex()
 
 
 /*
+ * This method returns the actual pointer to the STL map of the
+ * variables and it's useful for subclasses that have to do
+ * something with the variables that I didn't originally think
+ * of.
+ */
+std::map<std::string, CKVariant> *CKDataNode::getVars()
+{
+	return & mVars;
+}
+
+
+/*
  * This method returns the actual pointer to the mutex that is
  * being used to control access to the list of child nodes in this
  * node. This is here primarily as an accessor tool for the
@@ -1059,6 +1071,18 @@ CKFWMutex *CKDataNode::getVarsMutex()
 CKFWMutex *CKDataNode::getKidsMutex()
 {
 	return & mKidsMutex;
+}
+
+
+/*
+ * This method returns the actual pointer to the STL list of the
+ * children and it's useful for subclasses that have to do
+ * something with the children that I didn't originally think
+ * of.
+ */
+std::list<CKDataNode*> *CKDataNode::getKids()
+{
+	return & mKids;
 }
 
 
