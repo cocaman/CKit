@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.5 2003/12/16 18:08:48 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.6 2004/08/31 21:23:35 drbob Exp $
  */
 
 //	System Headers
@@ -228,7 +228,7 @@ std::string CKBufferedSocket::readUpTo( const std::string & aStopData )
 std::string CKBufferedSocket::readUpTo( const char *aStopData )
 {
 	bool			error = false;
-	std::string		retval;
+	std::string		retval("");
 	bool			done = false;
 
 	// first, make sure we have something interesting to do
