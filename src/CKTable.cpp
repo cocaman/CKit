@@ -5,13 +5,28 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.1 2003/12/16 18:09:07 drbob Exp $
+ * $Id: CKTable.cpp,v 1.2 2004/02/26 22:07:43 drbob Exp $
  */
 
 //	System Headers
 #include <string>
 #include <iostream>
 #include <sstream>
+#ifdef __linux__
+#define __USE_ISOC99 1
+#endif
+#include <math.h>
+/*
+ * Oddly enough, Sun doesn't seem to have NAN defined, so we need to
+ * do that here so that things run more smoothly. This is very interesting
+ * because Sun has isnan() defined, but no obvious way to set a value.
+ */
+#ifdef __sun__
+#ifndef NAN
+#define	NAN	(__extension__ ((union { unsigned __l __attribute__((__mode__(__SI__))); \
+			float __d; }) { __l: 0x7fc00000UL }).__d)
+#endif
+#endif
 
 //	Third-Party Headers
 #include <CKException.h>
@@ -2564,6 +2579,38 @@ long CKTable::parseLongFromBufferToDelim( char * & aBuff, char aDelim )
 	++aBuff;
 
 	return error ? 0 : retval;
+}
+
+
+/*
+ * This method looks at the character buffer and parses out the
+ * double value from the start of the buffer to the first
+ * instance of the character 'delim' and then returns that value.
+ * The buffer contents itself is untouched.
+ *
+ * On exit, the argument 'buff' will be moved to one character
+ * PAST the delimiter so that it's ready for another call to this
+ * method, if needed.
+ */
+double CKTable::parseDoubleFromBufferToDelim( char * & aBuff, char aDelim )
+{
+	bool		error = false;
+	double		retval = NAN;
+
+	// first thing is to get the string that is the value
+	char *strVal = parseStringFromBufferToDelim(aBuff, aDelim);
+	if (strVal == NULL) {
+		error = true;
+		// simply return a 'NaN' value no need to log
+	} else {
+		// convert this to a doublw
+		retval = atof(strVal);
+		// ...and drop the used storage as we're done with it
+		delete [] strVal;
+		strVal = NULL;
+	}
+
+	return error ? NAN : retval;
 }
 
 

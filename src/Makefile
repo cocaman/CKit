@@ -75,6 +75,7 @@ OBJS = CKUUID.o \
 	CKFWTimer.o \
 	CKVariant.o \
 	CKTable.o \
+	CKTimeSeries.o \
 	CKStopwatch.o \
 	CKException.o \
 	CKErrNoException.o
