@@ -75,6 +75,7 @@ OBJS = CKUUID.o \
 	CKFWThreadLocal.o \
 	CKFWTime.o \
 	CKFWTimer.o \
+	CKString.o \
 	CKVariant.o \
 	CKTable.o \
 	CKTimeSeries.o \
@@ -140,6 +141,7 @@ CKFWThread.o: CKFWThread.h CKErrNoException.h CKException.h
 CKFWThreadLocal.o: CKFWThreadLocal.h
 CKFWTime.o: CKFWTime.h CKException.h
 CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h
+CKString.o: CKException.h CKString.h CKFWMutex.h
 CKVariant.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
 CKTable.o: CKException.h CKTable.h CKVariant.h
 CKTimeSeries.o: CKException.h CKTable.h CKVariant.h CKTimeSeries.h CKFWMutex.h
