@@ -9,8 +9,8 @@
  *                   you need to pop off the top split time to get to the next one.
  *                   This means that the list of split times it a "scan once"
  *                   scheme, but that's not a real limitation for this guy.
- *
- * $Id: CKStopwatch.cpp,v 1.2 2004/02/24 19:37:08 drbob Exp $
+ * 
+ * $Id: CKStopwatch.cpp,v 1.3 2004/07/27 20:01:30 drbob Exp $
  */
 
 //	System Headers
@@ -41,23 +41,23 @@
 #define CLOCK_SCALE			10000.0/(double)CLOCKS_PER_SEC
 
 /*
- * The sleep() and usleep() functions on Solaris are iffy and can be a real
+ * The sleep() and usleep() methods on Solaris are iffy and can be a real
  * problem. So we have created these routines to take their place. The
  * first sleeps for a given number of seconds and the second for a given
  * number of milliseconds.
  */
 void msleep( long secs )
 {
-	mmsleep( 1000 * secs );
+	mmsleep( secs * 1000 );
 }
 
 
 void mmsleep( unsigned int millisecs )
 {
 	unsigned int	secs = millisecs / 1000;
-	unsigned int	nanosecs = (millisecs - (secs * 1000)) * 1000000;
-	struct timespec	rqtp = { secs, nanosecs };
-	struct timespec	rmtp = { 0, 0 };
+	unsigned int	nanosecs = (millisecs - (secs * 1000))*1000000;
+	struct timespec rqtp = { secs, nanosecs };
+	struct timespec rmtp = { 0, 0 };
 	while ((nanosleep(&rqtp, &rmtp) == -1) && (errno == EINTR)) {
 		rqtp = rmtp;
 	}
@@ -105,11 +105,7 @@ CKStopwatch::CKStopwatch( const CKStopwatch & anOther ) :
  */
 CKStopwatch::~CKStopwatch()
 {
-	/*
-	 * All the times are stack-based, so all I have to really do
-	 * is to clear out the list and we're done.
-	 */
-	clear();
+	// the STL containers are all going to clear out their data themselves
 }
 
 
@@ -397,7 +393,7 @@ bool CKStopwatch::operator!=( const CKStopwatch & anOther ) const
 
 
 /*
- * Because there are times when it's useful to have a nice
+ * Because there are times when it's useful to have a nice 
  * human-readable form of the contents of this instance. Most of the
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
@@ -416,7 +412,7 @@ std::string CKStopwatch::toString() const
 
 /*
  * This method is useful because C++ can;t compare structs and we
- * need to be able to compare lots of them for this guy's
+ * need to be able to compare lots of them for this guy's 
  * operator==() method.
  */
 bool CKStopwatch::areEqual( const struct tms & aTime, const struct tms & anOther )

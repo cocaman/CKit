@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.4 2004/03/02 19:18:58 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.5 2004/07/27 20:01:23 drbob Exp $
  */
 
 //	System Headers
@@ -164,9 +164,6 @@ CKFTPConnection::~CKFTPConnection()
 {
 	// disconnect from the FTP server
 	disconnect();
-
-	// clear out the server reply lines
-	mServerReplyLines.clear();
 }
 
 
@@ -3652,6 +3649,6 @@ std::string CKFTPConnection::stringForLastFTPReturnCode()
 std::ostream & operator<<( std::ostream & aStream, const CKFTPConnection & aConnection )
 {
 	aStream << aConnection.toString();
-
+	
 	return aStream;
 }

@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.8 2004/07/13 21:32:45 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.9 2004/07/27 20:01:21 drbob Exp $
  */
 
 //	System Headers
@@ -187,9 +187,6 @@ CKDataNode::~CKDataNode()
 		// ...and drop this guy from the list
 		mKids.erase(i);
 	}
-
-	// clear out all the variables while we're at it
-	mVars.clear();
 }
 
 

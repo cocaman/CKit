@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.10 2004/05/26 20:40:39 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.11 2004/07/27 20:01:29 drbob Exp $
  */
 
 //	System Headers
@@ -740,12 +740,13 @@ bool CKSocket::incomingConnectionActive() const
  */
 void CKSocket::shutdownSocket()
 {
-	// First shut down the socket against any communication
-	shutdown(getSocketHandle(), 2);
-
-	// See if we need to undo a bind() call with close()
+	// if we have a valid socket handle, clean it up first
 	if (getSocketHandle() != INVALID_SOCKET) {
+		// first shut down the socket against any communication
+		shutdown(getSocketHandle(), 2);
+		// ...now close out the file handle for this guy
 		::close(getSocketHandle());
+		// finally, invalidate the ivar
 		setSocketHandle(INVALID_SOCKET);
 	}
 
@@ -759,7 +760,7 @@ void CKSocket::shutdownSocket()
  * When the socket connection is no longer needed, this call
  * closes the connection and releases those system resources
  * back to the base operating system. It closes down the
- * connection in such a way that #no further reads or writes
+ * connection in such a way that no further reads or writes
  * to that socket will be allowed.
  */
 void CKSocket::closeConnection()
@@ -948,8 +949,8 @@ CKSocket *CKSocket::socketByAcceptingConnectionFromListener()
 				// see if it's an error we can handle
 				if (errno == EWOULDBLOCK) {
 					/*
-					 * OK, while this is an error, what's likely to have
-					 * happened is that the client connected and then dropped
+					 * OK, while this is an error what's likely to have
+					 * happened is that a client connected and then dropped
 					 * the connection before we could get to it. In this case
 					 * there is no one there and so the best thing to do is
 					 * to return a NULL. The easiest way to do that is to

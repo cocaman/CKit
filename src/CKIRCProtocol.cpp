@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.5 2004/07/08 13:52:04 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.6 2004/07/27 20:01:27 drbob Exp $
  */
 
 //	System Headers
@@ -214,7 +214,7 @@ CKIRCProtocol::~CKIRCProtocol()
 {
 	// first, kill the listener and free it
 	setListener(NULL);
-	// now handle the connection to the IRC server itself
+	// now handle the connection to the IRC server itself.
 	if (isConnected()) {
 		if (isLoggedIn()) {
 			doQUIT("bye");
@@ -222,10 +222,6 @@ CKIRCProtocol::~CKIRCProtocol()
 		}
 		mCommPort.disconnect();
 	}
-
-	// now release all the things that we have created
-	mChannelList.clear();
-	mResponders.clear();
 }
 
 
@@ -249,15 +245,15 @@ CKIRCProtocol & CKIRCProtocol::operator=( const CKIRCProtocol & anOther )
 	}
 
 	// set everything that the other one has
-	setHostname(anOther.getHostname());
-	setPort(anOther.getPort());
+	mHostname = anOther.mHostname;
+	mPort = anOther.mPort;
 	mCommPort = anOther.mCommPort;
-	setIsLoggedIn(anOther.isLoggedIn());
-	setPassword(anOther.getPassword());
-	setNickname(anOther.getNickname());
-	setUserHost(anOther.getUserHost());
-	setUserServer(anOther.getUserServer());
-	setRealName(anOther.getRealName());
+	mIsLoggedIn = anOther.mIsLoggedIn;
+	mPassword = anOther.mPassword;
+	mNickname = anOther.mNickname;
+	mUserHost = anOther.mUserHost;
+	mUserServer = anOther.mUserServer;
+	mRealName = anOther.mRealName;
 	/*
 	 * I'm going to break encapsulation on these lists as they are better
 	 * done as the ivars themselves.
@@ -1256,15 +1252,23 @@ std::string CKIRCProtocol::getReply()
 	bool			error = false;
 	std::string		retval;
 
-	// first, see if we're currently connected to some host
+	/*
+	 * First, see if we're connected to some IRC server, and if not, then
+	 * try to connect to the one that we connected to when we created this
+	 * guy.
+	 */
 	if (!error) {
 		if (!isConnected()) {
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::getReply() - this protocol is not currently connected "
-				"to any IRC server, and so it's not possible to get any reply. Please "
-				"make sure that there is an established connection with isConnected() "
-				"before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+			if (!connect()) {
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::getReply() - this protocol is not currently "
+					"connected to any IRC server, and a connection to the default "
+					"server could not be made. Therefore, it's not possible to get "
+					"any reply. Please make sure that there is an established "
+					"connection with isConnected() before calling this method, or "
+					"make sure that the IRC server is on-line.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
 	}
 
@@ -1287,15 +1291,23 @@ bool CKIRCProtocol::checkForReply()
 	bool		error = false;
 	bool		retval = false;
 
-	// first, see if we're currently connected to some host
+	/*
+	 * First, see if we're connected to some IRC server, and if not, then
+	 * try to connect to the one that we connected to when we created this
+	 * guy.
+	 */
 	if (!error) {
 		if (!isConnected()) {
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::checkForReply() - this protocol is not currently "
-				"connected to any IRC server, and so it's not possible to get any "
-				"reply. Please make sure that there is an established connection with "
-				"isConnected() before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+			if (!connect()) {
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::checkForReply() - this protocol is not currently "
+					"connected to any IRC server, and a connection to the default "
+					"server could not be made. Therefore, it's not possible to check "
+					"for any reply. Please make sure that there is an established "
+					"connection with isConnected() before calling this method, or "
+					"make sure that the IRC server is on-line.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
 	}
 
@@ -1380,17 +1392,24 @@ void CKIRCProtocol::executeCommand( const std::string & aCmd )
 {
 	bool		error = false;
 
-	// first, see if we're currently connected to some host
+	/*
+	 * First, see if we're connected to some IRC server, and if not, then
+	 * try to connect to the one that we connected to when we created this
+	 * guy.
+	 */
 	if (!error) {
 		if (!isConnected()) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::executeCommand(const std::string &) - this "
-				"protocol is not currently connected to any IRC server, and so "
-				"it's not possible to execute any commands. Please make sure that "
-				"there is an established connection with isConnected() before "
-				"calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+			if (!connect()) {
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::executeCommand(const std::string &) - this "
+					"protocol is not currently connected to any IRC server, and a "
+					"connection to the default server could not be made. Therefore, "
+					"it's not possible to execute any IRC commands to the server. "
+					"Please make sure that there is an established connection with "
+					"isConnected() before calling this method, or make sure that "
+					"the IRC server is on-line.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
 	}
 
