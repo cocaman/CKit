@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.4 2004/06/08 19:57:10 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.5 2004/06/10 12:50:53 drbob Exp $
  */
 
 //	System Headers
@@ -53,8 +53,35 @@ CKFWThread::~CKFWThread( )
 
 void CKFWThread::run( )
 {
+  bool		error = false;
+
   try {
-    if ( initialize( ) == cSuccess ) {
+    if ( initialize( ) != cSuccess ) {
+      error = true;
+    }
+  } catch ( CKException & lException ) {
+    std::cerr << "CKFWThread::run() - while initializing the thread a CKException "
+    	"was thrown: " << lException.getMessage() << std::endl;
+  } catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run() - while initializing the thread a (char*) exception "
+    	"was thrown: " << charstar << std::endl;
+  } catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run() - while initializing the thread a std::string "
+    	"exception was thrown: " << str << std::endl;
+  } catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run() - while initializing the thread a std::exception "
+    	"exception was thrown: " << excep.what() << std::endl;
+  } catch ( SAException & sae ) {
+  	std::string		excep = (const SAChar *)sae.ErrText();
+    std::cerr << "CKFWThread::run() - while initializing the thread an SAException "
+    	"exception was thrown: " << excep << std::endl;
+  } catch ( ... ) {
+    std::cerr << "CKFWThread::run() - while initializing the thread an unknown "
+    	"exception was thrown." << std::endl;
+  }
+
+  try {
+    if ( !error ) {
       while( process( ) == cSuccess );
     }
   } catch ( CKException & lException ) {
