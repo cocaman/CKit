@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.11 2005/02/11 21:41:32 drbob Exp $
+ * $Id: CKString.h,v 1.12 2005/02/14 19:07:46 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -1403,6 +1403,7 @@ class CKStringList
 		 * one separated by the passed-in separator.
 		 */
 		CKString concatenate( const CKString & aSeparator );
+		CKString concatenate( const CKString & aSeparator ) const;
 
 		/********************************************************
 		 *
