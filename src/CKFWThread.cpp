@@ -2,13 +2,17 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.5 2004/06/10 12:50:53 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.6 2004/08/31 11:18:06 drbob Exp $
  */
 
 //	System Headers
 #include <pthread.h>
 #include <math.h>
 #include <iostream>
+#include <sstream>
+#ifdef GPP2
+#include <exception>
+#endif
 
 //	Third-Party Headers
 #include <SQLAPI.h>
@@ -37,47 +41,91 @@ const int CKFWThread::cUnexpectedException = 2;
 CKFWThread::CKFWThread( int aPolicy,
                         double aPriority,
                         int aScope,
-                        int aIsDetachable )
-    : mPolicy( aPolicy ),
-      mPriority( aPriority ),
-      mScope( aScope ),
-      mIsDetachable( aIsDetachable )
+                        int aIsDetachable ) :
+	mPolicy( aPolicy ),
+	mPriority( aPriority ),
+	mScope( aScope ),
+	mIsDetachable( aIsDetachable ),
+	mTag( NULL )
 {
-  return;
+	return;
 }
 
 CKFWThread::~CKFWThread( )
 {
+	setTag(NULL);
   return;
 }
 
+CKFWThread & CKFWThread::operator=( CKFWThread & anOther )
+{
+	mPolicy = anOther.mPolicy;
+	mPriority = anOther.mPriority;
+	mScope = anOther.mScope;
+	mIsDetachable = anOther.mIsDetachable;
+	setTag(anOther.mTag);
+
+	return *this;
+}
+
+/*
+ * This is used to 'tag' the thread so that the exception reports tell
+ * us something more than nothing. It's about the only information we're
+ * going to get in some cases.
+ */
+void CKFWThread::setTag( const char *aTag )
+{
+	if (mTag != NULL) {
+			delete [] mTag;
+			mTag = NULL;
+	}
+	if (aTag != NULL) {
+		int		size = strlen(aTag) + 1;
+		mTag = new char[size];
+		if (mTag == NULL) {
+			std::ostringstream	msg;
+			msg << "CKFWThread::setTag(const char*) - space for the tag ('" <<
+					aTag << "') could not be created. This is a serious allocation "
+					"error.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+				strncpy(mTag, aTag, size);
+		}
+	}
+}
+
+
 void CKFWThread::run( )
 {
-  bool		error = false;
+	bool		error = false;
 
   try {
     if ( initialize( ) != cSuccess ) {
       error = true;
     }
   } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run() - while initializing the thread a CKException "
-    	"was thrown: " << lException.getMessage() << std::endl;
-  } catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run() - while initializing the thread a (char*) exception "
-    	"was thrown: " << charstar << std::endl;
-  } catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run() - while initializing the thread a std::string "
-    	"exception was thrown: " << str << std::endl;
-  } catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run() - while initializing the thread a std::exception "
-    	"exception was thrown: " << excep.what() << std::endl;
-  } catch ( SAException & sae ) {
-  	std::string		excep = (const SAChar *)sae.ErrText();
-    std::cerr << "CKFWThread::run() - while initializing the thread an SAException "
-    	"exception was thrown: " << excep << std::endl;
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread a CKException was thrown: " <<
+			lException.getMessage() << std::endl;
+	} catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread a (char*) exception was thrown: " << charstar <<
+			std::endl;
+	} catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread a std::string exception was thrown: " << str <<
+			std::endl;
+	} catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread a std::exception exception was thrown: " <<
+			excep.what() << std::endl;
+	} catch ( SAException & sae ) {
+		std::string	excep = (const SAChar *)sae.ErrText();
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread a SAException was thrown: " << excep << std::endl;
   } catch ( ... ) {
-    std::cerr << "CKFWThread::run() - while initializing the thread an unknown "
-    	"exception was thrown." << std::endl;
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"initializing the thread an unknown exception was thrown." << std::endl;
   }
 
   try {
@@ -85,47 +133,55 @@ void CKFWThread::run( )
       while( process( ) == cSuccess );
     }
   } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run() - while running the thread a CKException "
-    	"was thrown: " << lException.getMessage() << std::endl;
-  } catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run() - while running the thread a (char*) exception "
-    	"was thrown: " << charstar << std::endl;
-  } catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run() - while running the thread a std::string "
-    	"exception was thrown: " << str << std::endl;
-  } catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run() - while running the thread a std::exception "
-    	"exception was thrown: " << excep.what() << std::endl;
-  } catch ( SAException & sae ) {
-  	std::string		excep = (const SAChar *)sae.ErrText();
-    std::cerr << "CKFWThread::run() - while running the thread an SAException "
-    	"exception was thrown: " << excep << std::endl;
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread a CKException was thrown: " <<
+			lException.getMessage() << std::endl;
+	} catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread a (char*) exception was thrown: " << charstar <<
+			std::endl;
+	} catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread a std::string exception was thrown: " << str <<
+			std::endl;
+	} catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread a std::exception exception was thrown: " <<
+			excep.what() << std::endl;
+	} catch ( SAException & sae ) {
+		std::string	excep = (const SAChar *)sae.ErrText();
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread a SAException was thrown: " << excep << std::endl;
   } catch ( ... ) {
-    std::cerr << "CKFWThread::run() - while running the thread an unknown "
-    	"exception was thrown." << std::endl;
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"running the thread an unknown exception was thrown." << std::endl;
   }
 
   try {
     terminate( );
   } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run() - while terminating the thread a "
-    	"CKException was thrown: " << lException.getMessage() << std::endl;
-  } catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run() - while terminating the thread a (char*) exception "
-    	"was thrown: " << charstar << std::endl;
-  } catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run() - while terminating the thread a std::string "
-    	"exception was thrown: " << str << std::endl;
-  } catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run() - while terminating the thread a std::exception "
-    	"exception was thrown: " << excep.what() << std::endl;
-  } catch ( SAException & sae ) {
-  	std::string		excep = (const SAChar *)sae.ErrText();
-    std::cerr << "CKFWThread::run() - while terminating the thread an SAException "
-    	"exception was thrown: " << excep << std::endl;
-  } catch ( ... ) {
-    std::cerr << "CKFWThread::run() - while terminating the thread an unknown "
-    	"exception was thrown." << std::endl;
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread a CKException was thrown: " <<
+			lException.getMessage() << std::endl;
+	} catch ( char* charstar ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread a (char*) exception was thrown: " << charstar <<
+			std::endl;
+	} catch ( std::string & str ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread a std::string exception was thrown: " << str <<
+			std::endl;
+	} catch ( std::exception & excep ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread a std::exception exception was thrown: " <<
+			excep.what() << std::endl;
+	} catch ( SAException & sae ) {
+		std::string	excep = (const SAChar *)sae.ErrText();
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread a SAException was thrown: " << excep << std::endl;
+  } catch( ... ) {
+    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+			"terminating the thread an unknown exception was thrown." << std::endl;
   }
 }
 

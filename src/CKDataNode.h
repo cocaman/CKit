@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.6 2004/03/09 14:16:01 drbob Exp $
+ * $Id: CKDataNode.h,v 1.7 2004/08/31 11:18:05 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -331,6 +331,15 @@ class CKDataNode
 		 * of all the leaf nodes under it, and all it's children.
 		 */
 		std::vector<std::string>	getUniqueLeafNodeNames();
+
+		/*
+		 * This method will return the number of steps that need to be
+		 * taken from this node to a leaf node. For example, if this node
+		 * contained a child node that also contained a child node, then
+		 * this method would return 2. If this node was a leaf node, then
+		 * this method would return 0.
+		 */
+		int getNumOfStepsToLeaf();
 
 		/********************************************************
 		 *
