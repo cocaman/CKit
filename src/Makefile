@@ -44,7 +44,7 @@ LIB_FILE = $(LIB_DIR)/libCKit.$(SO_EXT)
 #
 INCLUDES = -I. -I$(INCLUDE_DIR)
 DEFINES = $(CXX_DEFS)
-CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
+CXXFLAGS = -O2 -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi
 LDFLAGS = -fPIC $(LIBS)
 
