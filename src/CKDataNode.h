@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.17 2005/01/20 15:54:55 drbob Exp $
+ * $Id: CKDataNode.h,v 1.18 2005/02/09 17:45:08 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -333,6 +333,39 @@ class CKDataNode
 		 * to have this method break it up.
 		 */
 		virtual CKDataNode *getNodeAtPath( const CKStringList & aSteps );
+
+		/*
+		 * This method takes a string that is a series of node identifying
+		 * names spearated by a '/' to represent a "path" to a node in the
+		 * data tree.
+		 *
+		 * For example, say the path was:
+		 *
+		 *     SectionA/Subsection1/GroupQ/Item212
+		 *
+		 * This method would look for the child identified by the name
+		 * "SectionA" and then have it look for a child called "Subsection1"
+		 * and it's child called "GroupQ" and it's child called "Item212".
+		 * What would be returned is the pointer to the "Item212" child.
+		 *
+		 * It's important to note that if any node in the path is NOT FOUND
+		 * then this method will *create* that node so that the path will
+		 * exist when complete unless a serious error occurs.
+		 *
+		 * If the path string includes a leading '/' then the path is
+		 * taken from the root node of the tree that this node is but a
+		 * part of. So, even if this node is *not* in the path, the value
+		 * will be returned if it's in the tree.
+		 */
+		virtual CKDataNode *getOrCreateNodeAtPath( const CKString & aPath );
+		/*
+		 * This version of the method takes a vector of strings that is
+		 * the path as opposed to a single string delimited by the '/'.
+		 * This is useful when you have the data organized in something
+		 * like a vector and you don't want to put it all together only
+		 * to have this method break it up.
+		 */
+		virtual CKDataNode *getOrCreateNodeAtPath( const CKStringList & aSteps );
 
 		/*
 		 * This method takes a string that is a series of node identifying
