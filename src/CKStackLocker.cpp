@@ -14,7 +14,7 @@
  *                     no matter how the scope is exited - normally or by an
  *                     exception being thrown, the mutex will be unlocked.
  *
- * $Id: CKStackLocker.cpp,v 1.5 2004/09/20 16:19:41 drbob Exp $
+ * $Id: CKStackLocker.cpp,v 1.6 2004/12/01 18:28:20 drbob Exp $
  */
 
 //	System Headers
@@ -41,12 +41,13 @@
  *
  ********************************************************/
 /*
- * This is the only public form of the constructor and it takes
- * the pointer to a CKFWMutex that needs to be non-NULL. It will
- * then proceed to lock this mutex and return. That's it.
+ * This form of the constructor takes a pointer to a CKFWMutex that
+ * needs to be non-NULL. It then proceeds to lock this mutex and
+ * return. That's it.
  */
 CKStackLocker::CKStackLocker( CKFWMutex *aMutex ) :
-	mMutex(NULL)
+	mMutex(NULL),
+	mRWMutex(NULL)
 {
 	if (aMutex == NULL) {
 		std::ostringstream	msg;
@@ -62,21 +63,54 @@ CKStackLocker::CKStackLocker( CKFWMutex *aMutex ) :
 
 
 /*
+ * This form of the constructor takes a pointer to a CKFWRWMutex that
+ * needs to be non-NULL. It then proceeds to lock this mutex and
+ * return. The nature of the lock is dictated by the boolean with
+ * the default being to do a read lock. That's it.
+ */
+CKStackLocker::CKStackLocker( CKFWRWMutex *aRWMutex, bool aReadLock ) :
+	mMutex(NULL),
+	mRWMutex(NULL)
+{
+	if (aRWMutex == NULL) {
+		std::ostringstream	msg;
+		msg << "CKStackLocker::CKStackLocker(CKFWRWMutex *, bool) - the passed-in "
+			"mutex is NULL and that means that there's nothing I can do. Please "
+			"make sure that the argument is not NULL before calling this "
+			"constructor.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		mRWMutex = aRWMutex;
+		if (aReadLock) {
+			mRWMutex->readLock();
+		} else {
+			mRWMutex->writeLock();
+		}
+	}
+}
+
+
+/*
  * This is the standard destructor and needs to be virtual to make
  * sure that if we subclass off this the right destructor will be
  * called. This guy will simply unlock the mutex and that's it.
  */
 CKStackLocker::~CKStackLocker()
 {
-	if (mMutex == NULL) {
+	if ((mMutex == NULL) && (mRWMutex == NULL)) {
 		std::ostringstream	msg;
 		msg << "CKStackLocker::~CKStackLocker() - the mutex is now NULL and it "
 			"had to be non-NULL in the constructor. Please check on this data "
 			"corruption problem as soon as possible.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
-		mMutex->unlock();
-		mMutex = NULL;
+		if (mMutex != NULL) {
+			mMutex->unlock();
+			mMutex = NULL;
+		} else if (mRWMutex != NULL) {
+			mRWMutex->unlock();
+			mRWMutex = NULL;
+		}
 	}
 }
 
@@ -88,6 +122,7 @@ CKStackLocker::~CKStackLocker()
  * to keep it private.
  */
 CKStackLocker::CKStackLocker() :
-	mMutex(NULL)
+	mMutex(NULL),
+	mRWMutex(NULL)
 {
 }

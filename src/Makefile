@@ -13,7 +13,7 @@ SO_FLAG = -shared
 endif
 ifeq ($(shell uname),Linux)
 CXX = g++
-CXX_DEFS = -DGPP2 -D_REENTRANT -O2
+CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
 endif
@@ -68,6 +68,7 @@ OBJS = CKUUID.o \
 	CKIRCResponder.o \
 	CKFWConditional.o \
 	CKFWMutex.o \
+	CKFWRWMutex.o \
 	CKStackLocker.o \
 	CKFWSemaphore.o \
 	CKFWTimedSemaphore.o \
@@ -149,6 +150,7 @@ CKIRCResponder.o: CKVector.h CKStackLocker.h CKException.h
 CKFWConditional.o: CKFWConditional.h 
 CKFWConditional.o: ./CKFWMutex.h CKErrNoException.h CKException.h CKString.h
 CKFWMutex.o: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
+CKFWRWMutex.o: CKFWRWMutex.h CKErrNoException.h CKException.h CKString.h
 CKStackLocker.o: CKException.h CKString.h CKFWMutex.h CKStackLocker.h
 CKFWSemaphore.o: CKFWSemaphore.h CKErrNoException.h CKException.h
 CKFWSemaphore.o: CKString.h CKFWMutex.h 
