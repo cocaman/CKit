@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.9 2004/09/22 12:08:30 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.10 2004/09/25 16:14:39 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -17,8 +17,6 @@
 #else
 #include <ostream>
 #endif
-#include <list>
-#include <vector>
 
 //	Third-Party Headers
 
@@ -26,6 +24,7 @@
 #include "CKTelnetConnection.h"
 #include "CKFWMutex.h"
 #include "CKString.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 class CKIRCProtocolListener;
@@ -262,7 +261,7 @@ class CKIRCProtocol
 		 */
 		const CKString getRealName() const;
 		/*
-		 * This method returns a pointer to a std::list of CKStrings that
+		 * This method returns a pointer to a CKStringList that
 		 * is the list of Channels that this IRC Connection has JOINed. Note
 		 * that this method will not return a NULL as it's a pointer to the
 		 * instance variable and therefore should also not be released, etc.
@@ -653,7 +652,7 @@ class CKIRCProtocol
 		 * allow for multiple 'listeners' in case the user wants to break
 		 * out their functionality.
 		 */
-		std::list<CKIRCResponder*>	mResponders;
+		CKVector<CKIRCResponder*>	mResponders;
 		// ...and this is the mutex for it to control access
 		CKFWMutex					mRespondersMutex;
 };

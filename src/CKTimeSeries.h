@@ -7,13 +7,12 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.10 2004/09/20 16:19:54 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.11 2004/09/25 16:14:40 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
 
 //	System Headers
-#include <vector>
 #include <map>
 #ifdef GPP2
 #include <ostream.h>
@@ -59,6 +58,7 @@
 //	Other Headers
 #include "CKFWMutex.h"
 #include "CKString.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 
@@ -101,8 +101,8 @@ class CKTimeSeries
 		 * something that has only one value per day and time per day
 		 * is not important.
 		 */
-		CKTimeSeries( const std::vector<long> & aDateSeries,
-					  const std::vector<double> & aValueSeries );
+		CKTimeSeries( const CKVector<long> & aDateSeries,
+					  const CKVector<double> & aValueSeries );
 		/*
 		 * This constructor is interesting in that it takes the data as
 		 * it comes from another CKTimeSeries's generateCodeFromValues()
@@ -150,8 +150,8 @@ class CKTimeSeries
 		 * in the format YYYYMMDD.hhmmssss where seconds are in the
 		 * hundredths of a second.
 		 */
-		void put( const std::vector<double> & aDateSeries,
-				  const std::vector<double> & aValueSeries );
+		void put( const CKVector<double> & aDateSeries,
+				  const CKVector<double> & aValueSeries );
 		/*
 		 * This method essentially merges the passed-in timeseries with
 		 * the existing one to create a 'super set'. This is nice because
@@ -176,7 +176,7 @@ class CKTimeSeries
 		 * input unless an error occurs. Use isnan() in <math.h> to
 		 * test these values.
 		 */
-		std::vector<double> get( const std::vector<double> & aDateSeries );
+		CKVector<double> get( const CKVector<double> & aDateSeries );
 		/*
 		 * This method takes today's date and marches back in time the
 		 * provided number of days to arrive at the value to return.
@@ -194,13 +194,13 @@ class CKTimeSeries
 		 * functions on the integer portion of the date and therefore
 		 * doesn't allow for complete timestamps.
 		 */
-		std::vector<long> getDates();
+		CKVector<long> getDates();
 		/*
 		 * This method gets the complete series of timestamps for the
 		 * current timeseries. This is useful if you're interesting in
 		 * knowing the time of each data point.
 		 */
-		std::vector<double> getDateTimes();
+		CKVector<double> getDateTimes();
 
 		/*
 		 * This method takes a timestamp in the format YYYYMMDD.hhmmssss
@@ -222,7 +222,7 @@ class CKTimeSeries
 		 * closer the available data points are, the more accurate the
 		 * interpolated value.
 		 */
-		std::vector<double> interpolate( const std::vector<double> & aDateSeries );
+		CKVector<double> interpolate( const CKVector<double> & aDateSeries );
 		/*
 		 * This method, and it's convenience method, fill in the values
 		 * in the time series by starting at the point furthest back in time

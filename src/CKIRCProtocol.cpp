@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.13 2004/09/22 12:08:29 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.14 2004/09/25 16:14:39 drbob Exp $
  */
 
 //	System Headers
@@ -450,7 +450,7 @@ const CKString CKIRCProtocol::getRealName() const
 
 
 /*
- * This method returns a pointer to a std::list of CKStrings that
+ * This method returns a pointer to a CKStringList that
  * is the list of Channels that this IRC Connection has JOINed. Note
  * that this method will not return a NULL as it's a pointer to the
  * instance variable and therefore should also not be released, etc.
@@ -838,11 +838,9 @@ void CKIRCProtocol::addToResponders( CKIRCResponder *anObj )
 		mRespondersMutex.lock();
 
 		// now try to find it
-		std::list<CKIRCResponder*>::iterator	i;
-		i = find(mResponders.begin(), mResponders.end(), anObj);
-		if (i == mResponders.end()) {
+		if (!mResponders.contains(anObj)) {
 			// not found, so it's safe to add it
-			mResponders.push_back(anObj);
+			mResponders.addToEnd(anObj);
 		}
 
 		// unlock it regardless of the outcome
@@ -877,15 +875,8 @@ void CKIRCProtocol::removeFromResponders( CKIRCResponder *anObj )
 	if (!error) {
 		// lock it down so it doesn't change
 		mRespondersMutex.lock();
-
-		// now try to find it
-		std::list<CKIRCResponder*>::iterator	i;
-		i = find(mResponders.begin(), mResponders.end(), anObj);
-		if (i != mResponders.end()) {
-			// found, so it's safe to erase it
-			mResponders.erase(i);
-		}
-
+		// now try to remove it
+		mResponders.remove(anObj);
 		// unlock it regardless of the outcome
 		mRespondersMutex.unlock();
 	}
@@ -1297,13 +1288,12 @@ bool CKIRCProtocol::alertAllResponders( CKIRCIncomingMessage & aMsg )
 	if (!error) {
 		// we need to make a thread-safe local copy of the responder list
 		mRespondersMutex.lock();
-		std::list<CKIRCResponder*>	copy = mResponders;
+		CKVector<CKIRCResponder*>	copy = mResponders;
 		mRespondersMutex.unlock();
 
 		// now go through the list, calling each with the message
-		std::list<CKIRCResponder*>::iterator	i;
-		for (i = copy.begin(); i != copy.end(); ++i) {
-			(*i)->respondToIRCMessage(aMsg);
+		for (int i = 0; i < copy.size(); i++) {
+			copy[i]->respondToIRCMessage(aMsg);
 		}
 	}
 

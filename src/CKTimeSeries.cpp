@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.11 2004/09/20 16:19:52 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.12 2004/09/25 16:14:40 drbob Exp $
  */
 
 //	System Headers
@@ -58,17 +58,17 @@ CKTimeSeries::CKTimeSeries() :
  * something that has only one value per day and time per day
  * is not important.
  */
-CKTimeSeries::CKTimeSeries( const std::vector<long> & aDateSeries,
-							const std::vector<double> & aValueSeries ) :
+CKTimeSeries::CKTimeSeries( const CKVector<long> & aDateSeries,
+							const CKVector<double> & aValueSeries ) :
 	mTimeseries(),
 	mTimeseriesMutex()
 {
 	// first, see if the lengths are different
-	unsigned int	cnt = aDateSeries.size();
+	int		cnt = aDateSeries.size();
 	if (cnt != aValueSeries.size()) {
 		std::ostringstream	msg;
-		msg << "CKTimeSeries::CKTimeSeries(const std::vector<long>, "
-			"const std::vector<double>) - the size of the timestamp vector "
+		msg << "CKTimeSeries::CKTimeSeries(const CKVector<long>, "
+			"const CKVector<double>) - the size of the timestamp vector "
 			"is " << cnt << " while the size of the data vector is " <<
 			aValueSeries.size() << ". This is a problem as they have to be the "
 			"same size to make sense. Please check the data.";
@@ -78,7 +78,7 @@ CKTimeSeries::CKTimeSeries( const std::vector<long> & aDateSeries,
 	// next, rip through the vectors adding the numbers to the series
 	if (cnt > 0) {
 		mTimeseriesMutex.lock();
-		for (unsigned int i = 0; i < cnt; i++) {
+		for (int i = 0; i < cnt; i++) {
 			mTimeseries[aDateSeries[i]] = aValueSeries[i];
 		}
 		mTimeseriesMutex.unlock();
@@ -178,15 +178,15 @@ void CKTimeSeries::put( double aDateTime, double aValue )
  * in the format YYYYMMDD.hhmmssss where seconds are in the
  * hundredths of a second.
  */
-void CKTimeSeries::put( const std::vector<double> & aDateSeries,
-						const std::vector<double> & aValueSeries )
+void CKTimeSeries::put( const CKVector<double> & aDateSeries,
+						const CKVector<double> & aValueSeries )
 {
 	// first, see if the lengths are different
-	unsigned int	cnt = aDateSeries.size();
+	int		cnt = aDateSeries.size();
 	if (cnt != aValueSeries.size()) {
 		std::ostringstream	msg;
-		msg << "CKTimeSeries::put(const std::vector<double>, "
-			"const std::vector<double>) - the size of the timestamp vector "
+		msg << "CKTimeSeries::put(const CKVector<double>, "
+			"const CKVector<double>) - the size of the timestamp vector "
 			"is " << cnt << " while the size of the data vector is " <<
 			aValueSeries.size() << ". This is a problem as they have to be the "
 			"same size to make sense. Please check the data.";
@@ -196,7 +196,7 @@ void CKTimeSeries::put( const std::vector<double> & aDateSeries,
 	// next, rip through the vectors adding the numbers to the series
 	if (cnt > 0) {
 		mTimeseriesMutex.lock();
-		for (unsigned int i = 0; i < cnt; i++) {
+		for (int i = 0; i < cnt; i++) {
 			mTimeseries[aDateSeries[i]] = aValueSeries[i];
 		}
 		mTimeseriesMutex.unlock();
@@ -266,9 +266,9 @@ double CKTimeSeries::get( double aDateTime )
  * input unless an error occurs. Use isnan() in <math.h> to
  * test these values.
  */
-std::vector<double> CKTimeSeries::get( const std::vector<double> & aDateSeries )
+CKVector<double> CKTimeSeries::get( const CKVector<double> & aDateSeries )
 {
-	std::vector<double>		retval;
+	CKVector<double>		retval;
 
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
@@ -283,12 +283,12 @@ std::vector<double> CKTimeSeries::get( const std::vector<double> & aDateSeries )
 			if (!mTimeseries.empty()) {
 				i = mTimeseries.find(aDateSeries[d]);
 				if (i != mTimeseries.end()) {
-					retval.push_back((*i).second);
+					retval.addToEnd((double)(*i).second);
 				} else {
-					retval.push_back(NAN);
+					retval.addToEnd(NAN);
 				}
 			} else {
-				retval.push_back(NAN);
+				retval.addToEnd(NAN);
 			}
 		}
 	}
@@ -326,9 +326,9 @@ double CKTimeSeries::getDaysBack( int aDayCnt )
  * functions on the integer portion of the date and therefore
  * doesn't allow for complete timestamps.
  */
-std::vector<long> CKTimeSeries::getDates()
+CKVector<long> CKTimeSeries::getDates()
 {
-	std::vector<long>		retval;
+	CKVector<long>		retval;
 
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
@@ -336,7 +336,7 @@ std::vector<long> CKTimeSeries::getDates()
 	if (!mTimeseries.empty()) {
 		std::map<double, double>::iterator	i;
 		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-			retval.push_back((long) (*i).first);
+			retval.addToEnd((long) (*i).first);
 		}
 	}
 	// unlock up this guy for changes
@@ -351,9 +351,9 @@ std::vector<long> CKTimeSeries::getDates()
  * current timeseries. This is useful if you're interesting in
  * knowing the time of each data point.
  */
-std::vector<double> CKTimeSeries::getDateTimes()
+CKVector<double> CKTimeSeries::getDateTimes()
 {
-	std::vector<double>		retval;
+	CKVector<double>		retval;
 
 	// lock up this guy against changes
 	mTimeseriesMutex.lock();
@@ -361,7 +361,7 @@ std::vector<double> CKTimeSeries::getDateTimes()
 	if (!mTimeseries.empty()) {
 		std::map<double, double>::iterator	i;
 		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-			retval.push_back((*i).first);
+			retval.addToEnd((*i).first);
 		}
 	}
 	// unlock up this guy for changes
@@ -504,15 +504,15 @@ double CKTimeSeries::interpolate( double aDateTime )
  * closer the available data points are, the more accurate the
  * interpolated value.
  */
-std::vector<double> CKTimeSeries::interpolate( const std::vector<double> & aDateSeries )
+CKVector<double> CKTimeSeries::interpolate( const CKVector<double> & aDateSeries )
 {
-	std::vector<double>		retval;
+	CKVector<double>		retval;
 
 	// simply call the single value interpolator many times
 	unsigned int	cnt = aDateSeries.size();
 	if (cnt > 0) {
 		for (unsigned int i = 0; i < cnt; i++) {
-			retval.push_back(interpolate(aDateSeries[i]));
+			retval.addToEnd(interpolate(aDateSeries[i]));
 		}
 	}
 
@@ -648,8 +648,8 @@ bool CKTimeSeries::add( CKTimeSeries & aSeries )
 
 	// first, see if the two timeseries are made of the same timestamps
 	if (!error) {
-		std::vector<double>		me = getDateTimes();
-		std::vector<double>		him = aSeries.getDateTimes();
+		CKVector<double>		me = getDateTimes();
+		CKVector<double>		him = aSeries.getDateTimes();
 		if (me != him) {
 			error = true;
 			std::ostringstream	msg;
@@ -719,8 +719,8 @@ bool CKTimeSeries::subtract( CKTimeSeries & aSeries )
 
 	// first, see if the two timeseries are made of the same timestamps
 	if (!error) {
-		std::vector<double>		me = getDateTimes();
-		std::vector<double>		him = aSeries.getDateTimes();
+		CKVector<double>		me = getDateTimes();
+		CKVector<double>		him = aSeries.getDateTimes();
 		if (me != him) {
 			error = true;
 			std::ostringstream	msg;
@@ -1094,7 +1094,7 @@ double CKTimeSeries::getCurrentDate()
 /*
  * This method adds or subtracts the count of days from the given
  * date and returns the resulting date to the caller. This is nice
- * because to add days to a date, make the count positive, to 
+ * because to add days to a date, make the count positive, to
  * subtract days from a date, make the count negative. The method
  * respects leap years, etc.
  */
@@ -1298,10 +1298,10 @@ double CKTimeSeries::getEndingDate()
 char *CKTimeSeries::generateCodeFromValues() const
 {
 	// start by getting a buffer to build up this value
-	std::ostringstream buff;
+	CKString buff;
 
 	// first, send out the count of data points
-	buff << "\x01" << mTimeseries.size() << "\x01";
+	buff.append("\x01").append((int)mTimeseries.size()).append("\x01");
 
 	// next, loop over all the data points and write each out
 	std::map<double, double>::const_iterator	i;
@@ -1309,19 +1309,19 @@ char *CKTimeSeries::generateCodeFromValues() const
 		// see if the timestamp is just a date
 		if ((*i).first == floor((*i).first)) {
 			// this will be just YYYYMMDD on the output
-			buff << ((long)floor((*i).first)) << "\x01";
+			buff.append(((long)floor((*i).first))).append("\x01");
 		} else {
 			// this will be YYYYMMDD.hhmmssss on the output
-			buff.setf(std::ios::fixed, std::ios::floatfield);
-			buff.precision(8);
-			buff << (*i).first << "\x01";
+			char	dateVal[20];
+			snprintf(dateVal, 20, "%17.8lf", (*i).first);
+			buff.append(dateVal).append("\x01");
 		}
 		// finish it off with the value in scientific notation
-		buff << (*i).second << "\x01";
+		buff.append((*i).second).append("\x01");
 	}
 
 	// now create a new buffer to hold all this
-	char	*retval = new char[buff.str().size() + 1];
+	char	*retval = new char[buff.size() + 1];
 	if (retval == NULL) {
 		throw CKException(__FILE__, __LINE__, "CKTimeSeries::generateCodeFromValues"
 			"() - the space to hold the codified representation of this "
@@ -1329,7 +1329,8 @@ char *CKTimeSeries::generateCodeFromValues() const
 			"error.");
 	} else {
 		// copy over the string's contents
-		strcpy(retval, buff.str().c_str());
+		bzero(retval, buff.size() + 1);
+		strncpy(retval, buff.c_str(), buff.size());
 	}
 
 	/*
