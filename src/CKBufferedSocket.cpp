@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.8 2004/09/02 20:48:40 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.9 2004/09/02 21:26:33 drbob Exp $
  */
 
 //	System Headers
@@ -317,7 +317,7 @@ std::string CKBufferedSocket::readUpTo( const char *aStopData )
  */
 std::string CKBufferedSocket::readUpToCRLF()
 {
-	return readUpTo("\r\n");
+	return readUpTo((const char *)"\r\n");
 }
 
 
@@ -328,7 +328,7 @@ std::string CKBufferedSocket::readUpToCRLF()
  */
 std::string CKBufferedSocket::readUpToNEWLINE()
 {
-	return readUpTo("\n");
+	return readUpTo((const char *)"\n");
 }
 
 
