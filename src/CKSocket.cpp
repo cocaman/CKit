@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.4 2003/12/04 12:47:30 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.5 2003/12/04 13:07:29 drbob Exp $
  */
 
 //	System Headers
@@ -749,14 +749,14 @@ bool CKSocket::incomingConnectionActive() const
  */
 void CKSocket::shutdownSocket()
 {
-	// See if we need to handle an un-bind()
-	if (isActivelyListening()) {
-		::close(getSocketHandle());
-	}
-
-	// Now just shut down the socket
+	// First shut down the socket against any communication
 	if (getSocketHandle() != INVALID_SOCKET) {
 		shutdown(getSocketHandle(), 2);
+	}
+
+	// See if we need to undo a bind() call with close()
+	if (isActivelyListening()) {
+		::close(getSocketHandle());
 	}
 
 	// ...and reset the class variables
