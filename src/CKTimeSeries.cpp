@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.23 2005/02/14 22:35:49 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.24 2005/02/17 14:44:12 drbob Exp $
  */
 
 //	System Headers
@@ -453,6 +453,39 @@ double CKTimeSeries::add( double aDateTime, double aValue )
 		// the series is empty, so this is the first value
 		mTimeseries[aDateTime] = aValue;
 		retval = aValue;
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method "swaps out" the existing value for the given date/time
+ * for the provided value. This original value is then returned to
+ * the caller to do with as they see fit. If no point exists for this
+ * date/time then NAN will be returned and the value will be set.
+ */
+double CKTimeSeries::swap( double aDateTime, double aValue )
+{
+	double		retval = NAN;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// see if it exists in the map
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i = mTimeseries.find(aDateTime);
+		if (i != mTimeseries.end()) {
+			retval = (*i).second;
+			(*i).second = aValue;
+		} else {
+			// this date/time isn't in the series, so this is a new point
+			mTimeseries[aDateTime] = aValue;
+		}
+	} else {
+		// the series is empty, so this is the first value
+		mTimeseries[aDateTime] = aValue;
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();

@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.18 2005/02/14 22:35:51 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.19 2005/02/17 14:44:14 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -228,6 +228,13 @@ class CKTimeSeries
 		 * series. It's much more efficient.
 		 */
 		double add( double aDateTime, double aValue );
+		/*
+		 * This method "swaps out" the existing value for the given date/time
+		 * for the provided value. This original value is then returned to
+		 * the caller to do with as they see fit. If no point exists for this
+		 * date/time then NAN will be returned and the value will be set.
+		 */
+		double swap( double aDateTime, double aValue );
 
 		/*
 		 * This method gets the complete series of dates for the current
