@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.3 2004/02/27 10:52:06 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.4 2004/02/27 14:37:45 drbob Exp $
  */
 
 //	System Headers
@@ -81,6 +81,32 @@ CKTimeSeries::CKTimeSeries( const std::vector<long> & aDateSeries,
 			mTimeseries[aDateSeries[i]] = aValueSeries[i];
 		}
 		mTimeseriesMutex.unlock();
+	}
+}
+
+
+/*
+ * This constructor is interesting in that it takes the data as
+ * it comes from another CKTimeSeries's generateCodeFromValues()
+ * method and parses it into a time series of values directly.
+ * This is very useful for serializing the table's data from one
+ * host to another across a socket, for instance.
+ */
+CKTimeSeries::CKTimeSeries( const char *aCode ) :
+	mTimeseries(),
+	mTimeseriesMutex()
+{
+	// first, make sure we have something to do
+	if (aCode == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTimeSeries::CKTimeSeries(const char *) - the provided "
+			"argument is NULL and that means that nothing can be done. Please "
+			"make sure that the argument is not NULL before calling this "
+			"constructor.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// load in the values from the code
+		takeValuesFromCode(aCode);
 	}
 }
 

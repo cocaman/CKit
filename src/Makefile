@@ -136,7 +136,7 @@ CKFWThread.o: CKFWThread.h CKErrNoException.h CKException.h
 CKFWThreadLocal.o: CKFWThreadLocal.h
 CKFWTime.o: CKFWTime.h CKException.h
 CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h
-CKVariant.o: CKException.h CKVariant.h CKTable.h
+CKVariant.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
 CKTable.o: CKException.h CKTable.h CKVariant.h
 CKTimeSeries.o: CKException.h CKTable.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKStopwatch.o: CKException.h CKStopwatch.h

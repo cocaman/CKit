@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.3 2004/02/27 00:32:35 drbob Exp $
+ * $Id: CKTable.h,v 1.4 2004/02/27 14:37:43 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -427,6 +427,7 @@ class CKTable {
 
 	protected:
 		friend class CKTimeSeries;
+		friend class CKVariant;
 
 		/*
 		 * This method sets the datastructure of the array of arrays of
