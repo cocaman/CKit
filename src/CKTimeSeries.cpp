@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.10 2004/09/16 09:34:21 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.11 2004/09/20 16:19:52 drbob Exp $
  */
 
 //	System Headers

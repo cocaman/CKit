@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.11 2004/09/16 09:34:21 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.12 2004/09/20 16:19:56 drbob Exp $
  */
 
 //	System Headers

@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.4 2004/09/16 09:57:49 drbob Exp $
+ * $Id: CKString.cpp,v 1.5 2004/09/20 16:19:42 drbob Exp $
  */
 
 //	System Headers
@@ -328,43 +328,13 @@ CKString::~CKString()
  */
 CKString & CKString::operator=( CKString & anOther )
 {
-	// if we already have something then we need to drop it
-	if (mString != NULL) {
-		delete [] mString;
-		mString = NULL;
-		mSize = 0;
-		mCapacity = 0;
-	}
-
-	// copy in all the easy things from the other guy
-	mSize = anOther.mSize;
-	mCapacity = anOther.mCapacity;
-	mInitialCapacity = anOther.mInitialCapacity;
-	mCapacityIncrement = anOther.mCapacityIncrement;
-
-	// now create the correctly sized buffer for holding this guy
-	mString = new char[mCapacity];
-	if (mString == NULL) {
-		std::ostringstream	msg;
-		msg << "CKString::operator=(CKString &) - the initial storage for this "
-			"string was to be " << mCapacity << " chars, but the creation "
-			"failed. Please look into this allocation error as soon as possible.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		// clear out all of it first
-		bzero(mString, mCapacity);
-		// now copy everything into this buffer
-		memcpy(mString, anOther.mString, mSize);
-	}
-
-	return *this;
+	return this->operator=(anOther.mString);
 }
 
 
 CKString & CKString::operator=( const CKString & anOther )
 {
-	// do a simple cast to remove the 'const'
-	return this->operator=((CKString &)anOther);
+	return this->operator=((char *)anOther.mString);
 }
 
 
@@ -387,39 +357,44 @@ CKString & CKString::operator=( const std::string & anSTLString )
 
 CKString & CKString::operator=( char *aCString )
 {
-	// if we already have something then we need to drop it
-	if (mString != NULL) {
-		delete [] mString;
-		mString = NULL;
-		mSize = 0;
-		mCapacity = 0;
-	}
-
-	// if we have something, then get it's size and use it
+	/*
+	 * First, let's see if what we need to take can already fit in what
+	 * we have allocated. If so, then let's just copy it in, but if not,
+	 * then we need to make a bigger buffer and copy it in.
+	 */
 	if (aCString != NULL) {
 		mSize = strlen(aCString);
-		if (mSize >= mInitialCapacity) {
-			mInitialCapacity += mSize;
+		if (mSize >= mCapacity) {
+			// make the new capacity just enough to hold this guy
+			mCapacity = mSize + 1;
+
+			// drop the old buffer, if we had one
+			if (mString != NULL) {
+				delete [] mString;
+				mString = NULL;
+			}
+
+			// create the new one
+			mString = new char[mCapacity];
+			if (mString == NULL) {
+				std::ostringstream	msg;
+				msg << "CKString::operator=(char *) - the storage needed for "
+					"this string is " << mCapacity << " chars, but the creation "
+					"failed. Please look into this allocation error as soon as "
+					"possible.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
+	} else {
+		// if we're getting a NULL, then we have no size anymore
+		mSize = 0;
 	}
 
-	// now create the correctly sized buffer for holding this guy
-	mString = new char[mInitialCapacity];
-	if (mString == NULL) {
-		std::ostringstream	msg;
-		msg << "CKString::operator=(char *) - the initial storage for this "
-			"string was to be " << mInitialCapacity << " chars, but the creation "
-			"failed. Please look into this allocation error as soon as possible.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		// clear out all of it first
-		bzero(mString, mInitialCapacity);
-		// now see if we need to copy anything into this buffer
-		if (aCString != NULL) {
-			memcpy(mString, aCString, mSize);
-		}
-		// ...and set the capacity of this guy as well
-		mCapacity = mInitialCapacity;
+	// now let's clear out what we have and copy in the string
+	bzero(mString, mCapacity);
+	// now see if we need to copy anything into this buffer
+	if (aCString != NULL) {
+		memcpy(mString, aCString, mSize);
 	}
 
 	return *this;
@@ -1498,7 +1473,7 @@ CKString operator+( char aChar, const CKString & aString )
  * pretty simple, but it's awfully handy not to have to implement
  * this in all the projects.
  */
-bool CKString::toUpper()
+CKString & CKString::toUpper()
 {
 	bool		error = false;
 
@@ -1521,11 +1496,11 @@ bool CKString::toUpper()
 		}
 	}
 
-	return !error;
+	return *this;
 }
 
 
-bool CKString::toUpper() const
+CKString & CKString::toUpper() const
 {
 	return ((CKString *)this)->toUpper();
 }
@@ -1537,7 +1512,7 @@ bool CKString::toUpper() const
  * pretty simple, but it's awfully handy not to have to implement
  * this in all the projects.
  */
-bool CKString::toLower()
+CKString & CKString::toLower()
 {
 	bool		error = false;
 
@@ -1560,11 +1535,11 @@ bool CKString::toLower()
 		}
 	}
 
-	return !error;
+	return *this;
 }
 
 
-bool CKString::toLower() const
+CKString & CKString::toLower() const
 {
 	return ((CKString *)this)->toLower();
 }
@@ -1602,9 +1577,14 @@ CKString CKString::substr( int aStartingPos, int aLength )
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKString::substr(int, int) - the provided starting position "
-				"of " << aStartingPos << " is not contained in this string. "
-				"Please make sure that you ask for a substring that's within the "
-				"limits of this string.";
+				"of " << aStartingPos << " is not contained in this ";
+			if (mSize == 0) {
+				msg << " empty string. ";
+			} else {
+				msg << " string: '" << mString << "'. ";
+			}
+			msg << "Please make sure that you ask for a substring that's within "
+				"the limits of this string.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
@@ -1614,9 +1594,14 @@ CKString CKString::substr( int aStartingPos, int aLength )
 			std::ostringstream	msg;
 			msg << "CKString::substr(int, int) - the requested length of " <<
 				aLength << " characters starting at the starting position of " <<
-				aStartingPos << " is not contained in this string. Please make "
-				"sure that you ask for a substring that's within the limits of "
-				"this string.";
+				aStartingPos << " is not contained in this ";
+			if (mSize == 0) {
+				msg << " empty string. ";
+			} else {
+				msg << " string: '" << mString << "'. ";
+			}
+			msg << "Please make sure that you ask for a substring that's within "
+				"the limits of this string.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
@@ -2142,22 +2127,9 @@ CKString CKString::left( int aNumOfChars )
 		}
 	}
 
-	// see if the substring exists
-	if (!error) {
-		if (aNumOfChars > mSize) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKString::left(int) - the number of characters to return: " <<
-				aNumOfChars << " is not contained in this string. Please make "
-				"sure that you ask for a substring that's within the limits of "
-				"this string.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
 	// now let's make the substring
-	if (!error) {
-		retval = substr(0, aNumOfChars);
+	if (!error && (mSize > 0)) {
+		retval = substr(0, (aNumOfChars > mSize ? mSize : aNumOfChars));
 	}
 
 	return retval;
@@ -2193,22 +2165,13 @@ CKString CKString::right( int aNumOfChars )
 		}
 	}
 
-	// see if the substring exists
-	if (!error) {
-		if (aNumOfChars > mSize) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKString::right(int) - the number of characters to return: " <<
-				aNumOfChars << " is not contained in this string. Please make "
-				"sure that you ask for a substring that's within the limits of "
-				"this string.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
 	// now let's make the substring
-	if (!error) {
-		retval = substr(mSize - aNumOfChars);
+	if (!error && (mSize > 0)) {
+		if (aNumOfChars >= mSize) {
+			retval = *this;
+		} else {
+			retval = substr(mSize - aNumOfChars);
+		}
 	}
 
 	return retval;
@@ -2349,19 +2312,19 @@ int CKString::find( char *aCString, int aStartingIndex )
 	if (!error) {
 		if (aCString == NULL) {
 			error = true;
-			// no need to throw exception, just don't match
+			// be nice and don't thrown an exception
 		} else {
 			// get the length of this argument now for use later
 			matchLen = strlen(aCString);
 			if (matchLen == 0) {
 				error = true;
-				// no need to throw exception, just don't match
+				// be nice and don't thrown an exception
 			}
 		}
-		// now see if I have anything to match
+		// see if we have anything to match
 		if (mSize == 0) {
 			error = true;
-			// no need to throw exception, just don't match
+			// no need to throw an exception
 		}
 	}
 
@@ -2520,19 +2483,18 @@ int CKString::findLast( char *aCString, int aStartingIndex )
 	if (!error) {
 		if (aCString == NULL) {
 			error = true;
-			// no need to throw exception, just don't match
+			// no need to throw an exception - it's no match
 		} else {
 			// get the length of this argument now for use later
 			matchLen = strlen(aCString);
 			if (matchLen == 0) {
 				error = true;
-				// no need to throw exception, just don't match
+				// no need to throw an exception - it's no match
 			}
 		}
-		// now see if I have anything to match
+		// see if we have anything to match
 		if (mSize == 0) {
 			error = true;
-			// no need to throw exception, just don't match
 		}
 	}
 
@@ -2661,6 +2623,138 @@ int CKString::findLast( const std::string & anSTLString, int aStartingIndex ) co
 }
 
 
+/*
+ * This method trims all the whitespace off the right-hand end of
+ * the string so that the last character in the string is something
+ * that visibly printable.
+ */
+CKString & CKString::trimRight()
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::trimRight() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// make sure we have something to do
+	if (!error) {
+		while ((mSize > 0) && isspace(mString[mSize-1])) {
+			mString[--mSize] = '\0';
+		}
+	}
+
+	return *this;
+}
+
+
+CKString & CKString::trimRight() const
+{
+	return ((CKString *)this)->trim();
+}
+
+
+/*
+ * This method trims all the whitespace off the left-hand end of
+ * the string so that the first character in the string is something
+ * that visibly printable.
+ */
+CKString & CKString::trimLeft()
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::trimLeft() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// make sure we have something to do
+	if (!error) {
+		// find out how many whitespace characters there are at the front
+		int		cnt = 0;
+		while ((cnt < mSize) && isspace(mString[cnt])) {
+			cnt++;
+		}
+		// move all the data to the left that many characters
+		memmove(mString, &(mString[cnt]), (mSize - cnt));
+		bzero(&(mString[(mSize - cnt)]), cnt);
+		mSize -= cnt;
+	}
+
+	return *this;
+}
+
+
+CKString & CKString::trimLeft() const
+{
+	return ((CKString *)this)->trim();
+}
+
+
+/*
+ * This method trims all the whitespace off the both ends of the
+ * string so that string is freed of all the "junk".
+ */
+CKString & CKString::trim()
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::trimRight() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// do the right-hand trim first to make the move as small as possible
+	if (!error) {
+		while ((mSize > 0) && isspace(mString[mSize-1])) {
+			mString[--mSize] = '\0';
+		}
+	}
+
+	// now do the tougher left-hand trim
+	if (!error) {
+		// find out how many whitespace characters there are at the front
+		int		cnt = 0;
+		while ((cnt < mSize) && isspace(mString[cnt])) {
+			cnt++;
+		}
+		// move all the data to the left that many characters
+		memmove(mString, &(mString[cnt]), (mSize - cnt));
+		bzero(&(mString[(mSize - cnt)]), cnt);
+		mSize -= cnt;
+	}
+
+	return *this;
+}
+
+
+CKString & CKString::trim() const
+{
+	return ((CKString *)this)->trim();
+}
+
+
 /********************************************************
  *
  *                Utility Methods
@@ -2720,7 +2814,7 @@ bool CKString::operator==( char *aCString )
 
 	// check the buffer contents
 	if (equal && (mSize > 0)) {
-		if (strncmp(mString, aCString, mSize) != 0) {
+		if (strcmp(mString, aCString) != 0) {
 			equal = false;
 		}
 	}
@@ -3407,7 +3501,7 @@ bool CKString::resize( int aSize )
  */
 std::ostream & operator<<( std::ostream & aStream, CKString & aString )
 {
-	aStream << aString.toString();
+	aStream << aString.c_str();
 
 	return aStream;
 }
@@ -3415,23 +3509,7 @@ std::ostream & operator<<( std::ostream & aStream, CKString & aString )
 
 std::ostream & operator<<( std::ostream & aStream, const CKString & aString )
 {
-	aStream << ((CKString &)aString).toString();
+	aStream << ((CKString &)aString).c_str();
 
-	return aStream;
-}
-
-
-/*
- * Sometimes it's useful to read an input stream into a CKString. This
- * operator<<() does just that.
- */
-std::ostream & operator<<( CKString & aString, std::ostream & aStream )
-{
-	return aStream;
-}
-
-
-std::ostream & operator<<( const CKString & aString, std::ostream & aStream )
-{
 	return aStream;
 }

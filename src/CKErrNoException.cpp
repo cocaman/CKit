@@ -5,7 +5,7 @@
  *                        you want to pass that information up to the caller
  *                        for them to decode as they see fit.
  * 
- * $Id: CKErrNoException.cpp,v 1.6 2004/09/16 09:34:13 drbob Exp $
+ * $Id: CKErrNoException.cpp,v 1.7 2004/09/20 16:19:23 drbob Exp $
  */
 
 //	System Headers

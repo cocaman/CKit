@@ -5,7 +5,7 @@
  *                   version of the base exception class used in the MarketMash
  *                   Server.
  * 
- * $Id: CKException.cpp,v 1.6 2004/09/16 09:34:13 drbob Exp $
+ * $Id: CKException.cpp,v 1.7 2004/09/20 16:19:23 drbob Exp $
  */
 
 //	System Headers

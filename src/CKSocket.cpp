@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.15 2004/09/16 09:34:18 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.16 2004/09/20 16:19:39 drbob Exp $
  */
 
 //	System Headers
@@ -1331,6 +1331,9 @@ CKString CKSocket::readAvailableData()
 		 * error that really isn't an error at all, only an indicator
 		 */
 		if ((bytesRead == SOCKET_ERROR) && (errno == EWOULDBLOCK)) {
+			// treat it as nothing was read
+			bytesRead = 0;
+		} else if ((bytesRead == SOCKET_ERROR) && (errno == ECONNRESET)) {
 			// treat it as nothing was read
 			bytesRead = 0;
 		} else if (bytesRead == SOCKET_ERROR)	{

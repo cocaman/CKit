@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.2 2004/09/16 09:34:19 drbob Exp $
+ * $Id: CKString.h,v 1.3 2004/09/20 16:19:45 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -36,7 +36,7 @@
  * that this to the size of the string, we'll have to allocate more and
  * then this won't be the size. But for starters, this is a good size.
  */
-#define	DEFAULT_STARTING_SIZE		32
+#define	DEFAULT_STARTING_SIZE		8
 /*
  * When the buffer has to grow for this string, this is the default
  * increment that it uses. Of course, this is *above* the necessary size
@@ -44,7 +44,7 @@
  * the DEFAULT_INCREMENT_SIZE to make sure that we have at least a little
  * growing room.
  */
-#define	DEFAULT_INCREMENT_SIZE		64
+#define	DEFAULT_INCREMENT_SIZE		16
 
 
 /*
@@ -393,8 +393,8 @@ class CKString
 		 * pretty simple, but it's awfully handy not to have to implement
 		 * this in all the projects.
 		 */
-		bool toUpper();
-		bool toUpper() const;
+		CKString & toUpper();
+		CKString & toUpper() const;
 
 		/*
 		 * This method goes through all the characters in the string
@@ -402,8 +402,8 @@ class CKString
 		 * pretty simple, but it's awfully handy not to have to implement
 		 * this in all the projects.
 		 */
-		bool toLower();
-		bool toLower() const;
+		CKString & toLower();
+		CKString & toLower() const;
 
 		/*
 		 * This method returns a new CKString based on the substring
@@ -601,6 +601,29 @@ class CKString
 		int findLast( const std::string & anSTLString, int aStartingIndex = -1 );
 		int findLast( std::string & anSTLString, int aStartingIndex = -1 ) const;
 		int findLast( const std::string & anSTLString, int aStartingIndex = -1 ) const;
+
+		/*
+		 * This method trims all the whitespace off the right-hand end of
+		 * the string so that the last character in the string is something
+		 * that visibly printable.
+		 */
+		CKString & trimRight();
+		CKString & trimRight() const;
+
+		/*
+		 * This method trims all the whitespace off the left-hand end of
+		 * the string so that the first character in the string is something
+		 * that visibly printable.
+		 */
+		CKString & trimLeft();
+		CKString & trimLeft() const;
+
+		/*
+		 * This method trims all the whitespace off the both ends of the
+		 * string so that string is freed of all the "junk".
+		 */
+		CKString & trim();
+		CKString & trim() const;
 
 		/********************************************************
 		 *
@@ -865,11 +888,5 @@ class CKString
  */
 std::ostream & operator<<( std::ostream & aStream, CKString & aString );
 std::ostream & operator<<( std::ostream & aStream, const CKString & aString );
-/*
- * Sometimes it's useful to read an input stream into a CKString. This
- * operator<<() does just that.
- */
-std::ostream & operator<<( CKString & aString, std::ostream & aStream );
-std::ostream & operator<<( const CKString & aString, std::ostream & aStream );
 
 #endif	// __CKSTRING_H

@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.6 2004/09/16 09:34:14 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.7 2004/09/20 16:19:28 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H

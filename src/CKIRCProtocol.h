@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.7 2004/09/16 09:34:16 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.8 2004/09/20 16:19:33 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -466,23 +466,17 @@ class CKIRCProtocol
 		void clearChannelList();
 
 		/*
+		 * This method is used by several methods to try and start the
+		 * Listener thread. There are a few steps to it, so it's nice to
+		 * have it in one place as opposed to copying code.
+		 */
+		void startListener();
+		/*
 		 * This method is used by several methods to try and stop the
 		 * Listener thread. There are a few steps to it, so it's nice to
 		 * have it in one place as opposed to copying code.
 		 */
 		void stopListener();
-
-		/*
-		 * This is the tokenizer/parser that wasn't in the STL string
-		 * class for some unknown reason. It takes a source and a
-		 * delimiter and breaks up the source into chunks that are
-		 * all separated by the delimiter string. Each chunk is put
-		 * into the returned vector for accessing by the caller. Since
-		 * the return value is created on the stack, the user needs to
-		 * save it if they want it to stay around.
-		 */
-		static std::vector<CKString> parseIntoChunks( const CKString & aString,
-													  const CKString & aDelim );
 
 		/********************************************************
 		 *
@@ -606,6 +600,13 @@ class CKIRCProtocol
 		 * higher-level protocol.
 		 */
 		CKTelnetConnection			mCommPort;
+		/*
+		 * This is used in those circumstances where we really need to only
+		 * have one thread working on the comm port at one time. Most 
+		 * notably these times are when sending data so that messages aren't
+		 * garbled.
+		 */
+		CKFWMutex					mCommPortMutex;
 		/*
 		 * Since you can log into a Chat server, we have this flag set up
 		 * so that the methods can update this status, and the accessor

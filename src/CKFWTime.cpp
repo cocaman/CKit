@@ -2,7 +2,7 @@
  * CKFWTime.cpp - this file implements the simple time class that can
  *                be used in a large number of applications.
  *
- * $Id: CKFWTime.cpp,v 1.6 2004/09/16 09:34:15 drbob Exp $
+ * $Id: CKFWTime.cpp,v 1.7 2004/09/20 16:19:31 drbob Exp $
  */
 
 //	System Headers

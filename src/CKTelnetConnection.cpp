@@ -9,7 +9,7 @@
  *                          and writing. Rather, this class focuses on the
  *                          higher-level features.
  *
- * $Id: CKTelnetConnection.cpp,v 1.6 2004/09/16 09:34:20 drbob Exp $
+ * $Id: CKTelnetConnection.cpp,v 1.7 2004/09/20 16:19:52 drbob Exp $
  */
 
 //	System Headers

@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.9 2004/09/16 09:34:21 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.10 2004/09/20 16:19:54 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
