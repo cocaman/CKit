@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.16 2005/02/09 17:44:27 drbob Exp $
+ * $Id: CKString.cpp,v 1.17 2005/02/11 21:41:27 drbob Exp $
  */
 
 //	System Headers
@@ -612,12 +612,16 @@ CKString & CKString::append( long aLong, int aNumOfDigits )
 }
 
 
-CKString & CKString::append( double aDouble )
+CKString & CKString::append( double aDouble, int aNumDecPlaces )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
-	snprintf(c, 79, "%.16g", aDouble);
+	if (aNumDecPlaces > 0) {
+		snprintf(c, 79, "%.*g", aNumDecPlaces, aDouble);
+	} else {
+		snprintf(c, 79, "%.16g", aDouble);
+	}
 	return append(c);
 }
 
@@ -780,12 +784,16 @@ CKString & CKString::prepend( long aLong, int aNumOfDigits )
 }
 
 
-CKString & CKString::prepend( double aDouble )
+CKString & CKString::prepend( double aDouble, int aNumDecPlaces )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
-	snprintf(c, 79, "%f", aDouble);
+	if (aNumDecPlaces > 0) {
+		snprintf(c, 79, "%.*g", aNumDecPlaces, aDouble);
+	} else {
+		snprintf(c, 79, "%.16g", aDouble);
+	}
 	return prepend(c);
 }
 
