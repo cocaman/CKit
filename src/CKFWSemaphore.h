@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple semaphore that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWSemaphore.h,v 1.3 2003/12/16 18:08:56 drbob Exp $
+ * $Id: CKFWSemaphore.h,v 1.4 2004/08/02 18:04:37 drbob Exp $
  */
 #ifndef __CKFW_SEMAPHORE_H
 #define __CKFW_SEMAPHORE_H
@@ -35,6 +35,7 @@
 class CKFWSemaphore {
 public :
   CKFWSemaphore( void );
+  CKFWSemaphore( unsigned int aMaxCnt );
   virtual ~CKFWSemaphore( void );
 
   int tryWait( void );
