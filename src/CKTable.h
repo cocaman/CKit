@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.1 2003/12/16 18:09:10 drbob Exp $
+ * $Id: CKTable.h,v 1.2 2004/02/26 22:07:47 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -393,6 +393,8 @@ class CKTable {
 		virtual std::string toString() const;
 
 	protected:
+		friend class CKTimeSeries;
+
 		/*
 		 * This method sets the datastructure of the array of arrays of
 		 * pointers of CKVariants to the proper location in this class
@@ -500,6 +502,17 @@ class CKTable {
 		 * method, if needed.
 		 */
 		static long parseLongFromBufferToDelim( char * & aBuff, char aDelim );
+		/*
+		 * This method looks at the character buffer and parses out the
+		 * double value from the start of the buffer to the first
+		 * instance of the character 'delim' and then returns that value.
+		 * The buffer contents itself is untouched.
+		 *
+		 * On exit, the argument 'buff' will be moved to one character
+		 * PAST the delimiter so that it's ready for another call to this
+		 * method, if needed.
+		 */
+		static double parseDoubleFromBufferToDelim( char * & aBuff, char aDelim );
 		/*
 		 * This method looks at the character buffer and parses out the
 		 * charater string value from the start of the buffer to the first
