@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.21 2004/12/22 10:50:23 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.22 2005/02/09 16:23:39 drbob Exp $
  */
 
 //	System Headers
@@ -437,12 +437,9 @@ void CKDataNode::removeChild( const CKDataNode *aNode )
 
 	// now see if we have this node as a child node
 	if (!error) {
-		// gotta be thread-safe on this guy
-		mKidsMutex.lock();
-		// remove all occurrences
-		mKids.remove((CKDataNode *)aNode);
-		// unlock the list of kids
-		mKidsMutex.unlock();
+		if (aNode->getParent() == this) {
+			((CKDataNode*)aNode)->setParent(NULL);
+		}
 	}
 }
 
