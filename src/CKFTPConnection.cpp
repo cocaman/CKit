@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.3 2003/12/16 18:08:50 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.4 2004/03/02 19:18:58 drbob Exp $
  */
 
 //	System Headers
@@ -3652,6 +3652,6 @@ std::string CKFTPConnection::stringForLastFTPReturnCode()
 std::ostream & operator<<( std::ostream & aStream, const CKFTPConnection & aConnection )
 {
 	aStream << aConnection.toString();
-	
+
 	return aStream;
 }
