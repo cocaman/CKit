@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.19 2005/01/20 19:17:49 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.20 2005/01/24 18:32:00 drbob Exp $
  */
 
 //	System Headers
@@ -811,35 +811,31 @@ bool CKTimeSeries::add( CKTimeSeries & aSeries )
 {
 	bool		error = false;
 
-	// first, see if the two timeseries are made of the same timestamps
-	if (!error) {
-		CKVector<double>		me = getDateTimes();
-		CKVector<double>		him = aSeries.getDateTimes();
-		if (me != him) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKTimeSeries::add(CKTimeSeries &) - the timestamps in the "
-				"passed-in series are not the same as the ones in this guy. "
-				"This implementation needs to have the dates match up.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
 	/*
-	 * Now we might as well add the series to this one point-by-point
+	 * We're going to scan 'his' data and look for each date of his
+	 * in 'my' data. If the point exists, we'll add it in, if it doesn't
+	 * then we'll add the point as a new value. This is going to take some
+	 * time, but it's the way to make sure that the dates line up.
 	 */
 	if (!error) {
 		// first, lock up the two series against changes
 		mTimeseriesMutex.lock();
 		aSeries.mTimeseriesMutex.lock();
 
-		// get going on the looping
+		// loop over all his data
 		std::map<double, double>::iterator	i;
 		std::map<double, double>::iterator	j;
-		for (i = mTimeseries.begin(), j = aSeries.mTimeseries.begin();
-			(i != mTimeseries.end()) && (j != aSeries.mTimeseries.end());
-			++i, ++j) {
-			(*i).second += (*j).second;
+		for (i = aSeries.mTimeseries.begin();
+			 i != aSeries.mTimeseries.end(); ++i) {
+			// try to find this date in *my* series
+			j = mTimeseries.find((*i).first);
+			if (j != mTimeseries.end()) {
+				// OK, we have something that matches
+				(*j).second += (*i).second;
+			} else {
+				// no match, so add the point as-is to my series
+				mTimeseries[(*i).first] = (*i).second;
+			}
 		}
 
 		// lastly, unlock up the two series for changes
