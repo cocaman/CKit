@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.15 2005/01/20 19:17:50 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.16 2005/02/04 10:37:32 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -302,6 +302,7 @@ class CKTimeSeries
 		 */
 		bool add( double anOffset );
 		bool add( CKTimeSeries & aSeries );
+		bool add( const CKTimeSeries & aSeries );
 		/*
 		 * These methods allow the user to subtract values from this
 		 * timeseries, in the first case, it's a constant value but
@@ -311,16 +312,25 @@ class CKTimeSeries
 		 */
 		bool subtract( double anOffset );
 		bool subtract( CKTimeSeries & aSeries );
+		bool subtract( const CKTimeSeries & aSeries );
 		/*
 		 * These method allows the user to multiply a constant value to
-		 * all data points in this timeseries.
+		 * all data points in this timeseries or to multiply each of the
+		 * values of one time series by the values of another where the
+		 * dates line up.
 		 */
 		bool multiply( double aFactor );
+		bool multiply( CKTimeSeries & aSeries );
+		bool multiply( const CKTimeSeries & aSeries );
 		/*
 		 * These method allows the user to divide each point in the
-		 * timeseries by a constant value.
+		 * timeseries by a constant value or to divide each of the
+		 * values of one time series by the values of another where the
+		 * dates line up.
 		 */
 		bool divide( double aDivisor );
+		bool divide( CKTimeSeries & aSeries );
+		bool divide( const CKTimeSeries & aSeries );
 
 		/*
 		 * This method takes the arithmetic mean (a.k.a. average) of the

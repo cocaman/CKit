@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.21 2005/01/20 15:55:03 drbob Exp $
+ * $Id: CKTable.cpp,v 1.22 2005/02/04 10:37:31 drbob Exp $
  */
 
 //	System Headers
@@ -2441,6 +2441,523 @@ bool CKTable::merge( const CKTable & aTable )
 
 /********************************************************
  *
+ *                Simple Math Methods
+ *
+ ********************************************************/
+/*
+ * These methods allow the user to add values to each applicable
+ * element in this table. In the first case, it's a constant value
+ * but in the second it's another table. The values updated in the
+ * methods are only those that make sense.
+ */
+bool CKTable::add( double anOffset )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::add(double) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] += anOffset;
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::add( CKTable & anOther )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::add(CKTable &) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	
+	// see if the sizes are the same - they have to be for this
+	if (!error) {
+		if ((mNumRows != anOther.mNumRows) ||
+			(mNumColumns != anOther.mNumColumns)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::add(CKTable &) - this table is " << mNumRows << "x" <<
+				mNumColumns << " and the passed-in table is " << anOther.mNumRows <<
+				"x" << anOther.mNumColumns << " and this mistatch is not allowed for "
+				"the addition operation. Please make sure that the sizes match.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] += anOther.mTable[row * mNumColumns + col];
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::add( const CKTable & anOther )
+{
+	return add((CKTable &)anOther);
+}
+
+
+/*
+ * These methods allow the user to subtract values from each applicable
+ * element in this table. In the first case, it's a constant value
+ * but in the second it's another table. The values updated in the
+ * methods are only those that make sense.
+ */
+bool CKTable::subtract( double anOffset )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::subtract(double) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] -= anOffset;
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::subtract( CKTable & anOther )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::subtract(CKTable &) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	
+	// see if the sizes are the same - they have to be for this
+	if (!error) {
+		if ((mNumRows != anOther.mNumRows) ||
+			(mNumColumns != anOther.mNumColumns)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::subtract(CKTable &) - this table is " << mNumRows << "x" <<
+				mNumColumns << " and the passed-in table is " << anOther.mNumRows <<
+				"x" << anOther.mNumColumns << " and this mistatch is not allowed for "
+				"the addition operation. Please make sure that the sizes match.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] -= anOther.mTable[row * mNumColumns + col];
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::subtract( const CKTable & anOther )
+{
+	return subtract((CKTable &)anOther);
+}
+
+
+/*
+ * These method allows the user to multiply a constant value to
+ * all elements in the table where such an activity would produce
+ * reasonable results. The second form of the method allows for the
+ * element-by-element multiplication of the tables.
+ */
+bool CKTable::multiply( double aFactor )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::multiply(double) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] *= aFactor;
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::multiply( CKTable & anOther )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::multiply(CKTable &) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	
+	// see if the sizes are the same - they have to be for this
+	if (!error) {
+		if ((mNumRows != anOther.mNumRows) ||
+			(mNumColumns != anOther.mNumColumns)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::multiply(CKTable &) - this table is " << mNumRows << "x" <<
+				mNumColumns << " and the passed-in table is " << anOther.mNumRows <<
+				"x" << anOther.mNumColumns << " and this mistatch is not allowed for "
+				"the addition operation. Please make sure that the sizes match.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] *= anOther.mTable[row * mNumColumns + col];
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::multiply( const CKTable & anOther )
+{
+	return multiply((CKTable &)anOther);
+}
+
+
+/*
+ * These method allows the user to divide each element in this
+ * table by a constant value where such an activity would produce
+ * reasonable results. The second form of the method allows for the
+ * element-by-element division of the tables.
+ */
+bool CKTable::divide( double aDivisor )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::divide(double) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] /= aDivisor;
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::divide( CKTable & anOther )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::divide(CKTable &) - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	
+	// see if the sizes are the same - they have to be for this
+	if (!error) {
+		if ((mNumRows != anOther.mNumRows) ||
+			(mNumColumns != anOther.mNumColumns)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::divide(CKTable &) - this table is " << mNumRows << "x" <<
+				mNumColumns << " and the passed-in table is " << anOther.mNumRows <<
+				"x" << anOther.mNumColumns << " and this mistatch is not allowed for "
+				"the addition operation. Please make sure that the sizes match.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now do the math an element at a time
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col] /= anOther.mTable[row * mNumColumns + col];
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTable::divide( const CKTable & anOther )
+{
+	return divide((CKTable &)anOther);
+}
+
+
+/*
+ * This method simply takes the inverse of each value in the table
+ * so that x -> 1/x for all points. This is marginally useful
+ * I'm thinking, but I added it here to be a little more complete.
+ */
+bool CKTable::inverse()
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (mTable == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKTable::inverse() - the main table structure is not where "
+				"it should be and this is a serious data integrity error that needs "
+				"to be looked into as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now invert each element in the table skipping problems
+	if (!error) {
+		for (int row = 0; row < mNumRows; row++) {
+			for (int col = 0; col < mNumColumns; col++) {
+				try {
+					mTable[row * mNumColumns + col].inverse();
+				} catch (CKException & e) {
+					/*
+					 * At this point we really don't want to throw an
+					 * exception because we said that we'd only do those
+					 * elements where it made sense. So, let's eat this
+					 * exception and trust that it being logged is enough.
+					 */
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+/*
+ * These are the operator equivalents of the simple mathematical
+ * operations on the table. They are here as an aid to the
+ * developer of analytic functions based on these guys.
+ */
+CKTable & CKTable::operator+=( double anOffset )
+{
+	add(anOffset);
+	return *this;
+}
+
+
+CKTable & CKTable::operator+=( CKTable & aTable )
+{
+	add(aTable);
+	return *this;
+}
+
+
+CKTable & CKTable::operator+=( const CKTable & aTable )
+{
+	add((CKTable &)aTable);
+	return *this;
+}
+
+
+CKTable & CKTable::operator-=( double anOffset )
+{
+	subtract(anOffset);
+	return *this;
+}
+
+
+CKTable & CKTable::operator-=( CKTable & aTable )
+{
+	subtract(aTable);
+	return *this;
+}
+
+
+CKTable & CKTable::operator-=( const CKTable & aTable )
+{
+	subtract((CKTable &)aTable);
+	return *this;
+}
+
+
+CKTable & CKTable::operator*=( double aFactor )
+{
+	multiply(aFactor);
+	return *this;
+}
+
+
+CKTable & CKTable::operator/=( double aDivisor )
+{
+	divide(aDivisor);
+	return *this;
+}
+
+
+/********************************************************
+ *
  *                Utility Methods
  *
  ********************************************************/
@@ -3301,4 +3818,88 @@ void CKTable::dropTable()
 	// also, set the size to 'undefined'
 	mNumRows = -1;
 	mNumColumns = -1;
+}
+
+
+/*
+ * These are the operators for creating new table data from
+ * one or two existing tables. This is nice in the same vein
+ * as the simpler operators in that it makes writing code for these
+ * data sets a lot easier.
+ */
+CKTable operator+( CKTable & aTable, double aValue )
+{
+	CKTable		retval(aTable);
+	retval += aValue;
+	return retval;
+}
+
+
+CKTable operator+( double aValue, CKTable & aTable )
+{
+	return operator+(aTable, aValue);
+}
+
+
+CKTable operator+( CKTable & aTable, CKTable & anotherTable )
+{
+	CKTable		retval(aTable);
+	retval += anotherTable;
+	return retval;
+}
+
+
+CKTable operator-( CKTable & aTable, double aValue )
+{
+	CKTable		retval(aTable);
+	retval -= aValue;
+	return retval;
+}
+
+
+CKTable operator-( double aValue, CKTable & aTable )
+{
+	CKTable		retval(aTable);
+	retval *= -1.0;
+	retval += aValue;
+	return retval;
+}
+
+
+CKTable operator-( CKTable & aTable, CKTable & anotherTable )
+{
+	CKTable		retval(aTable);
+	retval -= anotherTable;
+	return retval;
+}
+
+
+CKTable operator*( CKTable & aTable, double aValue )
+{
+	CKTable		retval(aTable);
+	retval *= aValue;
+	return retval;
+}
+
+
+CKTable operator*( double aValue, CKTable & aTable )
+{
+	return operator*(aTable, aValue);
+}
+
+
+CKTable operator/( CKTable & aTable, double aValue )
+{
+	CKTable		retval(aTable);
+	retval /= aValue;
+	return retval;
+}
+
+
+CKTable operator/( double aValue, CKTable & aTable )
+{
+	CKTable		retval(aTable);
+	retval.inverse();
+	retval *= aValue;
+	return retval;
 }

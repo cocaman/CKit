@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.20 2005/01/24 18:32:00 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.21 2005/02/04 10:37:32 drbob Exp $
  */
 
 //	System Headers
@@ -847,6 +847,12 @@ bool CKTimeSeries::add( CKTimeSeries & aSeries )
 }
 
 
+bool CKTimeSeries::add( const CKTimeSeries & aSeries )
+{
+	return add((CKTimeSeries &)aSeries);
+}
+
+
 /*
  * These methods allow the user to subtract values from this
  * timeseries, in the first case, it's a constant value but
@@ -878,35 +884,31 @@ bool CKTimeSeries::subtract( CKTimeSeries & aSeries )
 {
 	bool		error = false;
 
-	// first, see if the two timeseries are made of the same timestamps
-	if (!error) {
-		CKVector<double>		me = getDateTimes();
-		CKVector<double>		him = aSeries.getDateTimes();
-		if (me != him) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKTimeSeries::subtract(CKTimeSeries &) - the timestamps in the "
-				"passed-in series are not the same as the ones in this guy. "
-				"This implementation needs to have the dates match up.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
 	/*
-	 * Now we might as well add the series to this one point-by-point
+	 * We're going to scan 'his' data and look for each date of his
+	 * in 'my' data. If the point exists, we'll subtract it out, if it doesn't
+	 * then we'll put the point as a new value. This is going to take some
+	 * time, but it's the way to make sure that the dates line up.
 	 */
 	if (!error) {
 		// first, lock up the two series against changes
 		mTimeseriesMutex.lock();
 		aSeries.mTimeseriesMutex.lock();
 
-		// get going on the looping
+		// loop over all his data
 		std::map<double, double>::iterator	i;
 		std::map<double, double>::iterator	j;
-		for (i = mTimeseries.begin(), j = aSeries.mTimeseries.begin();
-			(i != mTimeseries.end()) && (j != aSeries.mTimeseries.end());
-			++i, ++j) {
-			(*i).second -= (*j).second;
+		for (i = aSeries.mTimeseries.begin();
+			 i != aSeries.mTimeseries.end(); ++i) {
+			// try to find this date in *my* series
+			j = mTimeseries.find((*i).first);
+			if (j != mTimeseries.end()) {
+				// OK, we have something that matches
+				(*j).second -= (*i).second;
+			} else {
+				// no match, so put the point in with the right sign
+				mTimeseries[(*i).first] = -1.0 * (*i).second;
+			}
 		}
 
 		// lastly, unlock up the two series for changes
@@ -918,9 +920,17 @@ bool CKTimeSeries::subtract( CKTimeSeries & aSeries )
 }
 
 
+bool CKTimeSeries::subtract( const CKTimeSeries & aSeries )
+{
+	return subtract((CKTimeSeries &)aSeries);
+}
+
+
 /*
  * These method allows the user to multiply a constant value to
- * all data points in this timeseries.
+ * all data points in this timeseries or to multiply each of the
+ * values of one time series by the values of another where the
+ * dates line up.
  */
 bool CKTimeSeries::multiply( double aFactor )
 {
@@ -942,9 +952,55 @@ bool CKTimeSeries::multiply( double aFactor )
 }
 
 
+bool CKTimeSeries::multiply( CKTimeSeries & aSeries )
+{
+	bool		error = false;
+
+	/*
+	 * We're going to scan 'his' data and look for each date of his
+	 * in 'my' data. If the point exists, we'll multiply it in, if it doesn't
+	 * then we'll leave it out as anything times 0 is zero. This is going 
+	 * to take some time, but it's the way to make sure that the dates
+	 * line up.
+	 */
+	if (!error) {
+		// first, lock up the two series against changes
+		mTimeseriesMutex.lock();
+		aSeries.mTimeseriesMutex.lock();
+
+		// loop over all his data
+		std::map<double, double>::iterator	i;
+		std::map<double, double>::iterator	j;
+		for (i = aSeries.mTimeseries.begin();
+			 i != aSeries.mTimeseries.end(); ++i) {
+			// try to find this date in *my* series
+			j = mTimeseries.find((*i).first);
+			if (j != mTimeseries.end()) {
+				// OK, we have something that matches
+				(*j).second *= (*i).second;
+			}
+		}
+
+		// lastly, unlock up the two series for changes
+		aSeries.mTimeseriesMutex.unlock();
+		mTimeseriesMutex.unlock();
+	}
+
+	return !error;
+}
+
+
+bool CKTimeSeries::multiply( const CKTimeSeries & aSeries )
+{
+	return multiply((CKTimeSeries &)aSeries);
+}
+
+
 /*
  * These method allows the user to divide each point in the
- * timeseries by a constant value.
+ * timeseries by a constant value or to divide each of the
+ * values of one time series by the values of another where the
+ * dates line up.
  */
 bool CKTimeSeries::divide( double aDivisor )
 {
@@ -963,6 +1019,50 @@ bool CKTimeSeries::divide( double aDivisor )
 	mTimeseriesMutex.unlock();
 
 	return !error;
+}
+
+
+bool CKTimeSeries::divide( CKTimeSeries & aSeries )
+{
+	bool		error = false;
+
+	/*
+	 * We're going to scan 'his' data and look for each date of his
+	 * in 'my' data. If the point exists, we'll divide it in, if it doesn't
+	 * then we'll leave it out as zero over anything is zero. This is going 
+	 * to take some time, but it's the way to make sure that the dates
+	 * line up.
+	 */
+	if (!error) {
+		// first, lock up the two series against changes
+		mTimeseriesMutex.lock();
+		aSeries.mTimeseriesMutex.lock();
+
+		// loop over all his data
+		std::map<double, double>::iterator	i;
+		std::map<double, double>::iterator	j;
+		for (i = aSeries.mTimeseries.begin();
+			 i != aSeries.mTimeseries.end(); ++i) {
+			// try to find this date in *my* series
+			j = mTimeseries.find((*i).first);
+			if (j != mTimeseries.end()) {
+				// OK, we have something that matches
+				(*j).second /= (*i).second;
+			}
+		}
+
+		// lastly, unlock up the two series for changes
+		aSeries.mTimeseriesMutex.unlock();
+		mTimeseriesMutex.unlock();
+	}
+
+	return !error;
+}
+
+
+bool CKTimeSeries::divide( const CKTimeSeries & aSeries )
+{
+	return divide((CKTimeSeries &)aSeries);
 }
 
 

@@ -5,7 +5,7 @@
  *             the important prices and values. This object makes it easy
  *             to get at these guys.
  *
- * $Id: CKPrice.h,v 1.1 2005/01/20 15:54:56 drbob Exp $
+ * $Id: CKPrice.h,v 1.2 2005/02/04 10:37:31 drbob Exp $
  */
 #ifndef __CKPRICE_H
 #define __CKPRICE_H
@@ -144,6 +144,84 @@ class CKPrice
 
 		/********************************************************
 		 *
+		 *                Simple Math Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These methods allow the user to add values to this price,
+		 * in the first case, it's a constant value but in the
+		 * second it's another price.
+		 */
+		bool add( double anOffset );
+		bool add( CKPrice & anOther );
+		bool add( const CKPrice & anOther );
+		/*
+		 * These methods allow the user to subtract values from this
+		 * price, in the first case, it's a constant value but
+		 * in the second it's another price.
+		 */
+		bool subtract( double anOffset );
+		bool subtract( CKPrice & anOther );
+		bool subtract( const CKPrice & anOther );
+		/*
+		 * These method allows the user to multiply a constant value to
+		 * both components of the price or it multiplies each by it's
+		 * respective partner in the other price.
+		 */
+		bool multiply( double aFactor );
+		bool multiply( CKPrice & anOther );
+		bool multiply( const CKPrice & anOther );
+		/*
+		 * These method allows the user to divide each component of
+		 * the price by a constant or it divides each by it's respective
+		 * partner in the other price.
+		 */
+		bool divide( double aDivisor );
+		bool divide( CKPrice & anOther );
+		bool divide( const CKPrice & anOther );
+		/*
+		 * This method simply takes the inverse of each value in the price
+		 * so that x -> 1/x for each value. This is marginally useful
+		 * I'm thinking, but I added it here to be a little more complete.
+		 */
+		bool inverse();
+
+		/*
+		 * These are the operator equivalents of the simple mathematical
+		 * operations on the price. They are here as an aid to the
+		 * developer of analytic functions based on these guys.
+		 */
+		CKPrice & operator+=( double anOffset );
+		CKPrice & operator+=( CKPrice & aPrice );
+		CKPrice & operator+=( const CKPrice & aPrice );
+		CKPrice & operator-=( double anOffset );
+		CKPrice & operator-=( CKPrice & aPrice );
+		CKPrice & operator-=( const CKPrice & aPrice );
+		CKPrice & operator*=( double aFactor );
+		CKPrice & operator/=( double aDivisor );
+
+		/*
+		 * These are the operators for creating new price data from
+		 * one or two existing prices. This is nice in the same vein
+		 * as the simpler operators in that it makes writing code for these
+		 * data sets a lot easier.
+		 */
+		friend CKPrice operator+( CKPrice & aPrice, double aValue );
+		friend CKPrice operator+( double aValue, CKPrice & aPrice );
+		friend CKPrice operator+( CKPrice & aPrice, CKPrice & anotherPrice );
+
+		friend CKPrice operator-( CKPrice & aPrice, double aValue );
+		friend CKPrice operator-( double aValue, CKPrice & aPrice );
+		friend CKPrice operator-( CKPrice & aPrice, CKPrice & anotherPrice );
+
+		friend CKPrice operator*( CKPrice & aPrice, double aValue );
+		friend CKPrice operator*( double aValue, CKPrice & aPrice );
+
+		friend CKPrice operator/( CKPrice & aPrice, double aValue );
+		friend CKPrice operator/( double aValue, CKPrice & aPrice );
+
+		/********************************************************
+		 *
 		 *                Utility Methods
 		 *
 		 ********************************************************/
@@ -202,5 +280,25 @@ class CKPrice
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, const CKPrice & anItem );
+
+/*
+ * These are the operators for creating new price data from
+ * one or two existing prices. This is nice in the same vein
+ * as the simpler operators in that it makes writing code for these
+ * data sets a lot easier.
+ */
+CKPrice operator+( CKPrice & aPrice, double aValue );
+CKPrice operator+( double aValue, CKPrice & aPrice );
+CKPrice operator+( CKPrice & aPrice, CKPrice & anotherPrice );
+
+CKPrice operator-( CKPrice & aPrice, double aValue );
+CKPrice operator-( double aValue, CKPrice & aPrice );
+CKPrice operator-( CKPrice & aPrice, CKPrice & anotherPrice );
+
+CKPrice operator*( CKPrice & aPrice, double aValue );
+CKPrice operator*( double aValue, CKPrice & aPrice );
+
+CKPrice operator/( CKPrice & aPrice, double aValue );
+CKPrice operator/( double aValue, CKPrice & aPrice );
 
 #endif	// __CKPRICE_H

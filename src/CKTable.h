@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.17 2005/01/20 15:55:07 drbob Exp $
+ * $Id: CKTable.h,v 1.18 2005/02/04 10:37:31 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -423,6 +423,88 @@ class CKTable {
 
 		/********************************************************
 		 *
+		 *                Simple Math Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These methods allow the user to add values to each applicable
+		 * element in this table. In the first case, it's a constant value
+		 * but in the second it's another table. The values updated in the
+		 * methods are only those that make sense.
+		 */
+		bool add( double anOffset );
+		bool add( CKTable & anOther );
+		bool add( const CKTable & anOther );
+		/*
+		 * These methods allow the user to subtract values from each applicable
+		 * element in this table. In the first case, it's a constant value
+		 * but in the second it's another table. The values updated in the
+		 * methods are only those that make sense.
+		 */
+		bool subtract( double anOffset );
+		bool subtract( CKTable & anOther );
+		bool subtract( const CKTable & anOther );
+		/*
+		 * These method allows the user to multiply a constant value to
+		 * all elements in the table where such an activity would produce
+		 * reasonable results. The second form of the method allows for the
+		 * element-by-element multiplication of the tables.
+		 */
+		bool multiply( double aFactor );
+		bool multiply( CKTable & anOther );
+		bool multiply( const CKTable & anOther );
+		/*
+		 * These method allows the user to divide each element in this
+		 * table by a constant value where such an activity would produce
+		 * reasonable results. The second form of the method allows for the
+		 * element-by-element division of the tables.
+		 */
+		bool divide( double aDivisor );
+		bool divide( CKTable & anOther );
+		bool divide( const CKTable & anOther );
+		/*
+		 * This method simply takes the inverse of each value in the table
+		 * so that x -> 1/x for all points. This is marginally useful
+		 * I'm thinking, but I added it here to be a little more complete.
+		 */
+		bool inverse();
+
+		/*
+		 * These are the operator equivalents of the simple mathematical
+		 * operations on the table. They are here as an aid to the
+		 * developer of analytic functions based on these guys.
+		 */
+		CKTable & operator+=( double anOffset );
+		CKTable & operator+=( CKTable & aTable );
+		CKTable & operator+=( const CKTable & aTable );
+		CKTable & operator-=( double anOffset );
+		CKTable & operator-=( CKTable & aTable );
+		CKTable & operator-=( const CKTable & aTable );
+		CKTable & operator*=( double aFactor );
+		CKTable & operator/=( double aDivisor );
+
+		/*
+		 * These are the operators for creating new table data from
+		 * one or two existing tables. This is nice in the same vein
+		 * as the simpler operators in that it makes writing code for these
+		 * data sets a lot easier.
+		 */
+		friend CKTable operator+( CKTable & aTable, double aValue );
+		friend CKTable operator+( double aValue, CKTable & aTable );
+		friend CKTable operator+( CKTable & aTable, CKTable & anotherTable );
+
+		friend CKTable operator-( CKTable & aTable, double aValue );
+		friend CKTable operator-( double aValue, CKTable & aTable );
+		friend CKTable operator-( CKTable & aTable, CKTable & anotherTable );
+
+		friend CKTable operator*( CKTable & aTable, double aValue );
+		friend CKTable operator*( double aValue, CKTable & aTable );
+
+		friend CKTable operator/( CKTable & aTable, double aValue );
+		friend CKTable operator/( double aValue, CKTable & aTable );
+
+		/********************************************************
+		 *
 		 *                Utility Methods
 		 *
 		 ********************************************************/
@@ -656,5 +738,25 @@ class CKTable {
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, const CKTable & aTable );
+
+/*
+ * These are the operators for creating new table data from
+ * one or two existing tables. This is nice in the same vein
+ * as the simpler operators in that it makes writing code for these
+ * data sets a lot easier.
+ */
+CKTable operator+( CKTable & aTable, double aValue );
+CKTable operator+( double aValue, CKTable & aTable );
+CKTable operator+( CKTable & aTable, CKTable & anotherTable );
+
+CKTable operator-( CKTable & aTable, double aValue );
+CKTable operator-( double aValue, CKTable & aTable );
+CKTable operator-( CKTable & aTable, CKTable & anotherTable );
+
+CKTable operator*( CKTable & aTable, double aValue );
+CKTable operator*( double aValue, CKTable & aTable );
+
+CKTable operator/( CKTable & aTable, double aValue );
+CKTable operator/( double aValue, CKTable & aTable );
 
 #endif	// __CKTABLE_H

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.18 2005/01/20 15:55:08 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.19 2005/02/04 10:37:32 drbob Exp $
  */
 
 //	System Headers
@@ -1162,6 +1162,2013 @@ CKString CKVariant::toString() const
 
 
 /*
+ * This method simply takes the inverse of the value so that
+ * x -> 1/x. This is useful in many cases, but in some it doesn't
+ * make sense (like strings), so skip those where it makes no
+ * sense.
+ */
+bool CKVariant::inverse()
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			break;
+		case eNumberVariant:
+			mDoubleValue = 1.0/mDoubleValue;
+			break;
+		case eDateVariant:
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->inverse();
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->inverse();
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->inverse();
+			}
+			break;
+	}
+	return true;
+}
+
+
+/*
+ * These operators allow us to use the variant as a "regular"
+ * variable in conditionals which is really important because
+ * we want this to fit into development like a regular scalar
+ * variable.
+ */
+bool CKVariant::operator==( const char *aCString ) const
+{
+	bool		equal = false;
+	if (mType == eStringVariant) {
+		if ((mStringValue != NULL) && (aCString != NULL)) {
+			equal = mStringValue->operator==(aCString);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( const std::string & anSTLString ) const
+{
+	bool		equal = false;
+	if (mType == eStringVariant) {
+		if (mStringValue != NULL) {
+			equal = mStringValue->operator==(anSTLString);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( const CKString & aString ) const
+{
+	bool		equal = false;
+	if (mType == eStringVariant) {
+		if (mStringValue != NULL) {
+			equal = mStringValue->operator==(aString);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( int aValue ) const
+{
+	bool		equal = false;
+	if (mType == eNumberVariant) {
+		if (mDoubleValue == (double) aValue) {
+			equal = true;
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( long aDateValue ) const
+{
+	bool		equal = false;
+	if (mType == eDateVariant) {
+		if (mDateValue == aDateValue) {
+			equal = true;
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( double aValue ) const
+{
+	bool		equal = false;
+	if (mType == eNumberVariant) {
+		if (mDoubleValue == aValue) {
+			equal = true;
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( const CKTable & aTable ) const
+{
+	bool		equal = false;
+	if (mType == eTableVariant) {
+		if (mTableValue != NULL) {
+			equal = mTableValue->operator==(aTable);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( const CKTimeSeries & aSeries ) const
+{
+	bool		equal = false;
+	if (mType == eTimeSeriesVariant) {
+		if (mTimeSeriesValue != NULL) {
+			equal = mTimeSeriesValue->operator==(aSeries);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator==( const CKPrice & aPrice ) const
+{
+	bool		equal = false;
+	if (mType == ePriceVariant) {
+		if (mPriceValue != NULL) {
+			equal = mPriceValue->operator==(aPrice);
+		}
+	}
+	return equal;
+}
+
+
+bool CKVariant::operator!=( const char *aCString ) const
+{
+	return !(this->operator==(aCString));
+}
+
+
+bool CKVariant::operator!=( const std::string & anSTLString ) const
+{
+	return !(this->operator==(anSTLString));
+}
+
+
+bool CKVariant::operator!=( const CKString & aString ) const
+{
+	return !(this->operator==(aString));
+}
+
+
+bool CKVariant::operator!=( int aValue ) const
+{
+	return !(this->operator==(aValue));
+}
+
+
+bool CKVariant::operator!=( long aDateValue ) const
+{
+	return !(this->operator==(aDateValue));
+}
+
+
+bool CKVariant::operator!=( double aValue ) const
+{
+	return !(this->operator==(aValue));
+}
+
+
+bool CKVariant::operator!=( const CKTable & aTable ) const
+{
+	return !(this->operator==(aTable));
+}
+
+
+bool CKVariant::operator!=( const CKTimeSeries & aSeries ) const
+{
+	return !(this->operator==(aSeries));
+}
+
+
+bool CKVariant::operator!=( const CKPrice & aPrice ) const
+{
+	return !(this->operator==(aPrice));
+}
+
+
+bool CKVariant::operator<( const char *aCString ) const
+{
+	bool		less = false;
+	if (mType == eStringVariant) {
+		if ((mStringValue != NULL) && (aCString != NULL)) {
+			less = mStringValue->operator<(aCString);
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( const std::string & anSTLString ) const
+{
+	bool		less = false;
+	if (mType == eStringVariant) {
+		if (mStringValue != NULL) {
+			less = mStringValue->operator<(anSTLString);
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( const CKString & aString ) const
+{
+	bool		less = false;
+	if (mType == eStringVariant) {
+		if (mStringValue != NULL) {
+			less = mStringValue->operator<(aString);
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( int aValue ) const
+{
+	bool		less = false;
+	if (mType == eNumberVariant) {
+		if (mDoubleValue < (double) aValue) {
+			less = true;
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( long aDateValue ) const
+{
+	bool		less = false;
+	if (mType == eDateVariant) {
+		if (mDateValue < aDateValue) {
+			less = true;
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( double aValue ) const
+{
+	bool		less = false;
+	if (mType == eNumberVariant) {
+		if (mDoubleValue < aValue) {
+			less = true;
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<( const CKTable & aTable ) const
+{
+	throw CKException(__FILE__, __LINE__, "CKVariant::operator<(const CKTable &) - "
+		"there is no defined comparision method for two tables at this time. If "
+		"this is a serious issue please contact the developers.");
+}
+
+
+bool CKVariant::operator<( const CKTimeSeries & aSeries ) const
+{
+	throw CKException(__FILE__, __LINE__, "CKVariant::operator<(const CKTable &) - "
+		"there is no defined comparision method for two time series at this time. If "
+		"this is a serious issue please contact the developers.");
+}
+
+
+bool CKVariant::operator<( const CKPrice & aPrice ) const
+{
+	bool		less = false;
+	if (mType == ePriceVariant) {
+		if (mPriceValue != NULL) {
+			if ((mPriceValue->getUSD() < aPrice.getUSD()) &&
+				(mPriceValue->getNative() < aPrice.getNative())) {
+				less = true;
+			}
+		}
+	}
+	return less;
+}
+
+
+bool CKVariant::operator<=( const char *aCString ) const
+{
+	bool		le = false;
+	if (aCString != NULL) {
+		le = (this->operator<(aCString) || this->operator==(aCString));
+	}
+	return le;
+}
+
+
+bool CKVariant::operator<=( const std::string & anSTLString ) const
+{
+	return this->operator<(anSTLString) || this->operator==(anSTLString);
+}
+
+
+bool CKVariant::operator<=( const CKString & aString ) const
+{
+	return this->operator<(aString) || this->operator==(aString);
+}
+
+
+bool CKVariant::operator<=( int aValue ) const
+{
+	return this->operator<(aValue) || this->operator==(aValue);
+}
+
+
+bool CKVariant::operator<=( long aDateValue ) const
+{
+	return this->operator<(aDateValue) || this->operator==(aDateValue);
+}
+
+
+bool CKVariant::operator<=( double aValue ) const
+{
+	return this->operator<(aValue) || this->operator==(aValue);
+}
+
+
+bool CKVariant::operator<=( const CKTable & aTable ) const
+{
+	return this->operator<(aTable) || this->operator==(aTable);
+}
+
+
+bool CKVariant::operator<=( const CKTimeSeries & aSeries ) const
+{
+	return this->operator<(aSeries) || this->operator==(aSeries);
+}
+
+
+bool CKVariant::operator<=( const CKPrice & aPrice ) const
+{
+	return this->operator<(aPrice) || this->operator==(aPrice);
+}
+
+
+bool CKVariant::operator>( const char *aCString ) const
+{
+	return !(this->operator<=(aCString));
+}
+
+
+bool CKVariant::operator>( const std::string & anSTLString ) const
+{
+	return !(this->operator<=(anSTLString));
+}
+
+
+bool CKVariant::operator>( const CKString & aString ) const
+{
+	return !(this->operator<=(aString));
+}
+
+
+bool CKVariant::operator>( int aValue ) const
+{
+	return !(this->operator<=(aValue));
+}
+
+
+bool CKVariant::operator>( long aDateValue ) const
+{
+	return !(this->operator<=(aDateValue));
+}
+
+
+bool CKVariant::operator>( double aValue ) const
+{
+	return !(this->operator<=(aValue));
+}
+
+
+bool CKVariant::operator>( const CKTable & aTable ) const
+{
+	return !(this->operator<=(aTable));
+}
+
+
+bool CKVariant::operator>( const CKTimeSeries & aSeries ) const
+{
+	return !(this->operator<=(aSeries));
+}
+
+
+bool CKVariant::operator>( const CKPrice & aPrice ) const
+{
+	return !(this->operator<=(aPrice));
+}
+
+
+bool CKVariant::operator>=( const char *aCString ) const
+{
+	return !(this->operator<(aCString));
+}
+
+
+bool CKVariant::operator>=( const std::string & anSTLString ) const
+{
+	return !(this->operator<(anSTLString));
+}
+
+
+bool CKVariant::operator>=( const CKString & aString ) const
+{
+	return !(this->operator<(aString));
+}
+
+
+bool CKVariant::operator>=( int aValue ) const
+{
+	return !(this->operator<(aValue));
+}
+
+
+bool CKVariant::operator>=( long aDateValue ) const
+{
+	return !(this->operator<(aDateValue));
+}
+
+
+bool CKVariant::operator>=( double aValue ) const
+{
+	return !(this->operator<(aValue));
+}
+
+
+bool CKVariant::operator>=( const CKTable & aTable ) const
+{
+	return !(this->operator<(aTable));
+}
+
+
+bool CKVariant::operator>=( const CKTimeSeries & aSeries ) const
+{
+	return !(this->operator<(aSeries));
+}
+
+
+bool CKVariant::operator>=( const CKPrice & aPrice ) const
+{
+	return !(this->operator<(aPrice));
+}
+
+
+/*
+ * These operators are the convenience assignment operators for
+ * the variant and are meant to make it easy to use these guys in
+ * code. If the operation doesn't make sense for the data an
+ * exception will be thrown - such as adding a string to a price.
+ */
+CKVariant & CKVariant::operator+=( const char *aCString )
+{
+	if (aCString != NULL) {
+		// what we do is based on what we are
+		switch (mType) {
+			case eUnknownVariant:
+				break;
+			case eStringVariant:
+				if (mStringValue != NULL) {
+					mStringValue->append(aCString);
+				}
+				break;
+			case eNumberVariant:
+				mDoubleValue += strtod(aCString, NULL);
+				break;
+			case eDateVariant:
+				throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+					"(const char *) - there is no defined operation for incrementing "
+					"a Date by a String, and so there's nothing I can do. You might "
+					"want to check on the types of the variants before doing the "
+					"math.");
+				break;
+			case eTableVariant:
+				throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+					"(const char *) - there is no defined operation for incrementing "
+					"a Table by a String, and so there's nothing I can do. You might "
+					"want to check on the types of the variants before doing the "
+					"math.");
+				break;
+			case eTimeSeriesVariant:
+				throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+					"(const char *) - there is no defined operation for incrementing "
+					"a TimeSeries by a String, and so there's nothing I can do. You might "
+					"want to check on the types of the variants before doing the "
+					"math.");
+				break;
+			case ePriceVariant:
+				throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+					"(const char *) - there is no defined operation for incrementing "
+					"a Price by a String, and so there's nothing I can do. You might "
+					"want to check on the types of the variants before doing the "
+					"math.");
+				break;
+		}
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const std::string & anSTLString )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				mStringValue->append(anSTLString);
+			}
+			break;
+		case eNumberVariant:
+			mDoubleValue += strtod(anSTLString.c_str(), NULL);
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const std::string &) - there is no defined operation for incrementing "
+				"a Date by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const std::string &) - there is no defined operation for incrementing "
+				"a Table by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const std::string &) - there is no defined operation for incrementing "
+				"a TimeSeries by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const std::string &) - there is no defined operation for incrementing "
+				"a Price by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKString & aString )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				mStringValue->append(aString);
+			}
+			break;
+		case eNumberVariant:
+			mDoubleValue += strtod(aString.c_str(), NULL);
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKString &) - there is no defined operation for incrementing "
+				"a Date by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKString &) - there is no defined operation for incrementing "
+				"a Table by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKString &) - there is no defined operation for incrementing "
+				"a TimeSeries by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKString &) - there is no defined operation for incrementing "
+				"a Price by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( int aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				mStringValue->append(aValue);
+			}
+			break;
+		case eNumberVariant:
+			mDoubleValue += aValue;
+			break;
+		case eDateVariant:
+			mDateValue = (long) CKTimeSeries::addDays(mDateValue, aValue);
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->add((double)aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->add((double)aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->add((double)aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( long aDateValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				// pull apart the components of the date
+				int		yr = (int)(aDateValue/10000);
+				int		mo = (int)((aDateValue - yr*10000)/100);
+				int		da = (int)(aDateValue - (yr*100 + mo)*100);
+				// now print this to a string buffer
+				char	buff[80];
+				snprintf(buff, 79, "%02d/%02d/%04d", mo, da, yr);
+				// now append it to the string we have
+				mStringValue->append(buff);
+			}
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a Number by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a Date by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a TimeSeries by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a Price by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( double aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				mStringValue->append(aValue);
+			}
+			break;
+		case eNumberVariant:
+			mDoubleValue += aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(double) - there is no defined operation for incrementing "
+				"a Date by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->add(aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->add(aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->add(aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKTable & aTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTable &) - there is no defined operation for incrementing "
+				"a String by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTable		a = aTable;
+				a += mDoubleValue;
+				setTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTable &) - there is no defined operation for incrementing "
+				"a Date by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->add(aTable);
+			}
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTable &) - there is no defined operation for incrementing "
+				"a TimeSeries by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTable &) - there is no defined operation for incrementing "
+				"a Price by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKTimeSeries & aSeries )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeSeries &) - there is no defined operation for incrementing "
+				"a String by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeSeries	a = aSeries;
+				a += mDoubleValue;
+				setTimeSeriesValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeSeries &) - there is no defined operation for incrementing "
+				"a Date by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeSeries &) - there is no defined operation for incrementing "
+				"a Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->add(aSeries);
+			}
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeSeries &) - there is no defined operation for incrementing "
+				"a Price by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKPrice & aPrice )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKPrice &) - there is no defined operation for incrementing "
+				"a String by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKPrice		a = aPrice;
+				a += mDoubleValue;
+				setPriceValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKPrice &) - there is no defined operation for incrementing "
+				"a Date by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKPrice &) - there is no defined operation for incrementing "
+				"a Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKPrice &) - there is no defined operation for incrementing "
+				"a Price by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->add(aPrice);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKVariant & aVar )
+{
+	// what we do is based on what *he* is
+	switch (aVar.mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (aVar.mStringValue != NULL) {
+				operator+=(*aVar.mStringValue);
+			}
+			break;
+		case eNumberVariant:
+			operator+=(aVar.mDoubleValue);
+			break;
+		case eDateVariant:
+			operator+=(aVar.mDateValue);
+			break;
+		case eTableVariant:
+			if (aVar.mTableValue != NULL) {
+				operator+=(*aVar.mTableValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (aVar.mTimeSeriesValue != NULL) {
+				operator+=(*aVar.mTimeSeriesValue);
+			}
+			break;
+		case ePriceVariant:
+			if (aVar.mPriceValue != NULL) {
+				operator+=(*aVar.mPriceValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( int aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				mStringValue->append(-1*aValue);
+			}
+			break;
+		case eNumberVariant:
+			mDoubleValue -= aValue;
+			break;
+		case eDateVariant:
+			mDateValue = (long) CKTimeSeries::addDays(mDateValue, (-1*aValue));
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->subtract((double)aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->subtract((double)aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->subtract((double)aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( long aDateValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a String by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a Number by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a Date by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a TimeSeries by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a Price by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( double aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(double) - there is no defined operation for decrementing "
+				"a String by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			mDoubleValue -= aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(double) - there is no defined operation for decrementing "
+				"a Date by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->subtract(aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->subtract(aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->subtract(aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKTable & aTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTable &) - there is no defined operation for decrementing "
+				"a String by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTable		a = aTable;
+				a *= -1.0;
+				a += mDoubleValue;
+				setTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTable &) - there is no defined operation for decrementing "
+				"a Date by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->subtract(aTable);
+			}
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTable &) - there is no defined operation for decrementing "
+				"a TimeSeries by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTable &) - there is no defined operation for decrementing "
+				"a Price by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKTimeSeries & aSeries )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeSeries &) - there is no defined operation for decrementing "
+				"a String by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeSeries	a = aSeries;
+				a *= -1.0;
+				a += mDoubleValue;
+				setTimeSeriesValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeSeries &) - there is no defined operation for decrementing "
+				"a Date by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeSeries &) - there is no defined operation for decrementing "
+				"a Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->subtract(aSeries);
+			}
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeSeries &) - there is no defined operation for decrementing "
+				"a Price by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKPrice & aPrice )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKPrice &) - there is no defined operation for decrementing "
+				"a String by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKPrice		a = aPrice;
+				a *= -1.0;
+				a += mDoubleValue;
+				setPriceValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKPrice &) - there is no defined operation for decrementing "
+				"a Date by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKPrice &) - there is no defined operation for decrementing "
+				"a Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKPrice &) - there is no defined operation for decrementing "
+				"a Price by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->subtract(aPrice);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKVariant & aVar )
+{
+	// what we do is based on what *he* is
+	switch (aVar.mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariant &) - there is no defined operation for decrementing "
+				"a String by a Variant, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			operator-=(aVar.mDoubleValue);
+			break;
+		case eDateVariant:
+			operator-=(aVar.mDateValue);
+			break;
+		case eTableVariant:
+			if (aVar.mTableValue != NULL) {
+				operator-=(*aVar.mTableValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (aVar.mTimeSeriesValue != NULL) {
+				operator-=(*aVar.mTimeSeriesValue);
+			}
+			break;
+		case ePriceVariant:
+			if (aVar.mPriceValue != NULL) {
+				operator-=(*aVar.mPriceValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( int aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(int) - there is no defined operation for multiplying a String "
+				"by an integer, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			mDoubleValue *= aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(int) - there is no defined operation for multiplying a Date "
+				"by an integer, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->multiply((double)aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->multiply((double)aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->multiply((double)aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( long aDateValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a String by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a Number by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a Date by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a TimeSeries by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a Price by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( double aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(double) - there is no defined operation for multiplying a String "
+				"by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			mDoubleValue *= aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(double) - there is no defined operation for multiplying a Date "
+				"by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->multiply(aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->multiply(aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->multiply(aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKTable & aTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTable &) - there is no defined operation for multiplying "
+				"a String by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTable		a = aTable;
+				a *= mDoubleValue;
+				setTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTable &) - there is no defined operation for multiplying "
+				"a Date by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->multiply(aTable);
+			}
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTable &) - there is no defined operation for multiplying "
+				"a TimeSeries by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTable &) - there is no defined operation for multiplying "
+				"a Price by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKTimeSeries & aSeries )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeSeries &) - there is no defined operation for multiplying "
+				"a String by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeSeries	a = aSeries;
+				a *= mDoubleValue;
+				setTimeSeriesValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeSeries &) - there is no defined operation for multiplying "
+				"a Date by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeSeries &) - there is no defined operation for multiplying "
+				"a Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->multiply(aSeries);
+			}
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeSeries &) - there is no defined operation for multiplying "
+				"a Price by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKPrice & aPrice )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKPrice &) - there is no defined operation for multiplying "
+				"a String by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKPrice		a = aPrice;
+				a *= mDoubleValue;
+				setPriceValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKPrice &) - there is no defined operation for multiplying "
+				"a Date by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKPrice &) - there is no defined operation for multiplying "
+				"a Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKPrice &) - there is no defined operation for multiplying "
+				"a Price by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->multiply(aPrice);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKVariant & aVar )
+{
+	// what we do is based on what *he* is
+	switch (aVar.mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariant &) - there is no defined operation for multiplying "
+				"a String by a Variant, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			operator*=(aVar.mDoubleValue);
+			break;
+		case eDateVariant:
+			operator*=(aVar.mDateValue);
+			break;
+		case eTableVariant:
+			if (aVar.mTableValue != NULL) {
+				operator*=(*aVar.mTableValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (aVar.mTimeSeriesValue != NULL) {
+				operator*=(*aVar.mTimeSeriesValue);
+			}
+			break;
+		case ePriceVariant:
+			if (aVar.mPriceValue != NULL) {
+				operator*=(*aVar.mPriceValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( int aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(int) - there is no defined operation for dividing a String "
+				"by an integer, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			mDoubleValue /= aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(int) - there is no defined operation for dividing a Date "
+				"by an integer, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->divide((double)aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->divide((double)aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->divide((double)aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( long aDateValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a String by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a Number by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a Date by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a TimeSeries by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a Price by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( double aValue )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(double) - there is no defined operation for dividing a String "
+				"by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			mDoubleValue /= aValue;
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(double) - there is no defined operation for dividing a Date "
+				"by a double, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->divide(aValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->divide(aValue);
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->divide(aValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKTable & aTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTable &) - there is no defined operation for dividing "
+				"a String by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTable		a = aTable;
+				a.inverse();
+				a *= mDoubleValue;
+				setTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTable &) - there is no defined operation for dividing "
+				"a Date by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				mTableValue->divide(aTable);
+			}
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTable &) - there is no defined operation for dividing "
+				"a TimeSeries by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTable &) - there is no defined operation for dividing "
+				"a Price by a Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKTimeSeries & aSeries )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeSeries &) - there is no defined operation for dividing "
+				"a String by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeSeries	a = aSeries;
+				a.inverse();
+				a *= mDoubleValue;
+				setTimeSeriesValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeSeries &) - there is no defined operation for dividing "
+				"a Date by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeSeries &) - there is no defined operation for dividing "
+				"a Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				mTimeSeriesValue->divide(aSeries);
+			}
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeSeries &) - there is no defined operation for dividing "
+				"a Price by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKPrice & aPrice )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKPrice &) - there is no defined operation for dividing "
+				"a String by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKPrice		a = aPrice;
+				a.inverse();
+				a *= mDoubleValue;
+				setPriceValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKPrice &) - there is no defined operation for dividing "
+				"a Date by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKPrice &) - there is no defined operation for dividing "
+				"a Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKPrice &) - there is no defined operation for dividing "
+				"a Price by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				mPriceValue->divide(aPrice);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKVariant & aVar )
+{
+	// what we do is based on what *he* is
+	switch (aVar.mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariant &) - there is no defined operation for dividing "
+				"a String by a Variant, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			operator/=(aVar.mDoubleValue);
+			break;
+		case eDateVariant:
+			operator/=(aVar.mDateValue);
+			break;
+		case eTableVariant:
+			if (aVar.mTableValue != NULL) {
+				operator/=(*aVar.mTableValue);
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (aVar.mTimeSeriesValue != NULL) {
+				operator/=(*aVar.mTimeSeriesValue);
+			}
+			break;
+		case ePriceVariant:
+			if (aVar.mPriceValue != NULL) {
+				operator/=(*aVar.mPriceValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+/*
  * This method sets the 'type' of the data that's being stored in this
  * instance. This is really an implementation method as the setters
  * of specific values really control the type, but in the interests
@@ -1196,4 +3203,491 @@ std::ostream & operator<<( std::ostream & aStream, const CKVariant & anItem )
 	aStream << anItem.toString();
 
 	return aStream;
+}
+
+
+/*
+ * There are times that variants will be used in mathematical
+ * expressions by themselves, these operator functions will make
+ * it very easy for the user to do simple 'a + b' coding on
+ * even the most complex structures.
+ */
+CKVariant operator+( CKVariant & aVar, CKVariant & anOtherVar )
+{
+	CKVariant	retval(aVar);
+	retval += anOtherVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, CKVariant & anOtherVar )
+{
+	CKVariant	retval(aVar);
+	retval -= anOtherVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, CKVariant & anOtherVar )
+{
+	CKVariant	retval(aVar);
+	retval *= anOtherVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, CKVariant & anOtherVar )
+{
+	CKVariant	retval(aVar);
+	retval /= anOtherVar;
+	return retval;
+}
+
+
+/*
+ * These operator functions will allow the mixed-mode math with
+ * variants casting the result up to a variant in each case. First,
+ * start with simple addition.
+ */
+CKVariant operator+( CKVariant & aVar, const char *aCString )
+{
+	CKVariant	retval(aVar);
+	retval += aCString;
+	return retval;
+}
+
+
+CKVariant operator+( const char *aCString, CKVariant & aVar )
+{
+	CKVariant	retval(aCString);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, const std::string & anSTLString )
+{
+	CKVariant	retval(aVar);
+	retval + anSTLString;
+	return retval;
+}
+
+
+CKVariant operator+( const std::string & anSTLString, CKVariant & aVar )
+{
+	CKVariant	retval(anSTLString.c_str());
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, const CKString & aString )
+{
+	CKVariant	retval(aVar);
+	retval += aString;
+	return retval;
+}
+
+
+CKVariant operator+( const CKString & aString, CKVariant & aVar )
+{
+	CKVariant	retval(aString.c_str());
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, int aValue )
+{
+	CKVariant	retval(aVar);
+	retval += aValue;
+	return retval;
+}
+
+
+CKVariant operator+( int aValue, CKVariant & aVar )
+{
+	CKVariant	retval((double)aValue);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, long aDateValue )
+{
+	CKVariant	retval(aVar);
+	retval += aDateValue;
+	return retval;
+}
+
+
+CKVariant operator+( long aDateValue, CKVariant & aVar )
+{
+	CKVariant	retval(aDateValue);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, double aValue )
+{
+	CKVariant	retval(aVar);
+	retval += aValue;
+	return retval;
+}
+
+
+CKVariant operator+( double aValue, CKVariant & aVar )
+{
+	CKVariant	retval(aValue);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, const CKTable & aTable )
+{
+	CKVariant	retval(aVar);
+	retval += aTable;
+	return retval;
+}
+
+
+CKVariant operator+( const CKTable & aTable, CKVariant & aVar )
+{
+	CKVariant	retval(&aTable);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, const CKTimeSeries & aSeries )
+{
+	CKVariant	retval(aVar);
+	retval += aSeries;
+	return retval;
+}
+
+
+CKVariant operator+( const CKTimeSeries & aSeries, CKVariant & aVar )
+{
+	CKVariant	retval(&aSeries);
+	retval += aVar;
+	return retval;
+}
+
+
+CKVariant operator+( CKVariant & aVar, const CKPrice & aPrice )
+{
+	CKVariant	retval(aVar);
+	retval += aPrice;
+	return retval;
+}
+
+
+CKVariant operator+( const CKPrice & aPrice, CKVariant & aVar )
+{
+	CKVariant	retval(&aPrice);
+	retval += aVar;
+	return retval;
+}
+
+
+/*
+ * Next, let's do all the different forms of the subtraction
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator-( CKVariant & aVar, int aValue )
+{
+	CKVariant	retval(aVar);
+	retval -= aValue;
+	return retval;
+}
+
+
+CKVariant operator-( int aValue, CKVariant & aVar )
+{
+	CKVariant	retval((double)aValue);
+	retval -= aVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, long aDateValue )
+{
+	CKVariant	retval(aVar);
+	retval -= aDateValue;
+	return retval;
+}
+
+
+CKVariant operator-( long aDateValue, CKVariant & aVar )
+{
+	CKVariant	retval(aDateValue);
+	retval -= aVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, double aValue )
+{
+	CKVariant	retval(aVar);
+	retval -= aValue;
+	return retval;
+}
+
+
+CKVariant operator-( double aValue, CKVariant & aVar )
+{
+	CKVariant	retval(aValue);
+	retval -= aVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, const CKTable & aTable )
+{
+	CKVariant	retval(aVar);
+	retval -= aTable;
+	return retval;
+}
+
+
+CKVariant operator-( const CKTable & aTable, CKVariant & aVar )
+{
+	CKVariant	retval(&aTable);
+	retval -= aVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, const CKTimeSeries & aSeries )
+{
+	CKVariant	retval(aVar);
+	retval -= aSeries;
+	return retval;
+}
+
+
+CKVariant operator-( const CKTimeSeries & aSeries, CKVariant & aVar )
+{
+	CKVariant	retval(&aSeries);
+	retval -= aVar;
+	return retval;
+}
+
+
+CKVariant operator-( CKVariant & aVar, const CKPrice & aPrice )
+{
+	CKVariant	retval(aVar);
+	retval -= aPrice;
+	return retval;
+}
+
+
+CKVariant operator-( const CKPrice & aPrice, CKVariant & aVar )
+{
+	CKVariant	retval(&aPrice);
+	retval -= aVar;
+	return retval;
+}
+
+
+/*
+ * Next, let's do all the different forms of the multiplication
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator*( CKVariant & aVar, int aValue )
+{
+	CKVariant	retval(aVar);
+	retval *= aValue;
+	return retval;
+}
+
+
+CKVariant operator*( int aValue, CKVariant & aVar )
+{
+	CKVariant	retval((double)aValue);
+	retval *= aVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, long aDateValue )
+{
+	CKVariant	retval(aVar);
+	retval *= aDateValue;
+	return retval;
+}
+
+
+CKVariant operator*( long aDateValue, CKVariant & aVar )
+{
+	CKVariant	retval(aDateValue);
+	retval *= aVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, double aValue )
+{
+	CKVariant	retval(aVar);
+	retval *= aValue;
+	return retval;
+}
+
+
+CKVariant operator*( double aValue, CKVariant & aVar )
+{
+	CKVariant	retval(aValue);
+	retval *= aVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, const CKTable & aTable )
+{
+	CKVariant	retval(aVar);
+	retval *= aTable;
+	return retval;
+}
+
+
+CKVariant operator*( const CKTable & aTable, CKVariant & aVar )
+{
+	CKVariant	retval(&aTable);
+	retval *= aVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, const CKTimeSeries & aSeries )
+{
+	CKVariant	retval(aVar);
+	retval *= aSeries;
+	return retval;
+}
+
+
+CKVariant operator*( const CKTimeSeries & aSeries, CKVariant & aVar )
+{
+	CKVariant	retval(&aSeries);
+	retval *= aVar;
+	return retval;
+}
+
+
+CKVariant operator*( CKVariant & aVar, const CKPrice & aPrice )
+{
+	CKVariant	retval(aVar);
+	retval *= aPrice;
+	return retval;
+}
+
+
+CKVariant operator*( const CKPrice & aPrice, CKVariant & aVar )
+{
+	CKVariant	retval(&aPrice);
+	retval *= aVar;
+	return retval;
+}
+
+
+/*
+ * Next, let's do all the different forms of the division
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator/( CKVariant & aVar, int aValue )
+{
+	CKVariant	retval(aVar);
+	retval /= aValue;
+	return retval;
+}
+
+
+CKVariant operator/( int aValue, CKVariant & aVar )
+{
+	CKVariant	retval((double)aValue);
+	retval /= aVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, long aDateValue )
+{
+	CKVariant	retval(aVar);
+	retval /= aDateValue;
+	return retval;
+}
+
+
+CKVariant operator/( long aDateValue, CKVariant & aVar )
+{
+	CKVariant	retval(aDateValue);
+	retval /= aVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, double aValue )
+{
+	CKVariant	retval(aVar);
+	retval /= aValue;
+	return retval;
+}
+
+
+CKVariant operator/( double aValue, CKVariant & aVar )
+{
+	CKVariant	retval(aValue);
+	retval /= aVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, const CKTable & aTable )
+{
+	CKVariant	retval(aVar);
+	retval /= aTable;
+	return retval;
+}
+
+
+CKVariant operator/( const CKTable & aTable, CKVariant & aVar )
+{
+	CKVariant	retval(&aTable);
+	retval /= aVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, const CKTimeSeries & aSeries )
+{
+	CKVariant	retval(aVar);
+	retval /= aSeries;
+	return retval;
+}
+
+
+CKVariant operator/( const CKTimeSeries & aSeries, CKVariant & aVar )
+{
+	CKVariant	retval(&aSeries);
+	retval /= aVar;
+	return retval;
+}
+
+
+CKVariant operator/( CKVariant & aVar, const CKPrice & aPrice )
+{
+	CKVariant	retval(aVar);
+	retval /= aPrice;
+	return retval;
+}
+
+
+CKVariant operator/( const CKPrice & aPrice, CKVariant & aVar )
+{
+	CKVariant	retval(&aPrice);
+	retval /= aVar;
+	return retval;
 }
