@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.15 2005/02/08 19:48:13 drbob Exp $
+ * $Id: CKString.cpp,v 1.16 2005/02/09 17:44:27 drbob Exp $
  */
 
 //	System Headers
@@ -5448,6 +5448,30 @@ CKStringList CKStringList::parseIntoChunks( const CKString & aString,
 	// if we didn't error out, then add the remaining buff to the end
 	if (!error) {
 		retval.addToEnd(buff);
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method is really useful when dealing with a list of
+ * strings and wanting to make a single string out of them.
+ * This might be in a debug print statement, it might also be
+ * a way to "piece together" something. In any case, the elements
+ * of the string list will be put into the resultant string each
+ * one separated by the passed-in separator.
+ */
+CKString CKStringList::concatenate( const CKString & aSeparator )
+{
+	CKString	retval("");
+
+	// simply iterate of all the elements and slap them together
+	for (CKStringNode *node = mHead; node != NULL; node = node->mNext) {
+		if (node != mHead) {
+			retval.append(aSeparator);
+		}
+		retval.append(node->CKString::toString());
 	}
 
 	return retval;

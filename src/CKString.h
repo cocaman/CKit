@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.9 2005/01/20 15:55:01 drbob Exp $
+ * $Id: CKString.h,v 1.10 2005/02/09 17:44:25 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -1393,6 +1393,16 @@ class CKStringList
 		 */
 		static CKStringList parseIntoChunks( const CKString & aString,
 											 const CKString & aDelim );
+
+		/*
+		 * This method is really useful when dealing with a list of
+		 * strings and wanting to make a single string out of them.
+		 * This might be in a debug print statement, it might also be
+		 * a way to "piece together" something. In any case, the elements
+		 * of the string list will be put into the resultant string each
+		 * one separated by the passed-in separator.
+		 */
+		CKString concatenate( const CKString & aSeparator );
 
 		/********************************************************
 		 *
