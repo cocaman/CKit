@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.12 2005/01/20 15:55:09 drbob Exp $
+ * $Id: CKVariant.h,v 1.13 2005/02/04 10:37:32 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -360,6 +360,230 @@ class CKVariant
 		 */
 		virtual CKString toString() const;
 
+		/*
+		 * This method simply takes the inverse of the value so that
+		 * x -> 1/x. This is useful in many cases, but in some it doesn't
+		 * make sense (like strings), so skip those where it makes no
+		 * sense.
+		 */
+		bool inverse();
+
+		/*
+		 * These operators allow us to use the variant as a "regular"
+		 * variable in conditionals which is really important because
+		 * we want this to fit into development like a regular scalar
+		 * variable.
+		 */
+		bool operator==( const char *aCString ) const;
+		bool operator==( const std::string & anSTLString ) const;
+		bool operator==( const CKString & aString ) const;
+		bool operator==( int aValue ) const;
+		bool operator==( long aDateValue ) const;
+		bool operator==( double aValue ) const;
+		bool operator==( const CKTable & aTable ) const;
+		bool operator==( const CKTimeSeries & aSeries ) const;
+		bool operator==( const CKPrice & aPrice ) const;
+
+		bool operator!=( const char *aCString ) const;
+		bool operator!=( const std::string & anSTLString ) const;
+		bool operator!=( const CKString & aString ) const;
+		bool operator!=( int aValue ) const;
+		bool operator!=( long aDateValue ) const;
+		bool operator!=( double aValue ) const;
+		bool operator!=( const CKTable & aTable ) const;
+		bool operator!=( const CKTimeSeries & aSeries ) const;
+		bool operator!=( const CKPrice & aPrice ) const;
+
+		bool operator<( const char *aCString ) const;
+		bool operator<( const std::string & anSTLString ) const;
+		bool operator<( const CKString & aString ) const;
+		bool operator<( int aValue ) const;
+		bool operator<( long aDateValue ) const;
+		bool operator<( double aValue ) const;
+		bool operator<( const CKTable & aTable ) const;
+		bool operator<( const CKTimeSeries & aSeries ) const;
+		bool operator<( const CKPrice & aPrice ) const;
+
+		bool operator<=( const char *aCString ) const;
+		bool operator<=( const std::string & anSTLString ) const;
+		bool operator<=( const CKString & aString ) const;
+		bool operator<=( int aValue ) const;
+		bool operator<=( long aDateValue ) const;
+		bool operator<=( double aValue ) const;
+		bool operator<=( const CKTable & aTable ) const;
+		bool operator<=( const CKTimeSeries & aSeries ) const;
+		bool operator<=( const CKPrice & aPrice ) const;
+
+		bool operator>( const char *aCString ) const;
+		bool operator>( const std::string & anSTLString ) const;
+		bool operator>( const CKString & aString ) const;
+		bool operator>( int aValue ) const;
+		bool operator>( long aDateValue ) const;
+		bool operator>( double aValue ) const;
+		bool operator>( const CKTable & aTable ) const;
+		bool operator>( const CKTimeSeries & aSeries ) const;
+		bool operator>( const CKPrice & aPrice ) const;
+
+		bool operator>=( const char *aCString ) const;
+		bool operator>=( const std::string & anSTLString ) const;
+		bool operator>=( const CKString & aString ) const;
+		bool operator>=( int aValue ) const;
+		bool operator>=( long aDateValue ) const;
+		bool operator>=( double aValue ) const;
+		bool operator>=( const CKTable & aTable ) const;
+		bool operator>=( const CKTimeSeries & aSeries ) const;
+		bool operator>=( const CKPrice & aPrice ) const;
+
+		/*
+		 * These operators are the convenience assignment operators for
+		 * the variant and are meant to make it easy to use these guys in
+		 * code. If the operation doesn't make sense for the data an
+		 * exception will be thrown - such as adding a string to a price.
+		 */
+		CKVariant & operator+=( const char *aCString );
+		CKVariant & operator+=( const std::string & anSTLString );
+		CKVariant & operator+=( const CKString & aString );
+		CKVariant & operator+=( int aValue );
+		CKVariant & operator+=( long aDateValue );
+		CKVariant & operator+=( double aValue );
+		CKVariant & operator+=( const CKTable & aTable );
+		CKVariant & operator+=( const CKTimeSeries & aSeries );
+		CKVariant & operator+=( const CKPrice & aPrice );
+		CKVariant & operator+=( const CKVariant & aVar );
+
+		CKVariant & operator-=( int aValue );
+		CKVariant & operator-=( long aDateValue );
+		CKVariant & operator-=( double aValue );
+		CKVariant & operator-=( const CKTable & aTable );
+		CKVariant & operator-=( const CKTimeSeries & aSeries );
+		CKVariant & operator-=( const CKPrice & aPrice );
+		CKVariant & operator-=( const CKVariant & aVar );
+
+		CKVariant & operator*=( int aValue );
+		CKVariant & operator*=( long aDateValue );
+		CKVariant & operator*=( double aValue );
+		CKVariant & operator*=( const CKTable & aTable );
+		CKVariant & operator*=( const CKTimeSeries & aSeries );
+		CKVariant & operator*=( const CKPrice & aPrice );
+		CKVariant & operator*=( const CKVariant & aVar );
+
+		CKVariant & operator/=( int aValue );
+		CKVariant & operator/=( long aDateValue );
+		CKVariant & operator/=( double aValue );
+		CKVariant & operator/=( const CKTable & aTable );
+		CKVariant & operator/=( const CKTimeSeries & aSeries );
+		CKVariant & operator/=( const CKPrice & aPrice );
+		CKVariant & operator/=( const CKVariant & aVar );
+
+		/*
+		 * There are times that variants will be used in mathematical
+		 * expressions by themselves, these operator functions will make
+		 * it very easy for the user to do simple 'a + b' coding on
+		 * even the most complex structures.
+		 */
+		friend CKVariant operator+( CKVariant & aVar, CKVariant & anOtherVar );
+		friend CKVariant operator-( CKVariant & aVar, CKVariant & anOtherVar );
+		friend CKVariant operator*( CKVariant & aVar, CKVariant & anOtherVar );
+		friend CKVariant operator/( CKVariant & aVar, CKVariant & anOtherVar );
+
+		/*
+		 * These operator functions will allow the mixed-mode math with
+		 * variants casting the result up to a variant in each case. First,
+		 * start with simple addition.
+		 */
+		friend CKVariant operator+( CKVariant & aVar, const char *aCString );
+		friend CKVariant operator+( const char *aCString, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, const std::string & anSTLString );
+		friend CKVariant operator+( const std::string & anSTLString, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, const CKString & aString );
+		friend CKVariant operator+( const CKString & aString, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, int aValue );
+		friend CKVariant operator+( int aValue, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, long aDateValue );
+		friend CKVariant operator+( long aDateValue, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, double aValue );
+		friend CKVariant operator+( double aValue, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, const CKTable & aTable );
+		friend CKVariant operator+( const CKTable & aTable, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, const CKTimeSeries & aSeries );
+		friend CKVariant operator+( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+		friend CKVariant operator+( CKVariant & aVar, const CKPrice & aPrice );
+		friend CKVariant operator+( const CKPrice & aPrice, CKVariant & aVar );
+
+		/*
+		 * Next, let's do all the different forms of the subtraction
+		 * operator between the variant and the other scalar types.
+		 */
+		friend CKVariant operator-( CKVariant & aVar, int aValue );
+		friend CKVariant operator-( int aValue, CKVariant & aVar );
+
+		friend CKVariant operator-( CKVariant & aVar, long aDateValue );
+		friend CKVariant operator-( long aDateValue, CKVariant & aVar );
+
+		friend CKVariant operator-( CKVariant & aVar, double aValue );
+		friend CKVariant operator-( double aValue, CKVariant & aVar );
+
+		friend CKVariant operator-( CKVariant & aVar, const CKTable & aTable );
+		friend CKVariant operator-( const CKTable & aTable, CKVariant & aVar );
+
+		friend CKVariant operator-( CKVariant & aVar, const CKTimeSeries & aSeries );
+		friend CKVariant operator-( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+		friend CKVariant operator-( CKVariant & aVar, const CKPrice & aPrice );
+		friend CKVariant operator-( const CKPrice & aPrice, CKVariant & aVar );
+
+		/*
+		 * Next, let's do all the different forms of the multiplication
+		 * operator between the variant and the other scalar types.
+		 */
+		friend CKVariant operator*( CKVariant & aVar, int aValue );
+		friend CKVariant operator*( int aValue, CKVariant & aVar );
+
+		friend CKVariant operator*( CKVariant & aVar, long aDateValue );
+		friend CKVariant operator*( long aDateValue, CKVariant & aVar );
+
+		friend CKVariant operator*( CKVariant & aVar, double aValue );
+		friend CKVariant operator*( double aValue, CKVariant & aVar );
+
+		friend CKVariant operator*( CKVariant & aVar, const CKTable & aTable );
+		friend CKVariant operator*( const CKTable & aTable, CKVariant & aVar );
+
+		friend CKVariant operator*( CKVariant & aVar, const CKTimeSeries & aSeries );
+		friend CKVariant operator*( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+		friend CKVariant operator*( CKVariant & aVar, const CKPrice & aPrice );
+		friend CKVariant operator*( const CKPrice & aPrice, CKVariant & aVar );
+
+		/*
+		 * Next, let's do all the different forms of the division
+		 * operator between the variant and the other scalar types.
+		 */
+		friend CKVariant operator/( CKVariant & aVar, int aValue );
+		friend CKVariant operator/( int aValue, CKVariant & aVar );
+
+		friend CKVariant operator/( CKVariant & aVar, long aDateValue );
+		friend CKVariant operator/( long aDateValue, CKVariant & aVar );
+
+		friend CKVariant operator/( CKVariant & aVar, double aValue );
+		friend CKVariant operator/( double aValue, CKVariant & aVar );
+
+		friend CKVariant operator/( CKVariant & aVar, const CKTable & aTable );
+		friend CKVariant operator/( const CKTable & aTable, CKVariant & aVar );
+
+		friend CKVariant operator/( CKVariant & aVar, const CKTimeSeries & aSeries );
+		friend CKVariant operator/( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+		friend CKVariant operator/( CKVariant & aVar, const CKPrice & aPrice );
+		friend CKVariant operator/( const CKPrice & aPrice, CKVariant & aVar );
+
 	protected:
 		/*
 		 * This method sets the 'type' of the data that's being stored in this
@@ -396,5 +620,114 @@ class CKVariant
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, const CKVariant & anItem );
+
+/*
+ * There are times that variants will be used in mathematical
+ * expressions by themselves, these operator functions will make
+ * it very easy for the user to do simple 'a + b' coding on
+ * even the most complex structures.
+ */
+CKVariant operator+( CKVariant & aVar, CKVariant & anOtherVar );
+CKVariant operator-( CKVariant & aVar, CKVariant & anOtherVar );
+CKVariant operator*( CKVariant & aVar, CKVariant & anOtherVar );
+CKVariant operator/( CKVariant & aVar, CKVariant & anOtherVar );
+
+/*
+ * These operator functions will allow the mixed-mode math with
+ * variants casting the result up to a variant in each case. First,
+ * start with simple addition.
+ */
+CKVariant operator+( CKVariant & aVar, const char *aCString );
+CKVariant operator+( const char *aCString, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, const std::string & anSTLString );
+CKVariant operator+( const std::string & anSTLString, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, const CKString & aString );
+CKVariant operator+( const CKString & aString, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, int aValue );
+CKVariant operator+( int aValue, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, long aDateValue );
+CKVariant operator+( long aDateValue, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, double aValue );
+CKVariant operator+( double aValue, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, const CKTable & aTable );
+CKVariant operator+( const CKTable & aTable, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, const CKTimeSeries & aSeries );
+CKVariant operator+( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+CKVariant operator+( CKVariant & aVar, const CKPrice & aPrice );
+CKVariant operator+( const CKPrice & aPrice, CKVariant & aVar );
+
+/*
+ * Next, let's do all the different forms of the subtraction
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator-( CKVariant & aVar, int aValue );
+CKVariant operator-( int aValue, CKVariant & aVar );
+
+CKVariant operator-( CKVariant & aVar, long aDateValue );
+CKVariant operator-( long aDateValue, CKVariant & aVar );
+
+CKVariant operator-( CKVariant & aVar, double aValue );
+CKVariant operator-( double aValue, CKVariant & aVar );
+
+CKVariant operator-( CKVariant & aVar, const CKTable & aTable );
+CKVariant operator-( const CKTable & aTable, CKVariant & aVar );
+
+CKVariant operator-( CKVariant & aVar, const CKTimeSeries & aSeries );
+CKVariant operator-( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+CKVariant operator-( CKVariant & aVar, const CKPrice & aPrice );
+CKVariant operator-( const CKPrice & aPrice, CKVariant & aVar );
+
+/*
+ * Next, let's do all the different forms of the multiplication
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator*( CKVariant & aVar, int aValue );
+CKVariant operator*( int aValue, CKVariant & aVar );
+
+CKVariant operator*( CKVariant & aVar, long aDateValue );
+CKVariant operator*( long aDateValue, CKVariant & aVar );
+
+CKVariant operator*( CKVariant & aVar, double aValue );
+CKVariant operator*( double aValue, CKVariant & aVar );
+
+CKVariant operator*( CKVariant & aVar, const CKTable & aTable );
+CKVariant operator*( const CKTable & aTable, CKVariant & aVar );
+
+CKVariant operator*( CKVariant & aVar, const CKTimeSeries & aSeries );
+CKVariant operator*( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+CKVariant operator*( CKVariant & aVar, const CKPrice & aPrice );
+CKVariant operator*( const CKPrice & aPrice, CKVariant & aVar );
+
+/*
+ * Next, let's do all the different forms of the division
+ * operator between the variant and the other scalar types.
+ */
+CKVariant operator/( CKVariant & aVar, int aValue );
+CKVariant operator/( int aValue, CKVariant & aVar );
+
+CKVariant operator/( CKVariant & aVar, long aDateValue );
+CKVariant operator/( long aDateValue, CKVariant & aVar );
+
+CKVariant operator/( CKVariant & aVar, double aValue );
+CKVariant operator/( double aValue, CKVariant & aVar );
+
+CKVariant operator/( CKVariant & aVar, const CKTable & aTable );
+CKVariant operator/( const CKTable & aTable, CKVariant & aVar );
+
+CKVariant operator/( CKVariant & aVar, const CKTimeSeries & aSeries );
+CKVariant operator/( const CKTimeSeries & aSeries, CKVariant & aVar );
+
+CKVariant operator/( CKVariant & aVar, const CKPrice & aPrice );
+CKVariant operator/( const CKPrice & aPrice, CKVariant & aVar );
 
 #endif	// __CKVARIANT_H

@@ -5,7 +5,7 @@
  *               the important prices and values. This object makes it easy
  *               to get at these guys.
  *
- * $Id: CKPrice.cpp,v 1.1 2005/01/20 15:54:56 drbob Exp $
+ * $Id: CKPrice.cpp,v 1.2 2005/02/04 10:37:30 drbob Exp $
  */
 
 //	System Headers
@@ -181,6 +181,193 @@ double CKPrice::getNative() const
 
 /********************************************************
  *
+ *                Simple Math Methods
+ *
+ ********************************************************/
+/*
+ * These methods allow the user to add values to this price,
+ * in the first case, it's a constant value but in the
+ * second it's another price.
+ */
+bool CKPrice::add( double anOffset )
+{
+	mUSD += anOffset;
+	mNative += anOffset;
+	return true;
+}
+
+
+bool CKPrice::add( CKPrice & anOther )
+{
+	mUSD += anOther.mUSD;
+	mNative += anOther.mNative;
+	return true;
+}
+
+
+bool CKPrice::add( const CKPrice & anOther )
+{
+	return add((CKPrice &)anOther);
+}
+
+
+/*
+ * These methods allow the user to subtract values from this
+ * price, in the first case, it's a constant value but
+ * in the second it's another price.
+ */
+bool CKPrice::subtract( double anOffset )
+{
+	mUSD -= anOffset;
+	mNative -= anOffset;
+	return true;
+}
+
+
+bool CKPrice::subtract( CKPrice & anOther )
+{
+	mUSD -= anOther.mUSD;
+	mNative -= anOther.mNative;
+	return true;
+}
+
+
+bool CKPrice::subtract( const CKPrice & anOther )
+{
+	return subtract((CKPrice &)anOther);
+}
+
+
+/*
+ * These method allows the user to multiply a constant value to
+ * both components of the price or it multiplies each by it's
+ * respective partner in the other price.
+ */
+bool CKPrice::multiply( double aFactor )
+{
+	mUSD *= aFactor;
+	mNative *= aFactor;
+	return true;
+}
+
+
+bool CKPrice::multiply( CKPrice & anOther )
+{
+	mUSD *= anOther.mUSD;
+	mNative *= anOther.mNative;
+	return true;
+}
+
+
+bool CKPrice::multiply( const CKPrice & anOther )
+{
+	return multiply((CKPrice &)anOther);
+}
+
+
+/*
+ * These method allows the user to divide each component of
+ * the price by a constant or it divides each by it's respective
+ * partner in the other price.
+ */
+bool CKPrice::divide( double aDivisor )
+{
+	mUSD /= aDivisor;
+	mNative /= aDivisor;
+	return true;
+}
+
+
+bool CKPrice::divide( CKPrice & anOther )
+{
+	mUSD /= anOther.mUSD;
+	mNative /= anOther.mNative;
+	return true;
+}
+
+
+bool CKPrice::divide( const CKPrice & anOther )
+{
+	return divide((CKPrice &)anOther);
+}
+
+
+/*
+ * This method simply takes the inverse of each value in the price
+ * so that x -> 1/x for each value. This is marginally useful
+ * I'm thinking, but I added it here to be a little more complete.
+ */
+bool CKPrice::inverse()
+{
+	mUSD = 1.0/mUSD;
+	mNative = 1.0/mNative;
+	return true;
+}
+
+
+/*
+ * These are the operator equivalents of the simple mathematical
+ * operations on the price. They are here as an aid to the
+ * developer of analytic functions based on these guys.
+ */
+CKPrice & CKPrice::operator+=( double anOffset )
+{
+	add(anOffset);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator+=( CKPrice & aPrice )
+{
+	add(aPrice);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator+=( const CKPrice & aPrice )
+{
+	add((CKPrice &)aPrice);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator-=( double anOffset )
+{
+	subtract(anOffset);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator-=( CKPrice & aPrice )
+{
+	subtract(aPrice);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator-=( const CKPrice & aPrice )
+{
+	subtract((CKPrice &)aPrice);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator*=( double aFactor )
+{
+	multiply(aFactor);
+	return *this;
+}
+
+
+CKPrice & CKPrice::operator/=( double aDivisor )
+{
+	divide(aDivisor);
+	return *this;
+}
+
+
+/********************************************************
+ *
  *                Utility Methods
  *
  ********************************************************/
@@ -322,4 +509,89 @@ std::ostream & operator<<( std::ostream & aStream, const CKPrice & anItem )
 	aStream << anItem.toString();
 
 	return aStream;
+}
+
+
+/*
+ * These are the operators for creating new price data from
+ * one or two existing prices. This is nice in the same vein
+ * as the simpler operators in that it makes writing code for these
+ * data sets a lot easier.
+ */
+CKPrice operator+( CKPrice & aPrice, double aValue )
+{
+	CKPrice		retval(aPrice);
+	retval += aValue;
+	return retval;
+}
+
+
+CKPrice operator+( double aValue, CKPrice & aPrice )
+{
+	return operator+(aPrice, aValue);
+}
+
+
+CKPrice operator+( CKPrice & aPrice, CKPrice & anotherPrice )
+{
+	CKPrice		retval(aPrice);
+	retval += anotherPrice;
+	return retval;
+}
+
+
+CKPrice operator-( CKPrice & aPrice, double aValue )
+{
+	CKPrice		retval(aPrice);
+	retval -= aValue;
+	return retval;
+}
+
+
+CKPrice operator-( double aValue, CKPrice & aPrice )
+{
+	CKPrice		retval(aPrice);
+	retval *= -1.0;
+	retval += aValue;
+	return retval;
+}
+
+
+CKPrice operator-( CKPrice & aPrice, CKPrice & anotherPrice )
+{
+	CKPrice		retval(aPrice);
+	retval -= anotherPrice;
+	return retval;
+}
+
+
+CKPrice operator*( CKPrice & aPrice, double aValue )
+{
+	CKPrice		retval(aPrice);
+	retval *= aValue;
+	return retval;
+}
+
+
+CKPrice operator*( double aValue, CKPrice & aPrice )
+{
+	return operator*(aPrice, aValue);
+}
+
+
+CKPrice operator/( CKPrice & aPrice, double aValue )
+{
+	CKPrice		retval(aPrice);
+	retval /= aValue;
+	return retval;
+}
+
+
+CKPrice operator/( double aValue, CKPrice & aPrice )
+{
+	CKPrice		retval(aPrice);
+	retval.mUSD = 1.0/retval.mUSD;
+	retval.mNative = 1.0/retval.mNative;
+	retval *= aValue;
+	return retval;
 }
