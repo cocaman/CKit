@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.12 2005/02/14 19:07:46 drbob Exp $
+ * $Id: CKString.h,v 1.13 2005/02/24 15:07:29 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -1187,6 +1187,19 @@ class CKStringList
 		CKStringNode *getTail() const;
 
 		/*
+		 * These methods return copies of the first and last strings in the
+		 * list. This is useful if you want to look at the elements of the
+		 * list but don't want to do the size() - 1 for the last one. If the
+		 * list is empty then the empty string will be returned, so it's best
+		 * to check empty() before using the results of this method for sure.
+		 */
+		CKString getFirst();
+		CKString getFirst() const;
+
+		CKString getLast();
+		CKString getLast() const;
+
+		/*
 		 * Because there may be times that the user wants to lock us up
 		 * for change, we're going to expose this here so it's easy for them
 		 * to iterate, for example.
@@ -1381,6 +1394,21 @@ class CKStringList
 		CKStringNode *find( const std::string & anSTLString );
 		CKStringNode *find( std::string & anSTLString ) const;
 		CKStringNode *find( const std::string & anSTLString ) const;
+
+		/*
+		 * These methods remove the first and last strings from the list
+		 * and return them to the callers. The idea is that many times
+		 * when the processing of a list is done a line at a time and this
+		 * makes it easy to do this. If there are no lines in the list
+		 * this method will return the empty string, so it's important to
+		 * use the size() or empty() methods to see when to stop popping
+		 * off the strings.
+		 */
+		CKString popOffFront();
+		CKString popOffFront() const;
+
+		CKString popOffEnd();
+		CKString popOffEnd() const;
 
 		/*
 		 * This is the tokenizer/parser that wasn't in the STL string

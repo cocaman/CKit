@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.18 2005/02/14 19:07:41 drbob Exp $
+ * $Id: CKString.cpp,v 1.19 2005/02/24 15:07:24 drbob Exp $
  */
 
 //	System Headers
@@ -4329,6 +4329,45 @@ CKStringNode *CKStringList::getTail() const
 
 
 /*
+ * These methods return copies of the first and last strings in the
+ * list. This is useful if you want to look at the elements of the
+ * list but don't want to do the size() - 1 for the last one. If the
+ * list is empty then the empty string will be returned, so it's best
+ * to check empty() before using the results of this method for sure.
+ */
+CKString CKStringList::getFirst()
+{
+	CKString	retval = "";
+	if (mHead != NULL) {
+		retval = *mHead;
+	}
+	return retval;
+}
+
+
+CKString CKStringList::getFirst() const
+{
+	return ((CKStringList *)this)->getFirst();
+}
+
+
+CKString CKStringList::getLast()
+{
+	CKString	retval = "";
+	if (mTail != NULL) {
+		retval = *mTail;
+	}
+	return retval;
+}
+
+
+CKString CKStringList::getLast() const
+{
+	return ((CKStringList *)this)->getLast();
+}
+
+
+/*
  * Because there may be times that the user wants to lock us up
  * for change, we're going to expose this here so it's easy for them
  * to iterate, for example.
@@ -5375,6 +5414,91 @@ CKStringNode *CKStringList::find( std::string & anSTLString ) const
 CKStringNode *CKStringList::find( const std::string & anSTLString ) const
 {
 	return ((CKStringList *)this)->find((char *)anSTLString.c_str());
+}
+
+
+/*
+ * These methods remove the first and last strings from the list
+ * and return them to the callers. The idea is that many times
+ * when the processing of a list is done a line at a time and this
+ * makes it easy to do this. If there are no lines in the list
+ * this method will return the empty string, so it's important to
+ * use the size() or empty() methods to see when to stop popping
+ * off the strings.
+ */
+CKString CKStringList::popOffFront()
+{
+	bool		error = false;
+	CKString	retval = "";
+
+	// we have only one thing to remove - the head of the list - if it exists
+	if (!error) {
+		// lock this list up against all changes
+		mMutex.lock();
+
+		// see if we have anything to do
+		if (mHead != NULL) {
+			// get the node that we'll be removing
+			CKStringNode	*n = mHead;
+			// ...and get the string that's stored there for returning
+			retval = *n;
+			// move to the new head of the list
+			mHead = mHead->getNext();
+			// tell the node to remove itself nicely
+			n->removeFromList();
+			// and delete him
+			delete n;
+		}
+
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+CKString CKStringList::popOffFront() const
+{
+	return ((CKStringList *)this)->popOffFront();
+}
+
+
+CKString CKStringList::popOffEnd()
+{
+	bool		error = false;
+	CKString	retval = "";
+
+	// we have only one thing to remove - the tail of the list - if it exists
+	if (!error) {
+		// lock this list up against all changes
+		mMutex.lock();
+
+		// see if we have anything to do
+		if (mTail != NULL) {
+			// get the node that we'll be removing
+			CKStringNode	*n = mTail;
+			// ...and get the string that's stored there for returning
+			retval = *n;
+			// move to the new tail of the list
+			mTail = mTail->getPrev();
+			// tell the node to remove itself nicely
+			n->removeFromList();
+			// and delete him
+			delete n;
+		}
+
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+CKString CKStringList::popOffEnd() const
+{
+	return ((CKStringList *)this)->popOffEnd();
 }
 
 
