@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.4 2004/05/25 16:12:28 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.5 2004/07/08 13:52:04 drbob Exp $
  */
 
 //	System Headers
@@ -212,15 +212,20 @@ CKIRCProtocol::CKIRCProtocol( const CKIRCProtocol & anOther ) :
  */
 CKIRCProtocol::~CKIRCProtocol()
 {
-	// first, disconnect from the IRC server
-	disconnect();
+	// first, kill the listener and free it
+	setListener(NULL);
+	// now handle the connection to the IRC server itself
+	if (isConnected()) {
+		if (isLoggedIn()) {
+			doQUIT("bye");
+			setIsLoggedIn(false);
+		}
+		mCommPort.disconnect();
+	}
 
 	// now release all the things that we have created
-	clearChannelList();
-	removeAllResponders();
-
-	// finally, kill the listener and free it
-	setListener(NULL);
+	mChannelList.clear();
+	mResponders.clear();
 }
 
 
