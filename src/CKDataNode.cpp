@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.23 2005/02/09 17:45:05 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.24 2005/02/14 17:07:48 drbob Exp $
  */
 
 //	System Headers
@@ -331,39 +331,105 @@ void CKDataNode::putVar( const CKString & aName, const CKVariant & aValue )
 /*
  * Since each node can hold many variables (attributes), it's
  * sometimes necessary to clean out the old ones. This method
- * removes the named variable from this node if it exists.
+ * removes the named variable from this node if it exists. If the
+ * flag indicates that this is to be "deep" (recursive), then
+ * this variable will be removed from all the child nodes as well.
  */
-void CKDataNode::removeVar( const CKString & aName )
+void CKDataNode::removeVar( const CKString & aName, bool aDeepFlag )
 {
-	// make sure we do this in a thread-safe manner
-	mVarsMutex.lock();
-	// ...erase all entries with this name (only one possible)
-	if (!mVars.empty()) {
-		std::map<CKString, CKVariant>::iterator	i = mVars.find(aName);
-		if (i != mVars.end()) {
-			mVars.erase(i);
+	bool		error = false;
+
+	/*
+	 * First, remove the variable name from this instance and
+	 * do it in a thread-safe manner.
+	 */
+	if (!error) {
+		// lock up the variable list
+		CKStackLocker	lockem(&mVarsMutex);
+		// ...erase all entries with this name (only one possible)
+		if (!mVars.empty()) {
+			std::map<CKString, CKVariant>::iterator	i = mVars.find(aName);
+			if (i != mVars.end()) {
+				mVars.erase(i);
+			}
 		}
 	}
-	// now unlock the map
-	mVarsMutex.unlock();
+
+	/*
+	 * Next, if the user wants us to delete this from all the kids, we
+	 * need to do that as well.
+	 */
+	if (!error && aDeepFlag) {
+		// lock up the list of kids for this
+		CKStackLocker	lockem(&mKidsMutex);
+		// see if we have any at all
+		if (!mKids.empty()) {
+			for (int i = 0; i < mKids.size(); i++) {
+				if (mKids[i] == NULL) {
+					error = true;
+					std::ostringstream	msg;
+					msg << "CKDataNode::removeVar(const CKString &, bool) - the "
+						"child of '" << getName() << "' was not supposed to be NULL "
+						"yet there is a NULL. Please check on this data corruption "
+						"problem as soon as possible.";
+					throw CKException(__FILE__, __LINE__, msg.str());
+				} else {
+					mKids[i]->removeVar(aName, aDeepFlag);
+				}
+			}
+		}
+	}
 }
 
 
 /*
  * When you want to clear out all the variables (attributes) from
  * this node, call this method and the entire map of variables will
- * be cleared out. It's non-reversable, so be carful with this.
+ * be cleared out. It's non-reversable, so be carful with this. If
+ * the flag indicates that this is to be "deep" (recursive), then
+ * all variables will be removed from all child nodes as well.
  */
-void CKDataNode::clearVars()
+void CKDataNode::clearVars( bool aDeepFlag )
 {
-	// make sure we do this in a thread-safe manner
-	mVarsMutex.lock();
-	// ...erase all entries - period.
-	if (!mVars.empty()) {
-		mVars.clear();
+	bool		error = false;
+
+	/*
+	 * First, remove all the variables from this instance and
+	 * do it in a thread-safe manner.
+	 */
+	if (!error) {
+		// lock up the variable list
+		CKStackLocker	lockem(&mVarsMutex);
+		// ...erase all entries - period.
+		if (!mVars.empty()) {
+			mVars.clear();
+		}
 	}
-	// now unlock the map
-	mVarsMutex.unlock();
+
+	/*
+	 * Next, if the user wants us to clear the variables from all the
+	 * kids, we need to do that as well.
+	 */
+	if (!error && aDeepFlag) {
+		// lock up the list of kids for this
+		CKStackLocker	lockem(&mKidsMutex);
+		// see if we have any at all
+		if (!mKids.empty()) {
+			for (int i = 0; i < mKids.size(); i++) {
+				if (mKids[i] == NULL) {
+					error = true;
+					std::ostringstream	msg;
+					msg << "CKDataNode::clearVars(bool) - the child of '" <<
+						getName() << "' was not supposed to be NULL yet there is "
+						"a NULL. Please check on this data corruption problem as "
+						"soon as possible.";
+					throw CKException(__FILE__, __LINE__, msg.str());
+				} else {
+					mKids[i]->clearVars(aDeepFlag);
+				}
+			}
+		}
+	}
 }
 
 
