@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.2 2003/12/01 15:44:16 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H
@@ -71,6 +71,14 @@ class CKBufferedSocket :
 		 * attempts to make that connection before returning.
 		 */
 		CKBufferedSocket( const std::string & aHost, int aPort );
+		/*
+		 * There are times when you are given a simple CKSocket and you
+		 * want to 'promote' it to a buffered socket. This form of the
+		 * constructor is made for just this type of operation. It takes
+		 * the CKSocket and creates a new CKBufferedSocket so that you
+		 * can take advantage of the buffered reads, etc.
+		 */
+		CKBufferedSocket( const CKSocket & anOther );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running

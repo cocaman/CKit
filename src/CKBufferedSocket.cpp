@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.2 2003/12/01 15:44:15 drbob Exp $
  */
 
 //	System Headers
@@ -54,6 +54,21 @@ CKBufferedSocket::CKBufferedSocket() :
  */
 CKBufferedSocket::CKBufferedSocket( const std::string & aHost, int aPort ) :
 	CKSocket(aHost, aPort),
+	mReadTimeout(DEFAULT_READ_TIMEOUT),
+	mPendingData()
+{
+}
+
+
+/*
+ * There are times when you are given a simple CKSocket and you
+ * want to 'promote' it to a buffered socket. This form of the
+ * constructor is made for just this type of operation. It takes
+ * the CKSocket and creates a new CKBufferedSocket so that you
+ * can take advantage of the buffered reads, etc.
+ */
+CKBufferedSocket::CKBufferedSocket( const CKSocket & anOther ) :
+	CKSocket(anOther),
 	mReadTimeout(DEFAULT_READ_TIMEOUT),
 	mPendingData()
 {
