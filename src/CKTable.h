@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.16 2004/12/16 10:39:17 drbob Exp $
+ * $Id: CKTable.h,v 1.17 2005/01/20 15:55:07 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -161,6 +161,11 @@ class CKTable {
 		void setStringValue( int aRow, const CKString & aColHeader, const char *aStringValue );
 		void setStringValue( const CKString & aRowLabel, int aCol, const char *aStringValue );
 		void setStringValue( const CKString & aRowLabel, const CKString & aColHeader, const char *aStringValue );
+
+		void setStringValue( int aRow, int aCol, const CKString *aStringValue );
+		void setStringValue( int aRow, const CKString & aColHeader, const CKString *aStringValue );
+		void setStringValue( const CKString & aRowLabel, int aCol, const CKString *aStringValue );
+		void setStringValue( const CKString & aRowLabel, const CKString & aColHeader, const CKString *aStringValue );
 		/*
 		 * This method sets the value stored in this location as a date of the
 		 * form YYYYMMDD - stored as a long.
@@ -194,6 +199,15 @@ class CKTable {
 		void setTimeSeriesValue( int aRow, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue );
 		void setTimeSeriesValue( const CKString & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue );
 		void setTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue );
+		/*
+		 * This sets the value stored in this location as a price, but
+		 * a local copy will be made so that the caller doesn't have to worry
+		 * about holding on to the parameter, and is free to delete it.
+		 */
+		void setPriceValue( int aRow, int aCol, const CKPrice *aPriceValue );
+		void setPriceValue( int aRow, const CKString & aColHeader, const CKPrice *aPriceValue );
+		void setPriceValue( const CKString & aRowLabel, int aCol, const CKPrice *aPriceValue );
+		void setPriceValue( const CKString & aRowLabel, const CKString & aColHeader, const CKPrice *aPriceValue );
 		/*
 		 * This method takes the supplied column number and the header and
 		 * assuming the table is big enough to include that column, sets the
@@ -281,10 +295,10 @@ class CKTable {
 		 * outside the scope of this class, then they need to make a copy,
 		 * or call the getValueAsString() method that returns a copy.
 		 */
-		const char *getStringValue( int aRow, int aCol ) const;
-		const char *getStringValue( int aRow, const CKString & aColHeader ) const;
-		const char *getStringValue( const CKString & aRowLabel, int aCol ) const;
-		const char *getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
+		const CKString *getStringValue( int aRow, int aCol ) const;
+		const CKString *getStringValue( int aRow, const CKString & aColHeader ) const;
+		const CKString *getStringValue( const CKString & aRowLabel, int aCol ) const;
+		const CKString *getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method returns the actual table value of the data that
 		 * this location is holding. If the user wants to use this value
@@ -303,6 +317,15 @@ class CKTable {
 		const CKTimeSeries *getTimeSeriesValue( int aRow, const CKString & aColHeader ) const;
 		const CKTimeSeries *getTimeSeriesValue( const CKString & aRowLabel, int aCol ) const;
 		const CKTimeSeries *getTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
+		/*
+		 * This method returns the actual price value of the data that
+		 * this location is holding. If the user wants to use this value
+		 * outside the scope of this class, then they need to make a copy.
+		 */
+		const CKPrice *getPriceValue( int aRow, int aCol ) const;
+		const CKPrice *getPriceValue( int aRow, const CKString & aColHeader ) const;
+		const CKPrice *getPriceValue( const CKString & aRowLabel, int aCol ) const;
+		const CKPrice *getPriceValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 
 		/*
 		 * This method returns the actual CKString value that is the

@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.11 2004/09/28 15:46:00 drbob Exp $
+ * $Id: CKVariant.h,v 1.12 2005/01/20 15:55:09 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -26,6 +26,7 @@
 
 //	Forward Declarations
 class CKTable;
+class CKPrice;
 
 //	Public Constants
 /*
@@ -39,7 +40,8 @@ enum CKVariantTypeEnum {
 	eNumberVariant = 1,
 	eDateVariant = 2,
 	eTableVariant = 3,
-	eTimeSeriesVariant = 4
+	eTimeSeriesVariant = 4,
+	ePriceVariant = 5
 };
 typedef CKVariantTypeEnum CKVariantType;
 
@@ -83,6 +85,7 @@ class CKVariant
 		 * with the caller.
 		 */
 		CKVariant( const char *aStringValue );
+		CKVariant( const CKString *aStringValue );
 		/*
 		 * This form of the constructor understands that the value that's
 		 * intended to be stored here is a Date (long) of the form YYYYMMDD,
@@ -112,6 +115,14 @@ class CKVariant
 		 */
 		CKVariant( const CKTimeSeries *aTimeSeriesValue );
 		/*
+		 * This form of the constructor understands that the value that's
+		 * intended to be stored here is a CKPrice, and the value provided
+		 * is what's to be stored. The value argument will not be touched
+		 * in this constructor as we'll be making a copy of the contents
+		 * for local use.
+		 */
+		CKVariant( const CKPrice *aPriceValue );
+		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
 		 * around.
@@ -130,6 +141,20 @@ class CKVariant
 		 * operator on all classes.
 		 */
 		CKVariant & operator=( const CKVariant & anOther );
+
+		/*
+		 * When we want to make a simple assignment to a CKVariant, these
+		 * operators will make it easy to put the important data types in
+		 * to the variant.
+		 */
+		CKVariant & operator=( const char *aString );
+		CKVariant & operator=( int aValue );
+		CKVariant & operator=( long aDateValue );
+		CKVariant & operator=( double aValue );
+		CKVariant & operator=( const CKString & aString );
+		CKVariant & operator=( const CKTable & aTable );
+		CKVariant & operator=( const CKTimeSeries & aTimeSeries );
+		CKVariant & operator=( const CKPrice & aPrice );
 
 		/********************************************************
 		 *
@@ -155,6 +180,7 @@ class CKVariant
 		 * about holding on to the parameter, and is free to delete it.
 		 */
 		void setStringValue( const char *aStringValue );
+		void setStringValue( const CKString *aStringValue );
 		/*
 		 * This method sets the value stored in this instance as a date of the
 		 * form YYYYMMDD - stored as a long.
@@ -177,6 +203,13 @@ class CKVariant
 		 * delete it.
 		 */
 		void setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue );
+		/*
+		 * This sets the value stored in this instance as a price (native
+		 * and USD), but a local copy will be made so that the caller
+		 * doesn't have to worry about holding on to the parameter, and
+		 * is free to delete it.
+		 */
+		void setPriceValue( const CKPrice *aPriceValue );
 
 		/*
 		 * This method returns the enumerated type of the data that this
@@ -212,7 +245,7 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy,
 		 * or call the getValueAsString() method that returns a copy.
 		 */
-		const char *getStringValue() const;
+		const CKString *getStringValue() const;
 		/*
 		 * This method returns the actual table value of the data that
 		 * this instance is holding. If the user wants to use this value
@@ -225,6 +258,12 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTimeSeries *getTimeSeriesValue() const;
+		/*
+		 * This method returns the actual price value of the data that
+		 * this instance is holding. If the user wants to use this value
+		 * outside the scope of this class, then they need to make a copy.
+		 */
+		const CKPrice *getPriceValue() const;
 
 		/*
 		 * This method can be used to clear out any existing value in the
@@ -342,11 +381,12 @@ class CKVariant
 		 * sets this data.
 		 */
 		union {
-			char			*mStringValue;
+			CKString		*mStringValue;
 			long			mDateValue;
 			double			mDoubleValue;
 			CKTable			*mTableValue;
 			CKTimeSeries	*mTimeSeriesValue;
+			CKPrice			*mPriceValue;
 		};
 };
 

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.17 2004/10/04 16:09:27 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.18 2005/01/20 15:55:08 drbob Exp $
  */
 
 //	System Headers
@@ -25,6 +25,7 @@
 #include "CKVariant.h"
 #include "CKTable.h"
 #include "CKTimeSeries.h"
+#include "CKPrice.h"
 
 //	Forward Declarations
 
@@ -78,6 +79,14 @@ CKVariant::CKVariant( CKVariantType aType, const char *aValue ) :
  * with the caller.
  */
 CKVariant::CKVariant( const char *aStringValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setStringValue(aStringValue);
+}
+
+
+CKVariant::CKVariant( const CKString *aStringValue ) :
 	mType(eUnknownVariant),
 	mStringValue(NULL)
 {
@@ -142,6 +151,21 @@ CKVariant::CKVariant( const CKTimeSeries *aTimeSeriesValue ) :
 
 
 /*
+ * This form of the constructor understands that the value that's
+ * intended to be stored here is a CKPrice, and the value provided
+ * is what's to be stored. The value argument will not be touched
+ * in this constructor as we'll be making a copy of the contents
+ * for local use.
+ */
+CKVariant::CKVariant( const CKPrice *aPriceValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setPriceValue(aPriceValue);
+}
+
+
+/*
  * This is the standard copy constructor and needs to be in every
  * class to make sure that we don't have too many things running
  * around.
@@ -191,8 +215,72 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
 		case eTimeSeriesVariant:
 			setTimeSeriesValue(anOther.getTimeSeriesValue());
 			break;
+		case ePriceVariant:
+			setPriceValue(anOther.getPriceValue());
+			break;
 	}
 
+	return *this;
+}
+
+
+/*
+ * When we want to make a simple assignment to a CKVariant, these
+ * operators will make it easy to put the important data types in
+ * to the variant.
+ */
+CKVariant & CKVariant::operator=( const char *aString )
+{
+	setStringValue(aString);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( int aValue )
+{
+	setDoubleValue((double)aValue);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( long aDateValue )
+{
+	setDateValue(aDateValue);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( double aValue )
+{
+	setDoubleValue(aValue);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKString & aString )
+{
+	setStringValue(aString.c_str());
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKTable & aTable )
+{
+	setTableValue(&aTable);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKTimeSeries & aTimeSeries )
+{
+	setTimeSeriesValue(&aTimeSeries);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKPrice & aPrice )
+{
+	setPriceValue(&aPrice);
 	return *this;
 }
 
@@ -223,9 +311,14 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 			 * Thankfully, we have some helper functions for this.
 			 */
 			if (isTable(aValue)) {
-				// this could be a table or a timeseries... check the value
-				long	v = strtol(&(aValue[1]), (char **)NULL, 10);
-				if ((v > 19760000) && (v < 20100000)) {
+				// this could be a table, price or timeseries... check the value
+				double	v = strtod(&(aValue[1]), (char **)NULL);
+				if (v != floor(v)) {
+					// make a price from the string representation
+					CKPrice		price(aValue);
+					// ...and use that as the value
+					setPriceValue(&price);
+				} else if ((v > 19760000) && (v < 20100000)) {
 					// make a time series from the string representation
 					CKTimeSeries	ts(aValue);
 					// ...and use that as the value
@@ -270,6 +363,14 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 				setTimeSeriesValue(&ts);
 			}
 			break;
+		case ePriceVariant:
+			{
+				// make a price from the string representation
+				CKPrice		price(aValue);
+				// ...and use that as the value
+				setPriceValue(&price);
+			}
+			break;
 	}
 }
 
@@ -285,15 +386,29 @@ void CKVariant::setStringValue( const char *aStringValue )
 	clearValue();
 	// next, if we have something to set, then create space for it
 	if (aStringValue != NULL) {
-		mStringValue = new char[strlen(aStringValue) + 1];
+		mStringValue = new CKString(aStringValue);
 		if (mStringValue == NULL) {
 			throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
 				"(const char *) - the space to hold this string value could "
 				"not be created. This is a serious allocation error.");
-		} else {
-			// go ahead and copy it in
-			bzero(mStringValue, strlen(aStringValue) + 1);
-			strncpy( mStringValue, aStringValue, strlen(aStringValue) );
+		}
+	}
+	// ...and don't forget to set the type of data we have now
+	mType = eStringVariant;
+}
+
+
+void CKVariant::setStringValue( const CKString *aStringValue )
+{
+	// first, see if we need to delete what's might already be here
+	clearValue();
+	// next, if we have something to set, then create space for it
+	if (aStringValue != NULL) {
+		mStringValue = new CKString(*aStringValue);
+		if (mStringValue == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
+				"(const char *) - the space to hold this string value could "
+				"not be created. This is a serious allocation error.");
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -379,6 +494,30 @@ void CKVariant::setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue )
 
 
 /*
+ * This sets the value stored in this instance as a price (native
+ * and USD), but a local copy will be made so that the caller
+ * doesn't have to worry about holding on to the parameter, and
+ * is free to delete it.
+ */
+void CKVariant::setPriceValue( const CKPrice *aPriceValue )
+{
+	// first, see if we need to delete what's might already be here
+	clearValue();
+	// next, if we have something to set, then create space for it
+	if (aPriceValue != NULL) {
+		mPriceValue = new CKPrice(*aPriceValue);
+		if (mPriceValue == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKVariant::setPriceValue("
+				"const CKPrice *) - the copy of this price value could not be "
+				"created. This is a serious allocation error.");
+		}
+	}
+	// ...and don't forget to set the type of data we have now
+	mType = ePriceVariant;
+}
+
+
+/*
  * This method returns the enumerated type of the data that this
  * instance is currently holding.
  */
@@ -450,7 +589,7 @@ long CKVariant::getDateValue() const
  * outside the scope of this class, then they need to make a copy,
  * or call the getValueAsString() method that returns a copy.
  */
-const char *CKVariant::getStringValue() const
+const CKString *CKVariant::getStringValue() const
 {
 	// make sure it's something that can be done
 	if (mType != eStringVariant) {
@@ -497,6 +636,23 @@ const CKTimeSeries *CKVariant::getTimeSeriesValue() const
 
 
 /*
+ * This method returns the actual price value of the data that
+ * this instance is holding. If the user wants to use this value
+ * outside the scope of this class, then they need to make a copy.
+ */
+const CKPrice *CKVariant::getPriceValue() const
+{
+	// make sure it's something that can be done
+	if (mType != ePriceVariant) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getPriceValue() - "
+			"the data contained in this instance is not a price and "
+			"therefore we can't get a price value from it.");
+	}
+	return mPriceValue;
+}
+
+
+/*
  * This method can be used to clear out any existing value in the
  * variant and reset it to it's "unknown" state. This is useful if
  * you want to clean up the memory used by the variant in preparation
@@ -510,7 +666,7 @@ void CKVariant::clearValue()
 			break;
 		case eStringVariant:
 			if (mStringValue != NULL) {
-				delete [] mStringValue;
+				delete mStringValue;
 				mStringValue = NULL;
 			}
 			break;
@@ -528,6 +684,12 @@ void CKVariant::clearValue()
 			if (mTimeSeriesValue != NULL) {
 				delete mTimeSeriesValue;
 				mTimeSeriesValue = NULL;
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue != NULL) {
+				delete mPriceValue;
+				mPriceValue = NULL;
 			}
 			break;
 	}
@@ -703,7 +865,7 @@ CKString CKVariant::getValueAsString() const
 			retval += "<unknown>";
 			break;
 		case eStringVariant:
-			retval += mStringValue;
+			retval += *mStringValue;
 			break;
 		case eNumberVariant:
 			retval += mDoubleValue;
@@ -723,6 +885,13 @@ CKString CKVariant::getValueAsString() const
 				retval += "NULL";
 			} else {
 				retval += mTimeSeriesValue->toString();
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue == NULL) {
+				retval += "NULL";
+			} else {
+				retval += mPriceValue->toString();
 			}
 			break;
 	}
@@ -758,7 +927,7 @@ CKString CKVariant::generateCodeFromValues() const
 			buff.append("U:");
 			break;
 		case eStringVariant:
-			buff.append("S:").append(mStringValue);
+			buff.append("S:").append(*mStringValue);
 			break;
 		case eNumberVariant:
 			buff.append("N:").append(mDoubleValue);
@@ -778,6 +947,13 @@ CKString CKVariant::generateCodeFromValues() const
 				buff.append("U:");
 			} else {
 				buff.append("L:").append(mTimeSeriesValue->generateCodeFromValues());
+			}
+			break;
+		case ePriceVariant:
+			if (mPriceValue == NULL) {
+				buff.append("U:");
+			} else {
+				buff.append("P:").append(mPriceValue->generateCodeFromValues());
 			}
 			break;
 	}
@@ -814,6 +990,9 @@ void CKVariant::takeValuesFromCode( const CKString & aCode )
 		case 'L':
 			setValueAsType(eTimeSeriesVariant, aCode.substr(2).c_str());
 			break;
+		case 'P':
+			setValueAsType(ePriceVariant, aCode.substr(2).c_str());
+			break;
 	}
 }
 
@@ -849,7 +1028,7 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 					if (anOther.mStringValue == NULL) {
 						equal = false;
 					} else {
-						if (strcmp(mStringValue, anOther.mStringValue) != 0) {
+						if ((*mStringValue) != (*anOther.mStringValue)) {
 							equal = false;
 						}
 					}
@@ -897,6 +1076,22 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 					}
 				}
 				break;
+			case ePriceVariant:
+				// two NULLs match in my opinion
+				if (mPriceValue == NULL) {
+					if (anOther.mPriceValue != NULL) {
+						equal = false;
+					}
+				} else {
+					if (anOther.mPriceValue == NULL) {
+						equal = false;
+					} else {
+						if ((*mPriceValue) != (*anOther.mPriceValue)) {
+							equal = false;
+						}
+					}
+				}
+				break;
 		}
 	}
 
@@ -937,7 +1132,7 @@ CKString CKVariant::toString() const
 			if (mStringValue == NULL) {
 				retval.append("NULL");
 			} else {
-				retval.append(mStringValue);
+				retval.append(*mStringValue);
 			}
 			break;
 		case eNumberVariant:
@@ -955,6 +1150,10 @@ CKString CKVariant::toString() const
 		case eTimeSeriesVariant:
 			retval = "(CKTimeSeries)";
 			retval.append(mTimeSeriesValue->toString());
+			break;
+		case ePriceVariant:
+			retval = "(CKPrice)";
+			retval.append(mPriceValue->toString());
 			break;
 	}
 
@@ -976,6 +1175,7 @@ void CKVariant::setType( CKVariantType aType )
 		case eDateVariant:
 		case eTableVariant:
 		case eTimeSeriesVariant:
+		case ePriceVariant:
 			mType = aType;
 			break;
 		default:

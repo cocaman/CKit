@@ -84,6 +84,7 @@ OBJS = CKUUID.o \
 	CKVariant.o \
 	CKTable.o \
 	CKTimeSeries.o \
+	CKPrice.o \
 	CKDataNode.o \
 	CKIndexNode.o \
 	CKStopwatch.o \
@@ -172,6 +173,8 @@ CKTable.o: CKException.h CKString.h CKFWMutex.h
 CKTable.o: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKTimeSeries.o: CKException.h CKString.h CKFWMutex.h CKTable.h 
 CKTimeSeries.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
+CKPrice.o: CKPrice.h CKException.h CKString.h CKFWMutex.h CKTable.h 
+CKPrice.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o: CKString.h CKVector.h CKStackLocker.h CKException.h
 CKIndexNode.o: CKIndexNode.h CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h

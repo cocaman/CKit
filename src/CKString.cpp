@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.13 2005/01/13 10:32:41 drbob Exp $
+ * $Id: CKString.cpp,v 1.14 2005/01/20 15:54:56 drbob Exp $
  */
 
 //	System Headers
@@ -640,7 +640,7 @@ CKString & CKString::prepend( const CKString & aString )
 }
 
 
-CKString & CKString::prepend( char *aCString )
+CKString & CKString::prepend( char *aCString, int aLength )
 {
 	bool		error = false;
 
@@ -668,7 +668,11 @@ CKString & CKString::prepend( char *aCString )
 			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
 			// this is what we have to add to the buffer
-			newChars = strlen(aCString);
+			if (aLength >= 0) {
+				newChars = aLength;
+			} else {
+				newChars = strlen(aCString);
+			}
 		}
 	}
 
@@ -714,9 +718,9 @@ CKString & CKString::prepend( char *aCString )
 }
 
 
-CKString & CKString::prepend( const char *aCString )
+CKString & CKString::prepend( const char *aCString, int aLength )
 {
-	return prepend((char *)aCString);
+	return prepend((char *)aCString, aLength);
 }
 
 
