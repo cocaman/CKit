@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.3 2004/09/16 09:34:19 drbob Exp $
+ * $Id: CKString.cpp,v 1.4 2004/09/16 09:57:49 drbob Exp $
  */
 
 //	System Headers
@@ -2349,23 +2349,19 @@ int CKString::find( char *aCString, int aStartingIndex )
 	if (!error) {
 		if (aCString == NULL) {
 			error = true;
-			std::ostringstream	msg;
-			msg << "CKString::find(char *, int) - the passed-in C-String is NULL and "
-				"that means that there's nothing I can do. Please make sure that "
-				"the argument is not NULL before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+			// no need to throw exception, just don't match
 		} else {
 			// get the length of this argument now for use later
 			matchLen = strlen(aCString);
 			if (matchLen == 0) {
 				error = true;
-				std::ostringstream	msg;
-				msg << "CKString::find(char *, int) - the passed-in C-String is empty "
-					"and that means that there's nothing I can do. Please make "
-					"sure that the argument is not empty before calling this "
-					"method.";
-				throw CKException(__FILE__, __LINE__, msg.str());
+				// no need to throw exception, just don't match
 			}
+		}
+		// now see if I have anything to match
+		if (mSize == 0) {
+			error = true;
+			// no need to throw exception, just don't match
 		}
 	}
 
@@ -2524,23 +2520,19 @@ int CKString::findLast( char *aCString, int aStartingIndex )
 	if (!error) {
 		if (aCString == NULL) {
 			error = true;
-			std::ostringstream	msg;
-			msg << "CKString::findLast(char *, int) - the passed-in C-String is NULL "
-				"and that means that there's nothing I can do. Please make sure "
-				"that the argument is not NULL before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+			// no need to throw exception, just don't match
 		} else {
 			// get the length of this argument now for use later
 			matchLen = strlen(aCString);
 			if (matchLen == 0) {
 				error = true;
-				std::ostringstream	msg;
-				msg << "CKString::findLast(char *) - the passed-in C-String is "
-					"empty and that means that there's nothing I can do. Please "
-					"make sure that the argument is not empty before calling "
-					"this method.";
-				throw CKException(__FILE__, __LINE__, msg.str());
+				// no need to throw exception, just don't match
 			}
+		}
+		// now see if I have anything to match
+		if (mSize == 0) {
+			error = true;
+			// no need to throw exception, just don't match
 		}
 	}
 
