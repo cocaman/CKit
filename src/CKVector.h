@@ -5,7 +5,7 @@
  *              This was originally written in the MarketMash server by
  *              Jeremy.
  *
- * $Id: CKVector.h,v 1.1 2004/09/23 16:26:19 drbob Exp $
+ * $Id: CKVector.h,v 1.2 2004/09/23 19:51:30 drbob Exp $
  */
 #ifndef __CKVECTOR_H
 #define __CKVECTOR_H
@@ -68,8 +68,8 @@ template <class T> class CKVector
 		 * to reasonable values, but it's nice to be able to set them
 		 * just the same.
 		 */
-		inline CKVector( int anInitialCapacity = CKVECTOR_DEFAULT_STARTING_SIZE,
-						 int aResizeAmount = CKVECTOR_DEFAULT_INCREMENT_SIZE ) :
+		CKVector( int anInitialCapacity = CKVECTOR_DEFAULT_STARTING_SIZE,
+				  int aResizeAmount = CKVECTOR_DEFAULT_INCREMENT_SIZE ) :
 			mElements(NULL),
 			mSize(0),
 			mCapacity(anInitialCapacity),
@@ -94,7 +94,7 @@ template <class T> class CKVector
 		 * class to make sure that we don't have too many things running
 		 * around.
 		 */
-		inline CKVector( CKVector<T> & anOther ) :
+		CKVector( CKVector<T> & anOther ) :
 			mElements(NULL),
 			mSize(0),
 			mCapacity(0),
@@ -107,7 +107,7 @@ template <class T> class CKVector
 		}
 
 
-		inline CKVector( const CKVector<T> & anOther ) :
+		CKVector( const CKVector<T> & anOther ) :
 			mElements(NULL),
 			mSize(0),
 			mCapacity(0),
@@ -124,7 +124,7 @@ template <class T> class CKVector
 		 * This is the destructor for the vector and makes sure that
 		 * everything is cleaned up before leaving.
 		 */
-		inline ~CKVector()
+		~CKVector()
 		{
 			if (mElements != NULL) {
 				delete [] mElements;
@@ -138,13 +138,13 @@ template <class T> class CKVector
 		 * make sure that we do this right by always having an equals
 		 * operator on all classes.
 		 */
-		inline CKVector<T> & operator=( const CKVector<T> & anOther )
+		CKVector<T> & operator=( const CKVector<T> & anOther )
 		{
 			return operator=((CKVector<T> &)anOther);
 		}
 
 
-		inline CKVector<T> & operator=( CKVector<T> & anOther )
+		CKVector<T> & operator=( CKVector<T> & anOther )
 		{
 			// first, copy in the easy values
 			mSize = anOther.mSize;
@@ -182,13 +182,13 @@ template <class T> class CKVector
 		 * implementations that it's often convenient to use one or the
 		 * other to remain consistent.
 		 */
-		inline int size() const
+		int size() const
 		{
 			return mSize;
 		}
 
 
-		inline int length() const
+		int length() const
 		{
 			return mSize;
 		}
@@ -199,7 +199,7 @@ template <class T> class CKVector
 		 * is NOT the size per se. The capacity is what this vector
 		 * will hold before having to resize it's contents.
 		 */
-		inline int capacity() const
+		int capacity() const
 		{
 			return mCapacity;
 		}
@@ -210,13 +210,13 @@ template <class T> class CKVector
 		 * for change, we're going to expose this here so it's easy for them
 		 * to iterate, for example.
 		 */
-		inline void lock()
+		void lock()
 		{
 			mMutex.lock();
 		}
 
 
-		inline void unlock()
+		void unlock()
 		{
 			mMutex.unlock();
 		}
@@ -231,20 +231,20 @@ template <class T> class CKVector
 		 * There needs to be a simple way to add an element to the end
 		 * of this vector. This is it.
 		 */
-		inline void addToEnd( T anElem )
+		void addToEnd( T anElem )
 		{
 			_addToEnd((T &)anElem);
 		}
 
 
-		inline void addToEnd( T & anElem )
+		void addToEnd( T & anElem )
 		{
 			_addToEnd(anElem);
 		}
 
 
 	private:
-		inline void _addToEnd( T & anElem )
+		void _addToEnd( T & anElem )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -274,20 +274,20 @@ template <class T> class CKVector
 		 * There needs to be a simple way to add an element to the front
 		 * of this vector. This is it.
 		 */
-		inline void addToFront( T & anElem )
+		void addToFront( T & anElem )
 		{
 			_addToFront(anElem);
 		}
 
 
-		inline void addToFront( T anElem )
+		void addToFront( T anElem )
 		{
 			_addToFront((T &)anElem);
 		}
 
 
 	private:
-		inline void _addToFront( T & anElem )
+		void _addToFront( T & anElem )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -323,7 +323,7 @@ template <class T> class CKVector
 		 * this method will return that element and it will be removed
 		 * from the vector itself.
 		 */
-		inline T popEnd()
+		T popEnd()
 		{
 			T		retval;
 
@@ -359,7 +359,7 @@ template <class T> class CKVector
 		 * this method will return that element and it will be removed
 		 * from the vector itself.
 		 */
-		inline T popFront()
+		T popFront()
 		{
 			T		retval;
 
@@ -400,7 +400,7 @@ template <class T> class CKVector
 		 * vector. It will create space, as needed, and that's a nice
 		 * way to pre-size the array.
 		 */
-		inline T & operator[]( int anIndex )
+		T & operator[]( int anIndex )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -443,7 +443,7 @@ template <class T> class CKVector
 		 * ouside the sizeing size of the vector, you're going to get an
 		 * exception.
 		 */
-		inline const T & operator[]( int anIndex ) const
+		const T & operator[]( int anIndex ) const
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -477,7 +477,7 @@ template <class T> class CKVector
 		 * the characters from 'aStartingIndex' to the end of the string
 		 * will be removed.
 		 */
-		inline void erase( int aStartingIndex,  int aLength = -1 )
+		void erase( int aStartingIndex,  int aLength = -1 )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -536,13 +536,13 @@ template <class T> class CKVector
 		 * storage allocated, it only means that there's no information in
 		 * that storage.
 		 */
-		inline bool empty()
+		bool empty()
 		{
 			return (mSize == 0);
 		}
 
 
-		inline bool empty() const
+		bool empty() const
 		{
 			return (mSize == 0);
 		}
@@ -553,7 +553,7 @@ template <class T> class CKVector
 		 * It's handy from time to time if you're going to be re-using the
 		 * same vector again and again.
 		 */
-		inline void clear()
+		void clear()
 		{
 			mSize = 0;
 		}
@@ -570,7 +570,7 @@ template <class T> class CKVector
 		 * are currently elements in the vector, they will be copied
 		 * to the new vector assuming they can be copied.
 		 */
-		inline void resize( int aNewSize )
+		void resize( int aNewSize )
 		{
 			// we need to create a new buffer that's the requested size
 			T	*resultant = new T[aNewSize];
@@ -612,7 +612,7 @@ template <class T> class CKVector
 		 * pointers themselves. If they are equal, then this method returns a
 		 * value of true, otherwise, it returns a false.
 		 */
-		inline bool operator==( CKVector<T> & anOther )
+		bool operator==( CKVector<T> & anOther )
 		{
 			bool		equal = true;
 
@@ -645,19 +645,19 @@ template <class T> class CKVector
 		}
 
 
-		inline bool operator==( const CKVector<T> & anOther )
+		bool operator==( const CKVector<T> & anOther )
 		{
 			return operator==((CKVector<T> &)anOther);
 		}
 
 
-		inline bool operator==( CKVector<T> & anOther ) const
+		bool operator==( CKVector<T> & anOther ) const
 		{
 			return ((CKVector<T> *)this)->operator==(anOther);
 		}
 
 
-		inline bool operator==( const CKVector<T> & anOther ) const
+		bool operator==( const CKVector<T> & anOther ) const
 		{
 			return ((CKVector<T> *)this)->operator==((CKVector<T> &)anOther);
 		}
@@ -669,25 +669,25 @@ template <class T> class CKVector
 		 * actual pointers themselves. If they are not equal, then this method
 		 * returns a value of true, otherwise, it returns a false.
 		 */
-		inline bool operator!=( CKVector<T> & anOther )
+		bool operator!=( CKVector<T> & anOther )
 		{
 			return !operator==(anOther);
 		}
 
 
-		inline bool operator!=( const CKVector<T> & anOther )
+		bool operator!=( const CKVector<T> & anOther )
 		{
 			return !operator==((CKVector<T> &)anOther);
 		}
 
 
-		inline bool operator!=( CKVector<T> & anOther ) const
+		bool operator!=( CKVector<T> & anOther ) const
 		{
 			return !((CKVector<T> *)this)->operator==(anOther);
 		}
 
 
-		inline bool operator!=( const CKVector<T> & anOther ) const
+		bool operator!=( const CKVector<T> & anOther ) const
 		{
 			return !((CKVector<T> *)this)->operator==((CKVector<T> &)anOther);
 		}
@@ -706,7 +706,7 @@ template <class T> class CKVector
 		 * dump of the tree rooted at this node. Pass in a 'true' if you
 		 * want to see the entire tree at this node.
 		 */
-		inline CKString toString() const
+		CKString toString() const
 		{
 			CKString	retval = "<not yet implemented>";
 			return retval;
