@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.2 2004/02/27 00:32:35 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.3 2004/02/27 10:52:06 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -264,6 +264,17 @@ class CKTimeSeries
 		 * common number yourself.
 		 */
 		double average();
+		/*
+		 * These methods are simple numerical attributes of the series
+		 * computed each time they are called. They are pretty easy to
+		 * understand, with the rms() being the root-mean-square value
+		 * of the series and the linf() being the l-infinity norm of the
+		 * series.
+		 */
+		double max();
+		double min();
+		double rms();
+		double linf();
 
 		/*
 		 * These are the operator equivalents of the simple mathematical
