@@ -15,7 +15,7 @@
  *                   grouping, we don't want this tree to manage the memory of
  *                   the leaf nodes, as the main CKDataTree does all that.
  *
- * $Id: CKIndexNode.cpp,v 1.1 2004/12/22 10:50:24 drbob Exp $
+ * $Id: CKIndexNode.cpp,v 1.2 2004/12/22 13:06:35 drbob Exp $
  */
 
 //	System Headers
@@ -422,7 +422,7 @@ CKIndexNode *CKIndexNode::newNodeByDeepCopy( const CKIndexNode *aNode,
 											 const CKIndexNode *aParent )
 {
 	bool		error = false;
-	CKIndexNode	*retval = NULL;
+	CKDataNode	*retval = NULL;
 
 	// first thing to do is to make a shallow copy of the node
 	if (!error) {
@@ -487,7 +487,8 @@ CKIndexNode *CKIndexNode::newNodeByDeepCopy( const CKIndexNode *aNode,
 			// copy each one with this guy as it's new parent
 			CKIndexNode	*n = NULL;
 			try {
-				n = newNodeByDeepCopy((CKIndexNode *) oldKids[i], retval);
+				n = newNodeByDeepCopy((CKIndexNode *) oldKids[i],
+									  (CKIndexNode *) retval);
 			} catch (CKException & cke) {
 				n = NULL;
 			}
@@ -495,7 +496,7 @@ CKIndexNode *CKIndexNode::newNodeByDeepCopy( const CKIndexNode *aNode,
 				// flag this as an error
 				error = true;
 				// clean up all the things we've allocated to this point
-				deleteNodeDeep((CKDataNode *) retval);
+				deleteNodeDeep(retval);
 				// now log the problem and throw the exception
 				std::ostringstream	msg;
 				msg << "CKIndexNode::newNodeByDeepCopy(const CKIndexNode*, "
@@ -510,7 +511,7 @@ CKIndexNode *CKIndexNode::newNodeByDeepCopy( const CKIndexNode *aNode,
 		}
 	}
 
-	return retval;
+	return (CKIndexNode*) retval;
 }
 
 
