@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include <map>
 
 #include "CKString.h"
 
@@ -46,6 +47,34 @@ int main(int argc, char *argv[]) {
 	std::cout << line.left(5) << std::endl;
 	std::cout << line.right(3) << std::endl;
 	std::cout << line.mid(3,5) << std::endl;
-	std::cout << line.replace('O','*') << std::endl;
+	std::cout << line.replace('O','*') << " " << line << std::endl;
 	std::cout << line.findLast("TU") << std::endl;
+	
+	std::map<CKString, CKString>	lookup;
+	lookup["one"] = "ONE";
+	lookup["two"] = "TWO";
+	lookup["three"] = "THREE";
+	lookup["one_two"] = "ONE_TWO";
+	std::map<CKString, CKString>::iterator	lu;
+	for (lu = lookup.begin(); lu != lookup.end(); ++lu) {
+		std::cout << lu->first << "=>" << lu->second << std::endl;
+	}
+	
+	CKString	one("one");
+	CKString	one_two("one_two");
+	if ((one == one_two) || (one_two == one)) {
+		std::cout << "bad equality" << std::endl;
+	} else {
+		std::cout << "good equality" << std::endl;
+	}
+	if (one < one_two) {
+		std::cout << one << " < " << one_two << std::endl;
+	} else {
+		std::cout << one << " !< " << one_two << std::endl;
+	}
+	if (one_two < one) {
+		std::cout << one_two << " < " << one << std::endl;
+	} else {
+		std::cout << one_two << " !< " << one << std::endl;
+	}
 }
