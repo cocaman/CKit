@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.7 2004/09/02 20:46:43 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.8 2004/09/02 20:48:40 drbob Exp $
  */
 
 //	System Headers
@@ -466,7 +466,7 @@ void CKBufferedSocket::appendToPendingData( const char *aString )
  */
 void CKBufferedSocket::emptyPendingData()
 {
-	mPendingData.empty();
+	mPendingData.clear();
 }
 
 
