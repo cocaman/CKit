@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  * 
- * $Id: CKIRCProtocolExec.cpp,v 1.2 2004/05/25 16:12:29 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.3 2004/09/11 02:15:20 drbob Exp $
  */
 
 //	System Headers
@@ -125,7 +125,13 @@ bool CKIRCProtocolExec::handleMessage( CKIRCIncomingMessage & aMsg,
 			exec->mMessage = aMsg;
 			exec->mProtocol = aBoss;
 			// ...and then LAUNCH!
-			exec->start();
+			if (exec->start() != CKFWThread::cSuccess) {
+				error = true;
+				std::cerr << "CKIRCProtocolExec::handleMessage(CKIRCIncomingMessage &, "
+					"CKIRCProtocol *) - the new thread which was to process this message "
+					"could not be started. This is a serious problem that needs to be "
+					"looked into as soon as possible." << std::endl;
+			}
 		}
 	}
 

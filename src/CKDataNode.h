@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.7 2004/08/31 11:18:05 drbob Exp $
+ * $Id: CKDataNode.h,v 1.8 2004/09/11 02:15:17 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -214,6 +214,18 @@ class CKDataNode
 		 * make a copy.
 		 */
 		CKDataNode *findChild( const std::string & aName );
+		/*
+		 * This method returns the number of child nodes this node has. This
+		 * is useful for a lot of things, and among them is the core of the
+		 * isLeaf() method, below.
+		 */
+		int getChildCount();
+		/*
+		 * This method will return true if there are no child nodes attached
+		 * to this node. This then, would make this node a leaf node in the
+		 * tree.
+		 */
+		bool isLeaf();
 
 		/*
 		 * One of the more interesting capabilities of this class is it's
@@ -326,11 +338,29 @@ class CKDataNode
 		 * There are times that we want to know the identifying names of
 		 * all the leaf nodes of a certain section of the tree. This is
 		 * really useful when we need to gather data from an external
-		 * source, and need a list of names to data that data for. This
+		 * source, and need a list of names to request that data for. This
 		 * method does a great job of getting a unique vector of names
 		 * of all the leaf nodes under it, and all it's children.
 		 */
 		std::vector<std::string>	getUniqueLeafNodeNames();
+		/*
+		 * This method is interesting in that it will return the list of
+		 * unique leaf node names that are *missing* the provided variable
+		 * name in their list of variables. This is really nice in that
+		 * it allows us to ask the question: Who needs 'price'? and have
+		 * a list of node names that is returned.
+		 */
+		std::vector<std::string>	getUniqueLeafNodeNamesWithoutVar(
+											const std::string & aVarName );
+		/*
+		 * This method is interesting in that it will return the list of
+		 * unique leaf node names that contain the provided variable
+		 * name in their list of variables. This is really nice in that
+		 * it allows us to ask the question: Who has 'price'? and have
+		 * a list of node names that is returned.
+		 */
+		std::vector<std::string>	getUniqueLeafNodeNamesWithVar(
+											const std::string & aVarName );
 
 		/*
 		 * This method will return the number of steps that need to be

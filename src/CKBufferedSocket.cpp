@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.9 2004/09/02 21:26:33 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.10 2004/09/11 02:15:16 drbob Exp $
  */
 
 //	System Headers
@@ -131,8 +131,8 @@ CKBufferedSocket & CKBufferedSocket::operator=( const CKBufferedSocket & anOther
 	CKSocket::operator=(anOther);
 
 	// now fill in the stuff we have
-	setReadTimeout(anOther.getReadTimeout());
-	setPendingData(anOther.getPendingData());
+	mReadTimeout = anOther.mReadTimeout;
+	mPendingData = anOther.mPendingData;
 
 	return *this;
 }
@@ -396,8 +396,8 @@ bool CKBufferedSocket::operator==( const CKBufferedSocket & anOther ) const
 	bool		equal = true;
 
 	if (!CKSocket::operator==(anOther) ||
-		(getReadTimeout() != anOther.getReadTimeout()) ||
-		(getPendingData() != anOther.getPendingData())) {
+		(mReadTimeout != anOther.mReadTimeout) ||
+		(mPendingData != anOther.mPendingData)) {
 		equal = false;
 	}
 

@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.8 2004/09/02 18:15:13 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.9 2004/09/11 02:15:20 drbob Exp $
  */
 
 //	System Headers
@@ -275,7 +275,7 @@ int CKIRCProtocolListener::process()
 					"message seemed to be to me, but the format was wrong: '" <<
 					line << "' so we're ignoring this message." << std::endl;
 			} else {
-				// pick off the sender and message to me
+				// pick off the sender and the message to me
 				msg.userNickname = line.substr(1, (bang - 1));
 				msg.message = line.substr(pos + strlen(tag));
 

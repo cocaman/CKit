@@ -2,10 +2,10 @@
  * CKVariant.cpp - this file defines a class that can be used to represent a
  *                 general data value. The power of this class is that all the
  *                 different kinds of values that this object can rperesent can
- *                 then be treated as a single data type and thus really
+ *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
- *
- * $Id: CKVariant.cpp,v 1.8 2004/09/02 18:13:33 drbob Exp $
+ * 
+ * $Id: CKVariant.cpp,v 1.9 2004/09/11 02:15:24 drbob Exp $
  */
 
 //	System Headers
@@ -42,7 +42,7 @@
  ********************************************************/
 /*
  * This is the default constructor that defaults to a String but
- * contains nothing. After this, you're certainly going to have to
+ * contains nothing. After this, you're certainly going to have to 
  * set the value's type and contents.
  */
 CKVariant::CKVariant() :
@@ -390,7 +390,7 @@ CKVariantType CKVariant::getType() const
 
 /*
  * This method will return the integer value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an
+ * instance - if the type is numeric. If the data isn't numeric an 
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -409,7 +409,7 @@ int CKVariant::getIntValue() const
 
 /*
  * This method will return the double value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an
+ * instance - if the type is numeric. If the data isn't numeric an 
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -531,7 +531,7 @@ void CKVariant::clearValue()
 			}
 			break;
 	}
-
+	
 	// don't forget to set it to 'unknown'
 	mType = eUnknownVariant;
 }
@@ -689,7 +689,7 @@ bool CKVariant::isTable( const char *aValue )
 
 
 /*
- * This method returns a copy of the current value as contained in
+ * This method returns a copy of the current value as contained in 
  * a string and it is the responsibility of the caller to call
  * 'delete []' on the results. It's also possible that this method
  * will return NULL, so you have better check the return value
@@ -798,8 +798,8 @@ char *CKVariant::generateCodeFromValues() const
 				if (code == NULL) {
 					throw CKException(__FILE__, __LINE__, "CKVariant::"
 						"generateCodeFromValues() - the code for the table value "
-						"of this variant could not be obtained. This is a serious "
-						"problem that needs to be looked into.");
+						"of this variant could not be obtained and that's a serious "
+						"problem that needs to be looked at.");
 				} else {
 					buff << "T:" << code;
 					delete [] code;
@@ -815,8 +815,8 @@ char *CKVariant::generateCodeFromValues() const
 				if (code == NULL) {
 					throw CKException(__FILE__, __LINE__, "CKVariant::"
 						"generateCodeFromValues() - the code for the timeseries value "
-						"of this variant could not be obtained. This is a serious "
-						"problem that needs to be looked into.");
+						"of this variant could not be obtained and that's a serious "
+						"problem that needs to be looked at.");
 				} else {
 					buff << "L:" << code;
 					delete [] code;

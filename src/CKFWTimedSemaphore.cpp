@@ -3,7 +3,7 @@
  *                          a certain period of time before giving up and
  *                          returning to the caller.
  *
- * $Id: CKFWTimedSemaphore.cpp,v 1.3 2003/12/16 18:08:56 drbob Exp $
+ * $Id: CKFWTimedSemaphore.cpp,v 1.4 2004/09/11 02:15:19 drbob Exp $
  */
 
 //	System Headers

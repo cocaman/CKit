@@ -2,7 +2,7 @@
  * CKFWTimer.h - this file defines the simple timer that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWTimer.h,v 1.3 2003/12/16 18:08:57 drbob Exp $
+ * $Id: CKFWTimer.h,v 1.4 2004/09/11 02:15:20 drbob Exp $
  */
 #ifndef __CKFW_TIMER_H
 #define __CKFW_TIMER_H

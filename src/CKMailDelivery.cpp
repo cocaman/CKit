@@ -5,7 +5,7 @@
  *                      implemented and therefore sets the contract that needs
  *                      to be adhered to for all delivery channels.
  *
- * $Id: CKMailDelivery.cpp,v 1.3 2003/12/16 18:09:00 drbob Exp $
+ * $Id: CKMailDelivery.cpp,v 1.4 2004/09/11 02:15:21 drbob Exp $
  */
 
 //	System Headers

@@ -6,7 +6,7 @@
  *                    user really only needs to subclass off this class and
  *                    then write that one method.
  *
- * $Id: CKIRCResponder.h,v 1.3 2003/12/16 18:09:00 drbob Exp $
+ * $Id: CKIRCResponder.h,v 1.4 2004/09/11 02:15:21 drbob Exp $
  */
 #ifndef __CKIRCRESPONDER_H
 #define __CKIRCRESPONDER_H

@@ -12,7 +12,7 @@
  *                      takes place during a connection. So, if you can, scan
  *                      the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.h,v 1.3 2003/12/16 18:09:03 drbob Exp $
+ * $Id: CKSMTPConnection.h,v 1.4 2004/09/11 02:15:22 drbob Exp $
  */
 #ifndef __CKSMTPCONNECTION_H
 #define __CKSMTPCONNECTION_H
