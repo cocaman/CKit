@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.18 2004/09/28 15:45:52 drbob Exp $
+ * $Id: CKTable.cpp,v 1.19 2004/09/28 23:37:56 drbob Exp $
  */
 
 //	System Headers
@@ -2333,7 +2333,8 @@ void CKTable::takeValuesFromCode( const CKString & aCode )
 	char	delim = aCode[0];
 	// ...and parse this guy into chunks
 	int		bit = 0;
-	CKStringList	chunks = CKStringList::parseIntoChunks(aCode, delim);
+	CKStringList	chunks = CKStringList::parseIntoChunks(
+									aCode.substr(1, aCode.size()-2), delim);
 	if (chunks.size() < 3) {
 		std::ostringstream	msg;
 		msg << "CKTable::takeValuesFromCode(const CKString &) - the code: '" <<

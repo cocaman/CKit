@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.13 2004/09/28 15:45:57 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.14 2004/09/28 23:37:56 drbob Exp $
  */
 
 //	System Headers
@@ -1365,7 +1365,8 @@ void CKTimeSeries::takeValuesFromCode( const CKString & aCode )
 	char	delim = aCode[0];
 	// ...and parse this guy into chunks
 	int		bit = 0;
-	CKStringList	chunks = CKStringList::parseIntoChunks(aCode, delim);
+	CKStringList	chunks = CKStringList::parseIntoChunks(
+									aCode.substr(1, aCode.size()-2), delim);
 	if (chunks.size() < 1) {
 		std::ostringstream	msg;
 		msg << "CKTimeSeries::takeValuesFromCode(const CKString &) - the code: '" <<
