@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.3 2004/02/27 14:37:47 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.4 2004/05/11 19:17:09 drbob Exp $
  */
 
 //	System Headers
@@ -725,21 +725,15 @@ char *CKVariant::generateCodeFromValues() const
 	}
 
 	// now create a new buffer to hold all this
-	const char	*guts = buff.str().c_str();
-	int			gutsLen = strlen(guts);
-	if (guts != NULL) {
-		retval = new char[gutsLen + 1];
-		if (retval == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::generateCodeFromValues"
-				"() - the space to hold the codified representation of this "
-				"value could not be created. This is a serious allocation "
-				"error.");
-		} else {
-			// copy over the string's contents
-			strncpy(retval, guts, gutsLen);
-			// ...and make sure to NULL terminate it
-			retval[gutsLen] = '\0';
-		}
+	retval = new char[buff.str().size() + 1];
+	if (retval == NULL) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::generateCodeFromValues"
+			"() - the space to hold the codified representation of this "
+			"value could not be created. This is a serious allocation "
+			"error.");
+	} else {
+		// copy over the string's contents
+		strcpy(retval, buff.str().c_str());
 	}
 	
 	return retval;
