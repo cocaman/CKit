@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.14 2005/01/20 15:54:56 drbob Exp $
+ * $Id: CKString.cpp,v 1.15 2005/02/08 19:48:13 drbob Exp $
  */
 
 //	System Headers
@@ -5202,8 +5202,9 @@ bool CKStringList::contains( char *aCString )
 		// ...and scan through the list looking for the first match
 		CKStringNode	*n = mHead;
 		while (!gotIt && (n != NULL)) {
-			if ((*n) == aCString) {
+			if ((*((CKString *)n)) == aCString) {
 				gotIt = true;
+				break;
 			} else {
 				// move to the next node to check
 				n = n->getNext();
