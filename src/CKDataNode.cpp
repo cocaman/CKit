@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.6 2004/05/19 15:51:43 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.7 2004/07/08 13:52:02 drbob Exp $
  */
 
 //	System Headers
@@ -175,26 +175,21 @@ CKDataNode::~CKDataNode()
 		mParent = NULL;
 	}
 
-	// now lock up our list of kids
-	mKidsMutex.lock();
 	// for each child, remove me as it's parent
-	if (mKids.size() > 0) {
-		std::list<CKDataNode*>::iterator	i;
-		for (i = mKids.begin(); i != mKids.end(); ++i) {
-			if (((*i) != NULL) && ((*i)->mParent = this)) {
-				(*i)->mParent = NULL;
-			}
+	std::list<CKDataNode*>::iterator	i;
+	while (!mKids.empty()) {
+		// get the first in the list
+		i = mKids.begin();
+		// if we're his parent, then invalidate that link
+		if (((*i) != NULL) && ((*i)->mParent = this)) {
+			(*i)->mParent = NULL;
 		}
-		// and clear out the list
-		mKids.clear();
+		// ...and remove this from the list
+		mKids.erase(i);
 	}
-	// finally, unlock the now empty list
-	mKidsMutex.unlock();
 
 	// clear out all the variables while we're at it
-	mVarsMutex.lock();
 	mVars.clear();
-	mVarsMutex.unlock();
 }
 
 
