@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.13 2004/09/20 17:59:09 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.14 2004/09/25 16:14:40 drbob Exp $
  */
 
 //	System Headers
@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
+#include <strings.h>
 
 //	Third-Party Headers
 #include <CKException.h>
@@ -757,23 +758,23 @@ char *CKVariant::generateCodeFromValues() const
 {
 	char	*retval = NULL;
 
-	std::ostringstream buff;
+	CKString buff;
 	switch (getType()) {
 		case eUnknownVariant:
-			buff << "U:";
+			buff.append("U:");
 			break;
 		case eStringVariant:
-			buff << "S:" << mStringValue;
+			buff.append("S:").append(mStringValue);
 			break;
 		case eNumberVariant:
-			buff << "N:" << mDoubleValue;
+			buff.append("N:").append(mDoubleValue);
 			break;
 		case eDateVariant:
-			buff << "D:" << mDateValue;
+			buff.append("D:").append(mDateValue);
 			break;
 		case eTableVariant:
 			if (mTableValue == NULL) {
-				buff << "U:";
+				buff.append("U:");
 			} else {
 				char *code = mTableValue->generateCodeFromValues();
 				if (code == NULL) {
@@ -782,7 +783,7 @@ char *CKVariant::generateCodeFromValues() const
 						"of this variant could not be obtained and that's a serious "
 						"problem that needs to be looked at.");
 				} else {
-					buff << "T:" << code;
+					buff.append("T:").append(code);
 					delete [] code;
 					code = NULL;
 				}
@@ -790,7 +791,7 @@ char *CKVariant::generateCodeFromValues() const
 			break;
 		case eTimeSeriesVariant:
 			if (mTimeSeriesValue == NULL) {
-				buff << "U:";
+				buff.append("U:");
 			} else {
 				char *code = mTimeSeriesValue->generateCodeFromValues();
 				if (code == NULL) {
@@ -799,7 +800,7 @@ char *CKVariant::generateCodeFromValues() const
 						"of this variant could not be obtained and that's a serious "
 						"problem that needs to be looked at.");
 				} else {
-					buff << "L:" << code;
+					buff.append("L:").append(code);
 					delete [] code;
 					code = NULL;
 				}
@@ -808,7 +809,7 @@ char *CKVariant::generateCodeFromValues() const
 	}
 
 	// now create a new buffer to hold all this
-	retval = new char[buff.str().size() + 1];
+	retval = new char[buff.size() + 1];
 	if (retval == NULL) {
 		throw CKException(__FILE__, __LINE__, "CKVariant::generateCodeFromValues"
 			"() - the space to hold the codified representation of this "
@@ -816,7 +817,8 @@ char *CKVariant::generateCodeFromValues() const
 			"error.");
 	} else {
 		// copy over the string's contents
-		strcpy(retval, buff.str().c_str());
+		bzero(retval, buff.size() + 1);
+		strncpy(retval, buff.c_str(), buff.size());
 	}
 
 	return retval;

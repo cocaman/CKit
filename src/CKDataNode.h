@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.12 2004/09/22 12:08:22 drbob Exp $
+ * $Id: CKDataNode.h,v 1.13 2004/09/25 16:14:38 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -18,9 +18,6 @@
 #ifdef GPP2
 #include <algo.h>
 #endif
-#include <string>
-#include <list>
-#include <vector>
 #include <map>
 #ifdef GPP2
 #include <ostream.h>
@@ -34,6 +31,7 @@
 #include "CKVariant.h"
 #include "CKString.h"
 #include "CKFWMutex.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 
@@ -486,7 +484,7 @@ class CKDataNode
 		 * something with the children that I didn't originally think
 		 * of.
 		 */
-		std::list<CKDataNode*> *getKids();
+		CKVector<CKDataNode*> *getKids();
 
 		/*
 		 * This is the tokenizer/parser that wasn't in the STL string
@@ -528,7 +526,7 @@ class CKDataNode
 		 * be plenty of helper methods to make it easy to get nodes in
 		 * and out of this structure.
 		 */
-		std::list<CKDataNode*>				mKids;
+		CKVector<CKDataNode*>				mKids;
 		/*
 		 * These mutexes are used to ensure that we're not corrupting the
 		 * data as it's being put into the underlying structures. This is

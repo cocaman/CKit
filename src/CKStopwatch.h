@@ -10,7 +10,7 @@
  *                 This means that the list of split times it a "scan once"
  *                 scheme, but that's not a real limitation for this guy.
  * 
- * $Id: CKStopwatch.h,v 1.6 2004/09/20 16:19:42 drbob Exp $
+ * $Id: CKStopwatch.h,v 1.7 2004/09/25 16:14:39 drbob Exp $
  */
 #ifndef __CKSTOPWATCH_H
 #define __CKSTOPWATCH_H
@@ -29,6 +29,7 @@
 
 //	Other Headers
 #include "CKString.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 /*
@@ -225,8 +226,8 @@ class CKStopwatch
 		 * to the end of itself and you can get pretty elaborate with this
 		 * in terms of a lot of splits.
 		 */
-		std::list<struct tms>	mTimes;
-		std::list<clock_t>		mRealTimes;
+		CKVector<struct tms>	mTimes;
+		CKVector<clock_t>		mRealTimes;
 };
 
 /*

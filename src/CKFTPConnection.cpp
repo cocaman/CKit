@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.10 2004/09/22 12:08:23 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.11 2004/09/25 16:14:38 drbob Exp $
  */
 
 //	System Headers
@@ -1484,7 +1484,7 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const CKString & aFile )
  *
  ********************************************************/
 /*
- * This method returns a std::vector of the directories
+ * This method returns a CKStringList of the directories
  * and files contained in the directory specified on the remote
  * host. This does not distinguish between symbolic links, files
  * or directories, and only includes the files in that directory -
@@ -1585,14 +1585,14 @@ CKStringList CKFTPConnection::getDirectoryContents( const CKString & aDir )
 
 
 /*
- * This method returns a std::vector of the entire
+ * This method returns a CKStringList of the entire
  * tree structure in the passed-in directory, and below.
  * Again, in a manner similar to the OPENSTEP NSFileManager,
  * this method can be used to search an entire directory tree
  * structure to find a particular file, or directory.
  *
  * If there is any problem in creating the directory list, an empty
- * list is returned, otherwise, a std::vector is returned.
+ * list is returned, otherwise, a CKStringList is returned.
  */
 CKStringList CKFTPConnection::getSubpathsAtPath( const CKString & aDir )
 {

@@ -5,13 +5,14 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.16 2004/09/22 12:08:40 drbob Exp $
+ * $Id: CKTable.cpp,v 1.17 2004/09/25 16:14:39 drbob Exp $
  */
 
 //	System Headers
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <strings.h>
 
 //	Third-Party Headers
 #include <CKException.h>
@@ -1893,7 +1894,7 @@ int CKTable::getRowForLabel( const CKString & aLabel ) const
  * of data for processing. The management of the returned value
  * is up to the caller.
  */
-std::vector<CKVariant> CKTable::getRow( int aRow ) const
+CKVector<CKVariant> CKTable::getRow( int aRow ) const
 {
 	// first, make sure we have data to grab
 	if ((aRow < 0) || (aRow >= mNumRows)) {
@@ -1913,11 +1914,11 @@ std::vector<CKVariant> CKTable::getRow( int aRow ) const
 	}
 
 	// make the return value first on the stack as it's easiest
-	std::vector<CKVariant>		retval;
+	CKVector<CKVariant>		retval;
 
 	// now pick put the data and copy it to the returned vector
 	for (int i = 0; i < mNumColumns; ++i) {
-		retval.push_back( mTable[aRow * mNumColumns + i] );
+		retval.addToEnd( (CKVariant)mTable[aRow * mNumColumns + i] );
 	}
 
 	return retval;
@@ -1931,7 +1932,7 @@ std::vector<CKVariant> CKTable::getRow( int aRow ) const
  * of data for processing. The management of the returned value
  * is up to the caller.
  */
-std::vector<CKVariant> CKTable::getRow( const CKString & aRowLabel ) const
+CKVector<CKVariant> CKTable::getRow( const CKString & aRowLabel ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
@@ -1955,7 +1956,7 @@ std::vector<CKVariant> CKTable::getRow( const CKString & aRowLabel ) const
  * of data for processing. The management of the returned value
  * is up to the caller.
  */
-std::vector<CKVariant> CKTable::getColumn( int aCol ) const
+CKVector<CKVariant> CKTable::getColumn( int aCol ) const
 {
 	// first, make sure we have data to grab
 	if ((aCol < 0) || (aCol >= mNumColumns)) {
@@ -1975,11 +1976,11 @@ std::vector<CKVariant> CKTable::getColumn( int aCol ) const
 	}
 
 	// make the return value first on the stack as it's easiest
-	std::vector<CKVariant>		retval;
+	CKVector<CKVariant>		retval;
 
 	// now pick put the data and copy it to the returned vector
 	for (int i = 0; i < mNumRows; ++i) {
-		retval.push_back( mTable[i * mNumColumns + aCol] );
+		retval.addToEnd( (CKVariant)mTable[i * mNumColumns + aCol] );
 	}
 
 	return retval;
@@ -1993,7 +1994,7 @@ std::vector<CKVariant> CKTable::getColumn( int aCol ) const
  * vector of data for processing. The management of the returned
  * value is up to the caller.
  */
-std::vector<CKVariant> CKTable::getColumn( const CKString & aColumnHeader ) const
+CKVector<CKVariant> CKTable::getColumn( const CKString & aColumnHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColumnHeader);
@@ -2117,25 +2118,25 @@ bool CKTable::merge( const CKTable & aTable )
 		int	blankRow = oldRows;
 		int	blankCol = oldCols;
 		// these will be the new locations in the merged table
-		std::vector<int>	targetRow;
-		std::vector<int>	targetCol;
+		CKVector<int>	targetRow;
+		CKVector<int>	targetCol;
 
 		// map all the rows from the source to the new table
 		for (int row = 0; row < aTable.mNumRows; row++) {
 			CKString		label = aTable.mRowLabels[row];
 			if (label == "") {
-				targetRow.push_back(blankRow++);
+				targetRow.addToEnd(blankRow++);
 			} else {
-				targetRow.push_back(getRowForLabel(label));
+				targetRow.addToEnd(getRowForLabel(label));
 			}
 		}
 		// now do the same for all the columns in the source
 		for (int col = 0; col < aTable.mNumColumns; col++) {
 			CKString		label = aTable.mColumnHeaders[col];
 			if (label == "") {
-				targetCol.push_back(blankCol++);
+				targetCol.addToEnd(blankCol++);
 			} else {
-				targetCol.push_back(getColumnForHeader(label));
+				targetCol.addToEnd(getColumnForHeader(label));
 			}
 		}
 
@@ -2271,19 +2272,20 @@ char *CKTable::generateCodeFromValues() const
 	 */
 
 	// start by getting a buffer to build up this value
-	std::ostringstream buff;
+	CKString buff;
 
 	// first, send out the row and column counts
-	buff << "\x01" << mNumRows << "\x01" << mNumColumns << "\x01";
+	buff.append("\x01").append(mNumRows).append("\x01").append(mNumColumns).
+		append("\x01");
 
 	// next, loop over all the column headers and write them out as well
 	for (int j = 0; j < mNumColumns; ++j) {
-		buff << mColumnHeaders[j] << "\x01";
+		buff.append(mColumnHeaders[j]).append("\x01");
 	}
 
 	// next, loop over all the row labels and write them out as well
 	for (int j = 0; j < mNumRows; ++j) {
-		buff << mRowLabels[j] << "\x01";
+		buff.append(mRowLabels[j]).append("\x01");
 	}
 
 	// now loop over the data and write it all out in an easy manner
@@ -2295,14 +2297,14 @@ char *CKTable::generateCodeFromValues() const
 				"() - the code for the variant in this table could not be obtained. "
 				"This is a serious problem that needs to be looked into.");
 		} else {
-			buff << code << "\x01";
+			buff.append(code).append("\x01");
 			delete [] code;
 			code = NULL;
 		}
 	}
 
 	// now create a new buffer to hold all this
-	char	*retval = new char[buff.str().size() + 1];
+	char	*retval = new char[buff.size() + 1];
 	if (retval == NULL) {
 		throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFromValues"
 			"() - the space to hold the codified representation of this "
@@ -2310,7 +2312,8 @@ char *CKTable::generateCodeFromValues() const
 			"error.");
 	} else {
 		// copy over the string's contents
-		strcpy(retval, buff.str().c_str());
+		bzero(retval, buff.size() + 1);
+		strncpy(retval, buff.c_str(), buff.size());
 	}
 
 	/*

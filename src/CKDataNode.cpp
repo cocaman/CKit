@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.17 2004/09/22 12:16:17 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.18 2004/09/25 16:14:37 drbob Exp $
  */
 
 //	System Headers
@@ -69,7 +69,7 @@ CKDataNode::CKDataNode( CKDataNode *aParent ) :
 	mParent = aParent;
 	// ...and then add ourselves to him as a new child node
 	aParent->mKidsMutex.lock();
-	aParent->mKids.push_back(this);
+	aParent->mKids.addToEnd(this);
 	aParent->mKidsMutex.unlock();
 }
 
@@ -93,7 +93,7 @@ CKDataNode::CKDataNode( CKDataNode *aParent, const CKString & aName ) :
 	mParent = aParent;
 	// ...and then add ourselves to him as a new child node
 	aParent->mKidsMutex.lock();
-	aParent->mKids.push_back(this);
+	aParent->mKids.addToEnd(this);
 	aParent->mKidsMutex.unlock();
 	// we also need to set our name
 	mName = aName;
@@ -122,7 +122,7 @@ CKDataNode::CKDataNode( CKDataNode *aParent, const CKString & aName,
 	mParent = aParent;
 	// ...and then add ourselves to him as a new child node
 	aParent->mKidsMutex.lock();
-	aParent->mKids.push_back(this);
+	aParent->mKids.addToEnd(this);
 	aParent->mKidsMutex.unlock();
 	// we also need to set our name
 	mName = aName;
@@ -178,16 +178,11 @@ CKDataNode::~CKDataNode()
 	}
 
 	// for each child, remove me as it's parent
-	std::list<CKDataNode*>::iterator	i;
-	while (!mKids.empty()) {
-		// get the first kid in the list
-		i = mKids.begin();
+	for (int i = 0; i < mKids.size(); i++) {
 		// if we're his parent, then invalidate that link
-		if (((*i) != NULL) && ((*i)->mParent = this)) {
-			(*i)->mParent = NULL;
+		if ((mKids[i] != NULL) && (mKids[i]->mParent = this)) {
+			mKids[i]->mParent = NULL;
 		}
-		// ...and drop this guy from the list
-		mKids.erase(i);
 	}
 }
 
@@ -412,13 +407,8 @@ void CKDataNode::addChild( CKDataNode *aNode )
 		// gotta be thread-safe on this guy
 		mKidsMutex.lock();
 		// look for first occurrence
-		if (!mKids.empty()) {
-			std::list<CKDataNode*>::iterator	i = find(mKids.begin(),
-														 mKids.end(),
-														 aNode);
-			if (i == mKids.end()) {
-				mKids.push_back(aNode);
-			}
+		if (!mKids.contains(aNode)) {
+			mKids.addToEnd(aNode);
 		}
 		// unlock the list of kids
 		mKidsMutex.unlock();
@@ -447,26 +437,10 @@ void CKDataNode::removeChild( const CKDataNode *aNode )
 
 	// now see if we have this node as a child node
 	if (!error) {
-		/*
-		 * Next, verify that it's in the list of children on this
-		 * node. If so, then reset it's parent as well as removing it.
-		 */
 		// gotta be thread-safe on this guy
 		mKidsMutex.lock();
-		// look for first occurrence
-		if (!mKids.empty()) {
-			std::list<CKDataNode*>::iterator	i = find(mKids.begin(),
-														 mKids.end(),
-														 aNode);
-			if (i != mKids.end()) {
-				// first thing is to remove me as it's parent
-				if ((*i)->mParent == this) {
-					(*i)->mParent = NULL;
-				}
-				// ...and remove it from the list
-				mKids.erase(i);
-			}
-		}
+		// remove all occurrences
+		mKids.remove((CKDataNode *)aNode);
 		// unlock the list of kids
 		mKidsMutex.unlock();
 	}
@@ -486,12 +460,9 @@ CKStringList CKDataNode::getChildNames()
 	// lock up the list to be safe
 	mKidsMutex.lock();
 	// go through all children and add their names to the vector
-	if (!mKids.empty()) {
-		std::list<CKDataNode*>::iterator	i;
-		for (i = mKids.begin(); i != mKids.end(); ++i) {
-			if ((*i) != NULL) {
-				retval.addToEnd((*i)->mName);
-			}
+	for (int i = 0; i < mKids.size(); i++) {
+		if (mKids[i] != NULL) {
+			retval.addToEnd(mKids[i]->mName);
 		}
 	}
 	// now unlock the list of kids for modification
@@ -515,13 +486,10 @@ CKDataNode *CKDataNode::findChild( const CKString & aName )
 	// lock up the list to be safe
 	mKidsMutex.lock();
 	// go through all children and look to their names for the right one
-	if (!mKids.empty()) {
-		std::list<CKDataNode*>::iterator	i;
-		for (i = mKids.begin(); i != mKids.end(); ++i) {
-			if (((*i) != NULL) && ((*i)->mName == aName)) {
-				retval = (*i);
-				break;
-			}
+	for (int i = 0; i < mKids.size(); i++) {
+		if ((mKids[i] != NULL) && (mKids[i]->mName == aName)) {
+			retval = mKids[i];
+			break;
 		}
 	}
 	// now unlock the list of kids for modification
@@ -1005,9 +973,8 @@ CKStringList CKDataNode::getUniqueLeafNodeNames()
 		// see if we have any at all
 		if (!mKids.empty()) {
 			// ask all the kids for their unique leaf node names
-			std::list<CKDataNode*>::iterator	i;
-			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				CKStringList	part = (*i)->getUniqueLeafNodeNames();
+			for (int i = 0; i < mKids.size(); i++) {
+				CKStringList	part = mKids[i]->getUniqueLeafNodeNames();
 				if (part.size() < 1) {
 					// unlock the list of kids
 					mKidsMutex.unlock();
@@ -1015,7 +982,7 @@ CKStringList CKDataNode::getUniqueLeafNodeNames()
 					error = true;
 					std::ostringstream	msg;
 					msg << "CKDataNode::getUniqueLeafNodeNames() - the node '" <<
-						(*i)->mName << "' (a child of '" << mName << "') had no "
+						mKids[i]->mName << "' (a child of '" << mName << "') had no "
 						"leaf nodes under it. This is simply not possible. It's "
 						"likely that there's a data corruption problem. Check "
 						"on it.";
@@ -1067,9 +1034,8 @@ CKStringList CKDataNode::getUniqueLeafNodeNamesWithoutVar( const CKString & aVar
 		// see if we have any at all
 		if (!mKids.empty()) {
 			// ask all the kids for their unique leaf node names
-			std::list<CKDataNode*>::iterator	i;
-			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				CKStringList	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
+			for (int i = 0; i < mKids.size(); i++) {
+				CKStringList	part = mKids[i]->getUniqueLeafNodeNamesWithoutVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
@@ -1120,9 +1086,8 @@ CKStringList CKDataNode::getUniqueLeafNodeNamesWithVar( const CKString & aVarNam
 		// see if we have any at all
 		if (!mKids.empty()) {
 			// ask all the kids for their unique leaf node names
-			std::list<CKDataNode*>::iterator	i;
-			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				CKStringList	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
+			for (int i = 0; mKids.size(); i++) {
+				CKStringList	part = mKids[i]->getUniqueLeafNodeNamesWithVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
@@ -1173,9 +1138,8 @@ int CKDataNode::getNumOfStepsToLeaf()
 		// see if we have any at all
 		if (!mKids.empty()) {
 			// ask all the kids for their unique leaf node names
-			std::list<CKDataNode*>::iterator	i = mKids.begin();
-			if ((*i) != NULL) {
-				retval = (*i)->getNumOfStepsToLeaf() + 1;
+			if (mKids[0] != NULL) {
+				retval = mKids[0]->getNumOfStepsToLeaf() + 1;
 			}
 		}
 		// unlock the list of kids
@@ -1293,16 +1257,15 @@ CKDataNode *CKDataNode::newNodeByDeepCopy( const CKDataNode *aNode,
 	 */
 	if (!error) {
 		// make a copy of the children we need to copy
-		std::list<CKDataNode*>	oldKids = retval->mKids;
+		CKVector<CKDataNode*>	oldKids = retval->mKids;
 		// ...and clear out the existing list of children
 		retval->mKids.clear();
 		// now iterate on the list of kids and deep copy each one
-		std::list<CKDataNode*>::iterator	i;
-		for (i = oldKids.begin(); i != oldKids.end(); ++i) {
+		for (int i = 0; oldKids.size(); i++) {
 			// copy each one with this guy as it's new parent
 			CKDataNode	*n = NULL;
 			try {
-				n = newNodeByDeepCopy((*i), retval);
+				n = newNodeByDeepCopy(oldKids[i], retval);
 			} catch (CKException & cke) {
 				n = NULL;
 			}
@@ -1320,7 +1283,7 @@ CKDataNode *CKDataNode::newNodeByDeepCopy( const CKDataNode *aNode,
 				throw CKException(__FILE__, __LINE__, msg.str());
 			} else {
 				// OK, it's good... add it to the node as a good kid
-				retval->mKids.push_back(n);
+				retval->mKids.addToEnd(n);
 			}
 		}
 	}
@@ -1372,10 +1335,9 @@ void CKDataNode::deleteNodeDeep( CKDataNode * & aNode )
 		// lock up the list of kids as it's the target
 		aNode->mKidsMutex.lock();
 		// iterate on all that is there
-		if (aNode->mKids.size() > 0) {
-			std::list<CKDataNode*>::iterator	i;
-			for (i = aNode->mKids.begin(); i != aNode->mKids.end(); ++i) {
-				deleteNodeDeep(*i);
+		if (!aNode->mKids.empty()) {
+			for (int i = 0; i < aNode->mKids.size(); i++) {
+				deleteNodeDeep(aNode->mKids[i]);
 			}
 			// now that they are deleted, clear out the list itself
 			aNode->mKids.clear();
@@ -1492,12 +1454,11 @@ CKString CKDataNode::toString( bool aDeepFlag ) const
 
 	// put in the names of each of the children
 	retval.append("Children:\n");
-	std::list<CKDataNode*>::const_iterator	j;
-	for (j = mKids.begin(); j != mKids.end(); ++j) {
+	for (int j = 0; j < mKids.size(); j++) {
 		retval.append("   ");
-		retval.append((*j)->mName);
+		retval.append(mKids[j]->mName);
 		if (aDeepFlag) {
-			retval.append((*j)->toString(aDeepFlag));
+			retval.append(mKids[j]->toString(aDeepFlag));
 		}
 		retval.append("\n");
 	}
@@ -1550,7 +1511,7 @@ CKFWMutex *CKDataNode::getKidsMutex()
  * something with the children that I didn't originally think
  * of.
  */
-std::list<CKDataNode*> *CKDataNode::getKids()
+CKVector<CKDataNode*> *CKDataNode::getKids()
 {
 	return & mKids;
 }

@@ -107,64 +107,68 @@ $(LIB_FILE): $(LIB_DIR) $(OBJS)
 
 # DO NOT DELETE
 
-CKUUID.o: CKUUID.h CKString.h CKException.h
-CKSocket.o: CKSocket.h CKString.h CKException.h
-CKSocket.o: CKErrNoException.h
-CKBufferedSocket.o: CKBufferedSocket.h CKSocket.h
-CKBufferedSocket.o: CKString.h CKException.h
-CKTCPConnection.o: CKTCPConnection.h CKBufferedSocket.h
-CKTCPConnection.o: CKSocket.h CKString.h
-CKTelnetConnection.o: CKTelnetConnection.h CKTCPConnection.h
-CKTelnetConnection.o: CKBufferedSocket.h CKSocket.h
-CKTelnetConnection.o: CKString.h CKException.h
-CKFTPConnection.o: CKFTPConnection.h CKSocket.h
-CKFTPConnection.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
-CKFTPConnection.o: CKString.h CKException.h
-CKMailDelivery.o: CKMailDelivery.h CKMailMessage.h CKString.h CKException.h
+CKUUID.o: CKUUID.h CKString.h CKFWMutex.h CKException.h
+CKSocket.o: CKSocket.h CKString.h CKFWMutex.h CKException.h CKErrNoException.h
+CKBufferedSocket.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h 
+CKBufferedSocket.o: CKException.h
+CKTCPConnection.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
+CKTCPConnection.o: CKString.h CKFWMutex.h 
+CKTelnetConnection.o: CKTelnetConnection.h CKTCPConnection.h CKException.h
+CKTelnetConnection.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h 
+CKFTPConnection.o: CKFTPConnection.h CKTelnetConnection.h CKTCPConnection.h
+CKFTPConnection.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
+CKFTPConnection.o: CKException.h
+CKMailDelivery.o: CKMailDelivery.h CKMailMessage.h CKString.h CKFWMutex.h
+CKMailDelivery.o: CKException.h
 CKMailDeliverySystem.o: CKMailDeliverySystem.h CKMailDelivery.h
-CKMailDeliverySystem.o: CKMailMessage.h CKString.h
-CKMailMessage.o: CKMailMessage.h CKString.h CKException.h CKUUID.h
-CKSMTPConnection.o: CKSMTPConnection.h CKSocket.h CKString.h
-CKSMTPConnection.o: CKTCPConnection.h CKBufferedSocket.h CKException.h
+CKMailDeliverySystem.o: CKMailMessage.h CKString.h CKFWMutex.h
+CKMailMessage.o: CKMailMessage.h CKString.h CKFWMutex.h
+CKMailMessage.o: CKException.h CKUUID.h 
+CKSMTPConnection.o: CKSMTPConnection.h CKTCPConnection.h CKBufferedSocket.h
+CKSMTPConnection.o: CKSocket.h CKString.h CKFWMutex.h CKException.h
 CKSMTPDelivery.o: CKSMTPDelivery.h CKMailDelivery.h CKMailMessage.h
-CKSMTPDelivery.o: CKString.h CKSMTPConnection.h CKTCPConnection.h
-CKSMTPDelivery.o: CKBufferedSocket.h CKSocket.h CKException.h
-CKIRCProtocol.o: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
-CKIRCProtocol.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
+CKSMTPDelivery.o: CKString.h CKFWMutex.h CKSocket.h CKException.h
+CKSMTPDelivery.o: CKSMTPConnection.h CKTCPConnection.h CKBufferedSocket.h
+CKIRCProtocol.o: CKIRCProtocol.h CKSocket.h CKString.h CKFWMutex.h
+CKIRCProtocol.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
+CKIRCProtocol.o: CKVector.h CKStackLocker.h CKException.h CKStopwatch.h 
 CKIRCProtocol.o: CKIRCProtocolListener.h CKFWThread.h CKIRCResponder.h
-CKIRCProtocol.o: CKException.h CKStopwatch.h
-CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h
-CKIRCProtocolListener.o: CKIRCProtocol.h CKTelnetConnection.h
-CKIRCProtocolListener.o: CKTCPConnection.h CKBufferedSocket.h
-CKIRCProtocolListener.o: CKString.h CKFWMutex.h CKIRCProtocolExec.h
-CKIRCProtocolListener.o: CKSocket.h CKException.h
-CKIRCProtocolExec.o: CKException.h CKString.h CKIRCProtocol.h
-CKIRCProtocolExec.o: CKTelnetConnection.h CKTCPConnection.h
-CKIRCProtocolExec.o: CKBufferedSocket.h CKSocket.h
-CKIRCProtocolExec.o: CKFWMutex.h CKIRCProtocolExec.h CKFWThread.h
+CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h CKIRCProtocol.h
+CKIRCProtocolListener.o: CKTelnetConnection.h CKTCPConnection.h
+CKIRCProtocolListener.o: CKBufferedSocket.h CKSocket.h
+CKIRCProtocolListener.o: CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
+CKIRCProtocolListener.o: CKException.h CKIRCProtocolExec.h
+CKIRCProtocolExec.o: CKException.h CKString.h CKFWMutex.h
+CKIRCProtocolExec.o: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
+CKIRCProtocolExec.o: CKBufferedSocket.h CKSocket.h CKFWThread.h
+CKIRCProtocolExec.o: CKVector.h CKStackLocker.h CKIRCProtocolExec.h
 CKIRCResponder.o: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
-CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
-CKIRCResponder.o: CKString.h CKFWMutex.h CKFWConditional.h
-CKFWConditional.o: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
+CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h 
+CKIRCResponder.o: CKSocket.h CKString.h CKFWMutex.h 
+CKIRCResponder.o: CKVector.h CKStackLocker.h CKException.h
+CKFWConditional.o: CKFWConditional.h 
+CKFWConditional.o: ./CKFWMutex.h CKErrNoException.h CKException.h CKString.h
 CKFWMutex.o: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
-CKStackLocker.o: CKException.h CKString.h CKStackLocker.h CKFWMutex.h
+CKStackLocker.o: CKException.h CKString.h CKFWMutex.h CKStackLocker.h
 CKFWSemaphore.o: CKFWSemaphore.h CKErrNoException.h CKException.h
-CKFWSemaphore.o: CKString.h
+CKFWSemaphore.o: CKString.h CKFWMutex.h 
 CKFWTimedSemaphore.o: CKFWTimedSemaphore.h CKFWMutex.h CKFWConditional.h
-CKFWThread.o: ../include/SQLAPI.h CKFWThread.h CKErrNoException.h 
-CKFWThread.o: CKException.h CKString.h
-CKFWThreadLocal.o: CKFWThreadLocal.h
-CKFWTime.o: CKFWTime.h CKErrNoException.h CKException.h CKString.h
-CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h CKString.h
-CKString.o: CKString.h CKException.h CKFWMutex.h CKErrNoException.h
-CKVariant.o: CKException.h CKString.h CKVariant.h
-CKVariant.o: CKTimeSeries.h CKFWMutex.h CKTable.h
-CKTable.o: CKException.h CKString.h CKTable.h 
-CKTable.o: CKVariant.h CKTimeSeries.h CKFWMutex.h
-CKTimeSeries.o: CKException.h CKString.h CKTable.h CKVariant.h CKTimeSeries.h
-CKTimeSeries.o: CKFWMutex.h 
+CKFWThread.o: ../include/SQLAPI.h CKFWThread.h
+CKFWThread.o: CKErrNoException.h CKException.h CKString.h CKFWMutex.h
+CKFWThreadLocal.o: CKFWThreadLocal.h 
+CKFWTime.o: CKFWTime.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h 
+CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h 
+CKString.o: CKString.h CKFWMutex.h 
+CKVariant.o: CKException.h CKString.h CKFWMutex.h 
+CKVariant.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h CKTable.h
+CKTable.o: CKException.h CKString.h CKFWMutex.h
+CKTable.o: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
+CKTimeSeries.o: CKException.h CKString.h CKFWMutex.h CKTable.h 
+CKTimeSeries.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
-CKDataNode.o: CKString.h CKException.h
-CKStopwatch.o: CKException.h CKString.h CKStopwatch.h 
-CKException.o: CKException.h CKString.h
-CKErrNoException.o: CKErrNoException.h CKException.h CKString.h
+CKDataNode.o: CKString.h CKVector.h CKStackLocker.h CKException.h
+CKStopwatch.o: CKException.h CKString.h CKFWMutex.h 
+CKStopwatch.o: CKStopwatch.h CKVector.h CKStackLocker.h
+CKException.o: CKException.h CKString.h CKFWMutex.h
+CKErrNoException.o: CKErrNoException.h 
+CKErrNoException.o: CKException.h CKString.h CKFWMutex.h

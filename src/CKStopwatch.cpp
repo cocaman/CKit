@@ -10,7 +10,7 @@
  *                   This means that the list of split times it a "scan once"
  *                   scheme, but that's not a real limitation for this guy.
  * 
- * $Id: CKStopwatch.cpp,v 1.8 2004/09/20 16:19:42 drbob Exp $
+ * $Id: CKStopwatch.cpp,v 1.9 2004/09/25 16:14:39 drbob Exp $
  */
 
 //	System Headers
@@ -142,7 +142,7 @@ double CKStopwatch::getRealTimeInSec() const
 	double		retval = 0.0;
 
 	if (!mRealTimes.empty()) {
-		retval = ((double)(mRealTimes.front() - mRealStartTime))*CLOCK_SCALE;
+		retval = ((double)(mRealTimes[0] - mRealStartTime))*CLOCK_SCALE;
 	}
 
 	return retval;
@@ -160,7 +160,7 @@ double CKStopwatch::getUserTimeInSec() const
 	double		retval = 0.0;
 
 	if (!mTimes.empty()) {
-		retval = ((double)(mTimes.front().tms_utime - mStartTime.tms_utime))*CLOCK_SCALE;
+		retval = ((double)(mTimes[0].tms_utime - mStartTime.tms_utime))*CLOCK_SCALE;
 	}
 
 	return retval;
@@ -178,7 +178,7 @@ double CKStopwatch::getSysTimeInSec() const
 	double		retval = 0.0;
 
 	if (!mTimes.empty()) {
-		retval = ((double)(mTimes.front().tms_stime - mStartTime.tms_stime))*CLOCK_SCALE;
+		retval = ((double)(mTimes[0].tms_stime - mStartTime.tms_stime))*CLOCK_SCALE;
 	}
 
 	return retval;
@@ -263,12 +263,9 @@ void CKStopwatch::popOffTime()
 
 	// as long as they aren't empty, remove the top one of each
 	if (!mTimes.empty()) {
-		// save the front times as the new 'reference' times
-		mStartTime = mTimes.front();
-		mRealStartTime = mRealTimes.front();
-		// ...now go ahead and pop them off
-		mTimes.pop_front();
-		mRealTimes.pop_front();
+		// get the front times as the new 'reference' times
+		mStartTime = mTimes.popFront();
+		mRealStartTime = mRealTimes.popFront();
 	}
 }
 
@@ -325,8 +322,8 @@ void CKStopwatch::split()
 	realTime = times(&timeBlock);
 
 	// then put them on their lists as they should
-	mTimes.push_back(timeBlock);
-	mRealTimes.push_back(realTime);
+	mTimes.addToEnd(timeBlock);
+	mRealTimes.addToEnd(realTime);
 
 	// make sure the sizes are the same
 	if (mTimes.size() != mRealTimes.size()) {
@@ -359,7 +356,8 @@ bool CKStopwatch::operator==( const CKStopwatch & anOther ) const
 		if (!areEqual(mStartTime, anOther.mStartTime) ||
 			(mTimes.size() != anOther.mTimes.size()) ||
 			(mRealStartTime != anOther.mRealStartTime) ||
-			(mRealTimes != anOther.mRealTimes)) {
+			(mRealTimes != anOther.mRealTimes) ||
+			(mTimes.size() != anOther.mTimes.size())) {
 			equal = false;
 		}
 		equal = false;
@@ -367,12 +365,11 @@ bool CKStopwatch::operator==( const CKStopwatch & anOther ) const
 
 	// go one by one on the times that each has checking them
 	if (equal) {
-		std::list<struct tms>::const_iterator		i;
-		std::list<struct tms>::const_iterator		j;
-		for ( i = mTimes.begin(), j = anOther.mTimes.begin();
-			  !equal && (i != mTimes.end()) && (j != anOther.mTimes.end());
-			  ++i, ++j ) {
-			equal = areEqual((*i), (*j));
+		for (int i = 0; i < mTimes.size(); i++) {
+			if (!areEqual(mTimes[i], anOther.mTimes[i])) {
+				equal = false;
+				break;
+			}
 		}
 	}
 

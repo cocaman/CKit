@@ -5,7 +5,7 @@
  *              This was originally written in the MarketMash server by
  *              Jeremy.
  *
- * $Id: CKVector.h,v 1.2 2004/09/23 19:51:30 drbob Exp $
+ * $Id: CKVector.h,v 1.3 2004/09/25 16:14:41 drbob Exp $
  */
 #ifndef __CKVECTOR_H
 #define __CKVECTOR_H
@@ -124,7 +124,7 @@ template <class T> class CKVector
 		 * This is the destructor for the vector and makes sure that
 		 * everything is cleaned up before leaving.
 		 */
-		~CKVector()
+		virtual ~CKVector()
 		{
 			if (mElements != NULL) {
 				delete [] mElements;
@@ -167,6 +167,8 @@ template <class T> class CKVector
 			for (int i = 0; i < mSize; i++) {
 				mElements[i] = anOther.mElements[i];
 			}
+			
+			return *this;
 		}
 
 
@@ -231,20 +233,7 @@ template <class T> class CKVector
 		 * There needs to be a simple way to add an element to the end
 		 * of this vector. This is it.
 		 */
-		void addToEnd( T anElem )
-		{
-			_addToEnd((T &)anElem);
-		}
-
-
-		void addToEnd( T & anElem )
-		{
-			_addToEnd(anElem);
-		}
-
-
-	private:
-		void _addToEnd( T & anElem )
+		void addToEnd( const T & anElem )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -267,27 +256,13 @@ template <class T> class CKVector
 			mElements[mSize] = anElem;
 			mSize++;
 		}
-	public:
 
 
 		/*
 		 * There needs to be a simple way to add an element to the front
 		 * of this vector. This is it.
 		 */
-		void addToFront( T & anElem )
-		{
-			_addToFront(anElem);
-		}
-
-
-		void addToFront( T anElem )
-		{
-			_addToFront((T &)anElem);
-		}
-
-
-	private:
-		void _addToFront( T & anElem )
+		void addToFront( const T & anElem )
 		{
 			// first, see if we have anything to do
 			if (mElements == NULL) {
@@ -315,7 +290,6 @@ template <class T> class CKVector
 			mElements[0] = anElem;
 			mSize++;
 		}
-	public:
 
 
 		/*
@@ -521,11 +495,35 @@ template <class T> class CKVector
 			} else {
 				// it's within the vector, so it's a left shift
 				int	cnt = mSize - aStartingIndex - aLength;
-				for (int i = 0; i < aLength; i++) {
+				for (int i = 0; i < cnt; i++) {
 					mElements[aStartingIndex + i] =
 								mElements[aStartingIndex + i + aLength];
 				}
 				mSize -= aLength;
+			}
+		}
+
+
+		/*
+		 * This method removes ALL copies of the argument from the vector
+		 * and compresses out the empty spaces from the vector. If the
+		 * argument does not exist, nothing is done.
+		 */
+		void remove( const T & anOther )
+		{
+			int		i = 0;
+			while (i < mSize) {
+				// see if this guy needs to be deleted
+				if (mElements[i] == anOther) {
+					for (int j = i+1; j < mSize; j++) {
+						mElements[j-1] = mElements[j];
+					}
+					// we have one less thing in the list
+					mSize--;
+				} else {
+					// look at the mext guy in the array
+					i++;
+				}
 			}
 		}
 
@@ -556,6 +554,43 @@ template <class T> class CKVector
 		void clear()
 		{
 			mSize = 0;
+		}
+
+
+		/*
+		 * This method returns true if the argument is contained in the
+		 * vector. This method uses the '==' operator on the object, so
+		 * you need to make sure that it is implemented.
+		 */
+		bool contains( const T & anOther )
+		{
+			bool		hitIt = false;
+			for (int i = 0; i < mSize; i++) {
+				if (mElements[i] == anOther) {
+					hitIt = true;
+					break;
+				}
+			}
+			return hitIt;
+		}
+
+
+		/*
+		 * When you want to find the index of the object in the vector,
+		 * the find() method does the job. If the object is NOT in the
+		 * vector (using the '==' operator, which must be defined), then
+		 * this method will return -1.
+		 */
+		int find( const T & anOther )
+		{
+			int		index = -1;
+			for (int i = 0; i < mSize; i++) {
+				if (mElements[i] == anOther) {
+					index = i;
+					break;
+				}
+			}
+			return index;
 		}
 
 

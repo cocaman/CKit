@@ -5,13 +5,12 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.13 2004/09/22 12:08:45 drbob Exp $
+ * $Id: CKTable.h,v 1.14 2004/09/25 16:14:40 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
 
 //	System Headers
-#include <vector>
 /*
  * Because we're using the NAN value in some places in this object,
  * we need to make sure that it's defined for all the platforms that
@@ -51,6 +50,7 @@
 //	Other Headers
 #include "CKVariant.h"
 #include "CKString.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 
@@ -357,7 +357,7 @@ class CKTable {
 		 * of data for processing. The management of the returned value
 		 * is up to the caller.
 		 */
-		std::vector<CKVariant> getRow( int aRow ) const;
+		CKVector<CKVariant> getRow( int aRow ) const;
 		/*
 		 * This method returns a complete vector of the CKVariants that
 		 * make up the supplied row label in the table. This is nice if you
@@ -365,7 +365,7 @@ class CKTable {
 		 * of data for processing. The management of the returned value
 		 * is up to the caller.
 		 */
-		std::vector<CKVariant> getRow( const CKString & aRowLabel ) const;
+		CKVector<CKVariant> getRow( const CKString & aRowLabel ) const;
 		/*
 		 * This method returns a complete vector of the CKVariants that
 		 * make up the supplied column in the table. This is nice if you
@@ -373,7 +373,7 @@ class CKTable {
 		 * of data for processing. The management of the returned value
 		 * is up to the caller.
 		 */
-		std::vector<CKVariant> getColumn( int aCol ) const;
+		CKVector<CKVariant> getColumn( int aCol ) const;
 		/*
 		 * This method returns a complete vector of the CKVariants that
 		 * make up the supplied column headerin the table. This is nice
@@ -381,7 +381,7 @@ class CKTable {
 		 * vector of data for processing. The management of the returned
 		 * value is up to the caller.
 		 */
-		std::vector<CKVariant> getColumn( const CKString & aColumnHeader ) const;
+		CKVector<CKVariant> getColumn( const CKString & aColumnHeader ) const;
 
 		/********************************************************
 		 *
