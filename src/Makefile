@@ -68,6 +68,7 @@ OBJS = CKUUID.o \
 	CKIRCResponder.o \
 	CKFWConditional.o \
 	CKFWMutex.o \
+	CKStackLocker.o \
 	CKFWSemaphore.o \
 	CKFWTimedSemaphore.o \
 	CKFWThread.o \
@@ -132,6 +133,7 @@ CKIRCResponder.o: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
 CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h CKFWMutex.h
 CKFWConditional.o: CKFWConditional.h CKFWMutex.h CKErrNoException.h CKException.h
 CKFWMutex.o: CKFWMutex.h CKErrNoException.h CKException.h
+CKStackLocker.o: CKStackLocker.h CKFWMutex.h CKErrNoException.h CKException.h
 CKFWSemaphore.o: CKFWSemaphore.h CKErrNoException.h CKException.h
 CKFWTimedSemaphore.o: CKFWTimedSemaphore.h CKFWMutex.h CKFWConditional.h
 CKFWThread.o: CKFWThread.h CKErrNoException.h CKException.h
