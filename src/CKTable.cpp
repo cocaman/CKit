@@ -5,28 +5,13 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.2 2004/02/26 22:07:43 drbob Exp $
+ * $Id: CKTable.cpp,v 1.3 2004/02/27 00:32:34 drbob Exp $
  */
 
 //	System Headers
 #include <string>
 #include <iostream>
 #include <sstream>
-#ifdef __linux__
-#define __USE_ISOC99 1
-#endif
-#include <math.h>
-/*
- * Oddly enough, Sun doesn't seem to have NAN defined, so we need to
- * do that here so that things run more smoothly. This is very interesting
- * because Sun has isnan() defined, but no obvious way to set a value.
- */
-#ifdef __sun__
-#ifndef NAN
-#define	NAN	(__extension__ ((union { unsigned __l __attribute__((__mode__(__SI__))); \
-			float __d; }) { __l: 0x7fc00000UL }).__d)
-#endif
-#endif
 
 //	Third-Party Headers
 #include <CKException.h>

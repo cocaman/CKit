@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.1 2004/02/26 22:07:49 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.2 2004/02/27 00:32:35 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -20,6 +20,39 @@
 #include <ostream.h>
 #else
 #include <ostream>
+#endif
+/*
+ * Because we're using the NAN value in some places in this object,
+ * we need to make sure that it's defined for all the platforms that
+ * will be using this object.
+ */
+#ifdef __linux__
+#define __USE_ISOC99 1
+#endif
+#include <math.h>
+/*
+ * Oddly enough, Sun doesn't seem to have NAN defined, so we need to
+ * do that here so that things run more smoothly. This is very interesting
+ * because Sun has isnan() defined, but no obvious way to set a value.
+ */
+#ifdef __sun__
+#ifndef NAN
+#define	NAN	(__extension__ ((union { unsigned __l __attribute__((__mode__(__SI__))); \
+			float __d; }) { __l: 0x7fc00000UL }).__d)
+#endif
+#endif
+/*
+ * This is most odd, but it seems that at least on Darwin (Mac OS X)
+ * there's a problem with the definition of isnan(). So... to make it
+ * easier on all parties, I'm simply going to repeat the definition
+ * that's in Linux and Darwin here, and it should get picked up even
+ * if the headers fail us.
+ */
+#ifdef __MACH__
+#ifndef isnan
+#define	isnan(x)	((sizeof(x) == sizeof(double)) ? __isnand(x) : \
+					(sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#endif
 #endif
 
 //	Third-Party Headers
