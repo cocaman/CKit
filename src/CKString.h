@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.6 2004/09/28 15:45:51 drbob Exp $
+ * $Id: CKString.h,v 1.7 2004/09/28 23:16:59 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -896,6 +896,13 @@ class CKString
 		 * a std::string.
 		 */
 		virtual CKString toString() const;
+
+		/*
+		 * There are times that it'd be nice to see the hex characters of
+		 * the string laid out so that you can actually see the binary data
+		 * in the string. This is the method that does that.
+		 */
+		virtual CKString toHexString() const;
 
 	protected:
 		/*
