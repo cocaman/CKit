@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple semaphore that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWSemaphore.cpp,v 1.7 2004/09/16 09:34:14 drbob Exp $
+ * $Id: CKFWSemaphore.cpp,v 1.8 2004/09/20 16:19:30 drbob Exp $
  */
 
 //	System Headers

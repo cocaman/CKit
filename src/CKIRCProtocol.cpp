@@ -6,10 +6,11 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.11 2004/09/16 09:34:16 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.12 2004/09/20 16:19:31 drbob Exp $
  */
 
 //	System Headers
+#include <iostream>
 #include <sstream>
 #include <unistd.h>
 #ifdef GPP2
@@ -23,6 +24,7 @@
 #include "CKIRCProtocolListener.h"
 #include "CKIRCResponder.h"
 #include "CKException.h"
+#include "CKStopwatch.h"
 
 //	Forward Declarations
 
@@ -48,6 +50,7 @@ CKIRCProtocol::CKIRCProtocol() :
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
+	mCommPortMutex(),
 	mIsLoggedIn(false),
 	mPassword(),
 	mNickname(DEFAULT_NICKNAME),
@@ -60,16 +63,6 @@ CKIRCProtocol::CKIRCProtocol() :
 	mResponders(),
 	mRespondersMutex()
 {
-	// create a listener for this guy
-	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
-	if (buddy == NULL) {
-		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol() - the Listener for this instance "
-			"could not be created. This is a serious allocation problem.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		setListener(buddy);
-	}
 }
 
 
@@ -83,6 +76,7 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort ) :
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
+	mCommPortMutex(),
 	mIsLoggedIn(false),
 	mPassword(),
 	mNickname(DEFAULT_NICKNAME),
@@ -95,18 +89,6 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort ) :
 	mResponders(),
 	mRespondersMutex()
 {
-	// create a listener for this guy
-	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
-	if (buddy == NULL) {
-		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int) - the "
-			"Listener for this instance could not be created. This is a serious "
-			"allocation problem.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		setListener(buddy);
-	}
-
 	// now try to make the connection to the IRC server
 	if (!connect(aHost, aPort)) {
 		// free up what we have created so far
@@ -133,6 +115,7 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort,
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
+	mCommPortMutex(),
 	mIsLoggedIn(false),
 	mPassword(),
 	mNickname(DEFAULT_NICKNAME),
@@ -145,18 +128,6 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort,
 	mResponders(),
 	mRespondersMutex()
 {
-	// create a listener for this guy
-	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
-	if (buddy == NULL) {
-		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int, "
-			"const CKString &) - the Listener for this instance could not be "
-			"created. This is a serious allocation problem.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		setListener(buddy);
-	}
-
 	// now try to make the connection to the IRC server
 	if (!connect(aHost, aPort)) {
 		// free up what we have created so far
@@ -172,10 +143,10 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort,
 
 	// finally, send the NICK and USER commands to get things going
 	doNICK(aNick);
-	doUSER(aNick, getUserHost(), getUserServer(), aNick);
+	doUSER(aNick, mUserHost, mUserServer, aNick);
 	// ...and set them accordingly
-	setNickname(aNick);
-	setRealName(aNick);
+	mNickname = aNick;
+	mRealName = aNick;
 }
 
 
@@ -188,6 +159,7 @@ CKIRCProtocol::CKIRCProtocol( const CKIRCProtocol & anOther ) :
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
+	mCommPortMutex(),
 	mIsLoggedIn(false),
 	mPassword(),
 	mNickname(DEFAULT_NICKNAME),
@@ -546,7 +518,7 @@ bool CKIRCProtocol::isChannelInChannelList( const CKString & aChannel )
  */
 bool CKIRCProtocol::connect()
 {
-	return connect(getHostname(), getPort());
+	return connect(mHostname, mPort);
 }
 
 
@@ -559,7 +531,7 @@ bool CKIRCProtocol::connect()
  */
 bool CKIRCProtocol::connect( const CKString & aHost )
 {
-	return connect(aHost, getPort());
+	return connect(aHost, mPort);
 }
 
 
@@ -575,12 +547,12 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 
 	// first, see if we are already connected to some host
 	if (!error) {
-		if (isConnected() && ((getHostname() != aHost) || (getPort() != aPort))) {
+		if (isConnected() && ((mHostname != aHost) || (mPort != aPort))) {
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKIRCProtocol::connect(const CKString & , int) - there's an "
-				"established connection to the server on " << getHostname() << ":" <<
-				getPort() << " and that connection needs to be closed before we can "
+				"established connection to the server on " << mHostname << ":" <<
+				mPort << " and that connection needs to be closed before we can "
 				"connect to another host and/or port. Please call disconnect().";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
@@ -588,24 +560,24 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 
 	// now, tell the connection object to connect to the right host and port
 	if (!error) {
-		// save the host and port for later
-		setHostname(aHost);
-		setPort(aPort);
-
+		// lock up the port
+		mCommPortMutex.lock();
 		// try to make the connection
 		if (!mCommPort.connect(aHost, aPort)) {
-			// undo the settings we did just before this
-			setHostname("");
-			setPort(DEFAULT_IRC_PORT);
-			// ...now flag the error and throw the exception
+			// unlock the port because of the error
+			mCommPortMutex.unlock();
+			// now we can flag the error and throw the exception
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKIRCProtocol::connect(const CKString & , int) - the "
-				"connection to the server on " << getHostname() << ":" <<
-				getPort() << " could not be created and that's a serious problem. "
+				"connection to the server on " << aHost << ":" <<
+				aPort << " could not be created and that's a serious problem. "
 				"Please make sure that there's an IRC server on that box.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
+			// save the host and port for later
+			mHostname = aHost;
+			mPort = aPort;
 			/*
 			 * The connection was good, so let's set the read timeout to
 			 * the default value which is understandably short given the
@@ -613,29 +585,27 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 			 */
 			mCommPort.setReadTimeout(DEFAULT_IRC_READ_TIMEOUT);
 		}
+		// unlock the port for use
+		mCommPortMutex.unlock();
 	}
 
 	// if we're good, then save all the parts and start the listener
 	if (!error) {
 		// start the listener so it can monitor incoming traffic
-		if (getListener() == NULL) {
+		if (mListener == NULL) {
 			// create a listener for this guy
-			CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
-			if (buddy == NULL) {
+			mListener = new CKIRCProtocolListener(this);
+			if (mListener == NULL) {
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKIRCProtocol::connect(const CKString & , int) - the "
 					"Listener for this instance could not be created. This is a "
 					"serious allocation problem.";
 				throw CKException(__FILE__, __LINE__, msg.str());
-			} else {
-				setListener(buddy);
 			}
 		}
 		// ...now start it - if it needs to be started
-		if (!getListener()->isRunning()) {
-			getListener()->start();
-		}
+		startListener();
 	}
 
 	return !error;
@@ -648,7 +618,11 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
  */
 bool CKIRCProtocol::isConnected()
 {
-	return mCommPort.isConnected();
+	bool	conn = false;
+	mCommPortMutex.lock();
+	conn = mCommPort.isConnected();
+	mCommPortMutex.unlock();
+	return conn;
 }
 
 
@@ -669,7 +643,9 @@ void CKIRCProtocol::disconnect()
 			doQUIT("bye");
 			setIsLoggedIn(false);
 		}
+		mCommPortMutex.lock();
 		mCommPort.disconnect();
+		mCommPortMutex.unlock();
 		// clear out all the channels we joined
 		clearChannelList();
 	}
@@ -720,31 +696,35 @@ void CKIRCProtocol::sendMessage( const CKString & aDest, const CKString & aMsg )
 		}
 	}
 
-	// now let's chunk up this message into a series of lines
-	std::vector<CKString>	lines;
-	if (!error) {
-		lines = parseIntoChunks(aMsg, "\n");
-		if (lines.size() == 0) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
-				" - the supplied chat message could not be broken up into a series "
-				"of NEWLINE-delimited strings. This is a problem because there "
-				"should at least be the one, original message line.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
 	/*
 	 * Now we need to process each line, but be careful, if the line's
 	 * length exceeds the MAX_MESSAGE_LEN, it needs to be broken on the
 	 * word boundaries to make it fit.
 	 */
 	if (!error) {
-		for (unsigned int i = 0; i < lines.size(); i++) {
-			// get the next line to send to the server
-			CKString		line = lines[i];
-			// see if it's too long to fit as one message
+		CKString	line;
+		int			size = aMsg.size();
+		int			sol = 0;
+		int			eol = 0;
+		while (sol < size) {
+			// clear out the current line buffer
+			line.clear();
+			// find the next eod-of-line character in the message
+			eol = aMsg.find('\n', sol);
+			if (eol == -1) {
+				// not there, so the rest of the message is all there is
+				line = aMsg.substr(sol);
+				sol = aMsg.length();
+			} else {
+				// got it, so get the line and then move past it
+				line = aMsg.substr(sol, (eol - sol));
+				sol = eol + 1;
+			}
+
+			/*
+			 * If we have a string to send, then send it. But watch
+			 * out for lines that are too long...
+			 */
 			while (line.length() > MAX_MESSAGE_LEN) {
 				// try to cut it right at the limit
 				int		pos = MAX_MESSAGE_LEN;
@@ -1132,23 +1112,27 @@ void CKIRCProtocol::clearChannelList()
 
 
 /*
- * This method is used by several methods to try and stop the
+ * This method is used by several methods to try and start the
  * Listener thread. There are a few steps to it, so it's nice to
  * have it in one place as opposed to copying code.
  */
-void CKIRCProtocol::stopListener()
+void CKIRCProtocol::startListener()
 {
-	if (getListener() != NULL) {
-		if (getListener()->isRunning()) {
-			getListener()->setTimeToDie(true);
+	// we have to have a listener to operate on...
+	if (mListener != NULL) {
+		// ...and to start it it should not be running
+		if (!mListener->isRunning()) {
+			// OK... start it...
+			mListener->start();
+			// now check to see that it actually got started
 			int		cnt = 0;
-			while ((cnt < 6) && getListener()->isRunning()) {
-				// wait for DEFAULT_IRC_READ_TIMEOUT/4 to see if it's dead
-				usleep((unsigned int)(DEFAULT_IRC_READ_TIMEOUT * 1000000 / 4));
+			while ((cnt < 6) && !mListener->isRunning()) {
+				// wait for 0.25 sec to see if it's alive
+				mmsleep(250);
 				cnt++;
 			}
-			// make sure it's stopped
-			if (getListener()->isRunning()) {
+			// make sure it's running
+			if (!mListener->isRunning()) {
 				std::ostringstream	msg;
 				msg << "CKIRCProtocol::stopListener() - the Listener for this "
 					"instance could not be stopped. This is a serious threading "
@@ -1161,84 +1145,35 @@ void CKIRCProtocol::stopListener()
 
 
 /*
- * This is the tokenizer/parser that wasn't in the STL string
- * class for some unknown reason. It takes a source and a
- * delimiter and breaks up the source into chunks that are
- * all separated by the delimiter string. Each chunk is put
- * into the returned vector for accessing by the caller. Since
- * the return value is created on the stack, the user needs to
- * save it if they want it to stay around.
+ * This method is used by several methods to try and stop the
+ * Listener thread. There are a few steps to it, so it's nice to
+ * have it in one place as opposed to copying code.
  */
-std::vector<CKString> CKIRCProtocol::parseIntoChunks(
-												const CKString & aString,
-												const CKString & aDelim )
+void CKIRCProtocol::stopListener()
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
-
-	// first, see if we have anything to do
-	if (!error) {
-		if (aString.length() <= 0) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::parseIntoChunks(const CKString &, "
-				"const CKString &) - the length of the source string is 0 and "
-				"that means that there's nothing for me to do. Please make sure "
-				"that the arguments make sense before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+	// we have to have a listener to stop...
+	if (mListener != NULL) {
+		// and it only makes sense if it's currently running
+		if (mListener->isRunning()) {
+			// OK, let it know it's time to stop...
+			mListener->setTimeToDie(true);
+			// ...and check to see that it does
+			int		cnt = 0;
+			while ((cnt < 6) && mListener->isRunning()) {
+				// wait for DEFAULT_IRC_READ_TIMEOUT/4 to see if it's dead
+				mmsleep((unsigned int)DEFAULT_IRC_READ_TIMEOUT * 1000000 / 4);
+				cnt++;
+			}
+			// make sure it's stopped
+			if (mListener->isRunning()) {
+				std::ostringstream	msg;
+				msg << "CKIRCProtocol::stopListener() - the Listener for this "
+					"instance could not be stopped. This is a serious threading "
+					"problem.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
 	}
-	int		delimLength = 0;
-	if (!error) {
-		delimLength = aDelim.length();
-		if (delimLength <= 0) {
-			error = true;
-			std::ostringstream	msg;
-			msg << "CKIRCProtocol::parseIntoChunks(const CKString &, "
-				"const CKString &) - the length of the delimiter string is 0 "
-				"and that means that there's nothing for me to do. Please make "
-				"sure that the arguments make sense before calling this method.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		}
-	}
-
-	// now, copy the source to a buffer so I can consume it in the process
-	CKString		buff(aString);
-
-	/*
-	 * Now loop picking off the parts bettween the delimiters. Do this by
-	 * finding the first delimiter, see if it's located at buff[0], and if
-	 * so, then add an empty string to the vector, otherwise, get the
-	 * substring up to that delimiter and place it at the end of the vector,
-	 * removing it from the buffer as you do this. Then eat up the delimiter
-	 * and do it all again. In the end, there will be one more bit and that
-	 * will simply be added to the end of the vector.
-	 */
-	while (!error) {
-		// find out wherre, if anyplace, the delimiter sits
-		int		pos = buff.find(aDelim);
-		if (pos == -1) {
-			// nothing left to parse out, bail out
-			break;
-		} else if (pos == 0) {
-			// add an empty string to the vector
-			retval.push_back(CKString(""));
-		} else {
-			// pick off the substring up to the delimiter
-			retval.push_back(buff.substr(0, pos));
-			// ...and then delete them from the buffer
-			buff.erase(0, pos);
-		}
-
-		// now strip off the delimiter from the buffer
-		buff.erase(0, delimLength);
-	}
-	// if we didn't error out, then add the remaining buff to the end
-	if (!error) {
-		retval.push_back(buff);
-	}
-
-	return retval;
 }
 
 
@@ -1425,8 +1360,10 @@ void CKIRCProtocol::executeCommand( const CKString & aCmd )
 	if (!error) {
 		CKString		cmd = aCmd;
 		cmd += "\n";
-		if (!mCommPort.send(cmd)) {
-			error = true;
+		mCommPortMutex.lock();
+		error = !mCommPort.send(cmd);
+		mCommPortMutex.unlock();
+		if (error) {
 			std::ostringstream	msg;
 			msg << "CKIRCProtocol::executeCommand(const CKString &) - while "
 				"trying to send the command '" << aCmd << "' to the IRC server an "

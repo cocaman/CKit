@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.11 2004/09/16 09:34:16 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.12 2004/09/20 16:19:34 drbob Exp $
  */
 
 //	System Headers
@@ -49,7 +49,7 @@ CKIRCProtocolListener::CKIRCProtocolListener( CKIRCProtocol *aProtocol ) :
 	mTimeToDie(false)
 {
 	// set the args as we've been given them
-	setProtocol(aProtocol);
+	mProtocol = aProtocol;
 }
 
 
@@ -77,7 +77,7 @@ CKIRCProtocolListener::CKIRCProtocolListener( const CKIRCProtocolListener & anOt
 CKIRCProtocolListener::~CKIRCProtocolListener()
 {
 	/*
-	 * While we "have" a CKIRCProtocol, that's really out prent and we
+	 * While we "have" a CKIRCProtocol, that's really our parent and we
 	 * don't want to free him. So, there's really nothing we have to
 	 * delete, so let's not.
 	 */

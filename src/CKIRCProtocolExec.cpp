@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  * 
- * $Id: CKIRCProtocolExec.cpp,v 1.5 2004/09/16 09:34:16 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.6 2004/09/20 16:19:34 drbob Exp $
  */
 
 //	System Headers

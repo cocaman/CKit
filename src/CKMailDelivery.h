@@ -5,7 +5,7 @@
  *                    implemented and therefore sets the contract that needs
  *                    to be adhered to for all delivery channels.
  *
- * $Id: CKMailDelivery.h,v 1.6 2004/09/16 09:34:17 drbob Exp $
+ * $Id: CKMailDelivery.h,v 1.7 2004/09/20 16:19:36 drbob Exp $
  */
 #ifndef __CKMAILDELIVERY_H
 #define __CKMAILDELIVERY_H

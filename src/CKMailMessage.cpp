@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.7 2004/09/16 09:34:17 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.8 2004/09/20 16:19:36 drbob Exp $
  */
 
 //	System Headers

@@ -132,7 +132,7 @@ CKSMTPDelivery.o: CKBufferedSocket.h CKSocket.h CKException.h
 CKIRCProtocol.o: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
 CKIRCProtocol.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKIRCProtocol.o: CKIRCProtocolListener.h CKFWThread.h CKIRCResponder.h
-CKIRCProtocol.o: CKException.h
+CKIRCProtocol.o: CKException.h CKStopwatch.h
 CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h
 CKIRCProtocolListener.o: CKIRCProtocol.h CKTelnetConnection.h
 CKIRCProtocolListener.o: CKTCPConnection.h CKBufferedSocket.h

@@ -9,7 +9,7 @@
  *                        and writing. Rather, this class focuses on the
  *                        higher-level features.
  *
- * $Id: CKTelnetConnection.h,v 1.6 2004/09/16 09:34:20 drbob Exp $
+ * $Id: CKTelnetConnection.h,v 1.7 2004/09/20 16:19:52 drbob Exp $
  */
 #ifndef __CKTELNETCONNECTION_H
 #define __CKTELNETCONNECTION_H

@@ -2,7 +2,7 @@
  * CKFWTime.h - this file defines the simple time class that can
  *              be used in a large number of applications.
  *
- * $Id: CKFWTime.h,v 1.6 2004/09/16 09:34:15 drbob Exp $
+ * $Id: CKFWTime.h,v 1.7 2004/09/20 16:19:31 drbob Exp $
  */
 #ifndef __CKFW_TIME_H
 #define __CKFW_TIME_H
