@@ -2,7 +2,7 @@
  * CKFWThread.h - this file defines the simple thread that can
  *                be used in a large number of applications.
  *
- * $Id: CKFWThread.h,v 1.3 2003/12/16 18:08:56 drbob Exp $
+ * $Id: CKFWThread.h,v 1.4 2004/08/31 11:18:07 drbob Exp $
  */
 #ifndef __CKFW_THREAD_H
 #define __CKFW_THREAD_H
@@ -55,6 +55,14 @@ class CKFWThread
 
 		virtual ~CKFWThread( );
 
+		CKFWThread & operator=( CKFWThread & anOther );
+
+		/*
+		 * This is used to 'tag' the thread so that the exception reports tell
+		 * us something more than nothing. It's about the only information we're
+		 * going to get in some cases.
+		 */
+		void setTag( const char *aTag );
 		/*
 		 *
 		 */
@@ -86,11 +94,12 @@ class CKFWThread
 	private :
 		static void *threadFunction( void * );
 
-		int			mPolicy;
+		int				mPolicy;
 		double		mPriority;
-		int			mScope;
+		int				mScope;
 		pthread_t	mThread;
-		int			mIsDetachable;
+		int				mIsDetachable;
+		char			*mTag;
 
   friend int CKFWThreadTest( char * argv[] = 0, int argc = 0 );
 };

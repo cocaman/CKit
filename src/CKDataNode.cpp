@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.9 2004/07/27 20:01:21 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.10 2004/08/31 11:18:04 drbob Exp $
  */
 
 //	System Headers
@@ -936,7 +936,7 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
 		// lock up the list of kids for this
 		mKidsMutex.lock();
 		// see if we have any at all
-		if (mKids.size() > 0) {
+		if (!mKids.empty()) {
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
@@ -973,6 +973,37 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
 			 * and that's all we have to do.
 			 */
 			retval.push_back(mName);
+		}
+		// unlock the list of kids
+		mKidsMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will return the number of steps that need to be
+ * taken from this node to a leaf node. For example, if this node
+ * contained a child node that also contained a child node, then
+ * this method would return 2. If this node was a leaf node, then
+ * this method would return 0.
+ */
+int CKDataNode::getNumOfStepsToLeaf()
+{
+	bool		error = false;
+	int			retval = 0;
+
+	// we need to recursively count the number of child nodes
+	if (!error) {
+		// lock up the list of kids for this
+		mKidsMutex.lock();
+		// see if we have any at all
+		if (!mKids.empty()) {
+			std::list<CKDataNode*>::iterator	i = mKids.begin();
+			if ((*i) != NULL) {
+				retval = (*i)->getNumOfStepsToLeaf() + 1;
+			}
 		}
 		// unlock the list of kids
 		mKidsMutex.unlock();

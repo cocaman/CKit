@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.5 2004/05/25 16:12:30 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.6 2004/08/31 11:18:07 drbob Exp $
  */
 
 //	System Headers
@@ -268,13 +268,19 @@ int CKIRCProtocolListener::process()
 			((pos = line.find(tag)) != std::string::npos)) {
 			// build up the message packet for tossing around
 			CKIRCIncomingMessage	msg;
-			int		bang = line.find('!');
-			msg.userNickname = line.substr(1, (bang - 1));
-			msg.message = line.substr(pos + tag.size());
-			msg.response = "";
+			unsigned int	bang = line.find('!');
+			if (bang == std::string::npos) {
+				std::cerr << "CKIRCProtocolListener::process() - the incoming chat "
+					"message seemed to be to me, but the format was wrong: '" <<
+					line << "' so we're ignoring this message." << std::endl;
+			} else {
+				// pick off the sender and message to me
+				msg.userNickname = line.substr(1, (bang - 1));
+				msg.message = line.substr(pos + tag.size());
 
-			// now process it outside of this thread
-			CKIRCProtocolExec::handleMessage(msg, mProtocol);
+				// now process it outside of this thread
+				CKIRCProtocolExec::handleMessage(msg, mProtocol);
+			}
 			processed = true;
 		}
 	}
