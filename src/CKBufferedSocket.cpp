@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.13 2004/09/20 16:19:20 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.14 2004/12/17 21:04:13 drbob Exp $
  */
 
 //	System Headers
@@ -202,6 +202,87 @@ CKString CKBufferedSocket::read()
 	CKString	retval(mPendingData);
 	// ...and clear it out
 	mPendingData.clear();
+
+	return retval;
+}
+
+
+/*
+ * This method will read the specified number of bytes (characters)
+ * from the socket and return those bytes as the contents of the
+ * CKString. If the count exists in the buffer of the socket, then
+ * nothing will be physically read off the socket, but if there are
+ * not enough characters in the buffer to comply with the request,
+ * then this method will wait until the correct number of bytes
+ * have been read from the socket - or until the socket is closed.
+ */
+CKString CKBufferedSocket::readChars( int aCharCount )
+{
+	bool			error = false;
+	CKString		retval;
+	bool			done = false;
+
+	/*
+	 * OK, here's what we're going to do... We need to create a loop where
+	 * the first thing to do is to read everything that's available on the
+	 * socket into the pending data buffer. Once it's there, we then check
+	 * to see if the pending data buffer contains the correct number of
+	 * characters. If it does, then we stop and move to the next phase where
+	 * we pick off the data. If it's not currently in the buffer, however,
+	 * then we need to wait on the socket until something arrives. When it
+	 * arrives, we repeat the loop and see what happens.
+	 */
+	while (!error && !done) {
+		/*
+		 * Step 1 - transfer all the data waiting at the socket to the
+		 *          pending data buffer
+		 */
+		if (mPendingData.size() < aCharCount) {
+			transferWaitingDataAtSocketToPendingData();
+		}
+
+		/*
+		 * Step 2 - see if a sufficient number of characters is in the
+		 *          pending data buffer (break encapsulation here because
+		 *          we need to work on the buffer itself and not a copy
+		 *          which will be returned by the getPendingData() method.)
+		 */
+		if (mPendingData.size() >= aCharCount) {
+			// grab the substring up to that point
+			retval = mPendingData.substr(0, aCharCount);
+			// and clear out the buffer of this stuff
+			mPendingData.erase(0, aCharCount);
+			// ...and flag this as done
+			done = true;
+			break;
+		}
+
+		/*
+		 * Step 3 - wait for anything at the socket to arrive. It there's
+		 *          a timeout, then flag it as an error, set the errno to
+		 *          the timeout indicator, and bail out of this guy. The
+		 *          one trick is that we need to assume that if the poll()
+		 *          says there's data, then we ought to be able to see some
+		 *          on the socket. That's the reason for the final argument
+		 *          in the poll() call.
+		 */
+		int status = poll(getSocketHandle(), (int)(1000 * getReadTimeout()), true);
+		if (status != POLL_OK) {
+			error = true;
+			switch (status) {
+				case POLL_ERROR:
+					errno = ERR_READ_ERROR;
+					break;
+				case POLL_TIMEOUT:
+					errno = ERR_READ_TIMEOUT;
+					break;
+				case POLL_INTERRUPT:
+					errno = ERR_READ_INTERRUPT;
+					break;
+			}
+			break;
+		}
+	}
 
 	return retval;
 }

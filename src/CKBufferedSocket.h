@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.11 2004/09/25 17:02:01 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.12 2004/12/17 21:04:14 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H
@@ -153,6 +153,16 @@ class CKBufferedSocket :
 		 * everything.
 		 */
 		CKString read();
+		/*
+		 * This method will read the specified number of bytes (characters)
+		 * from the socket and return those bytes as the contents of the
+		 * CKString. If the count exists in the buffer of the socket, then
+		 * nothing will be physically read off the socket, but if there are
+		 * not enough characters in the buffer to comply with the request,
+		 * then this method will wait until the correct number of bytes
+		 * have been read from the socket - or until the socket is closed.
+		 */
+		CKString readChars( int aCharCount );
 		/*
 		 * These methods read data up to - and including, the provided
 		 * 'tag', or stop, data from the socket, and will wait until

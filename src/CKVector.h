@@ -5,7 +5,7 @@
  *              This was originally written in the MarketMash server by
  *              Jeremy.
  *
- * $Id: CKVector.h,v 1.3 2004/09/25 16:14:41 drbob Exp $
+ * $Id: CKVector.h,v 1.4 2004/12/17 21:04:16 drbob Exp $
  */
 #ifndef __CKVECTOR_H
 #define __CKVECTOR_H
@@ -167,7 +167,7 @@ template <class T> class CKVector
 			for (int i = 0; i < mSize; i++) {
 				mElements[i] = anOther.mElements[i];
 			}
-			
+
 			return *this;
 		}
 
@@ -407,7 +407,7 @@ template <class T> class CKVector
 				mSize = anIndex + 1;
 			}
 
-			return mElements[anIndex]; 
+			return mElements[anIndex];
 		}
 
 
@@ -439,7 +439,7 @@ template <class T> class CKVector
 				throw CKException(__FILE__, __LINE__, msg.str());
 			}
 
-			return mElements[anIndex]; 
+			return mElements[anIndex];
 		}
 
 
