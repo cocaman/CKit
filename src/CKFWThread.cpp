@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.10 2004/09/20 16:19:30 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.11 2004/09/22 21:09:16 drbob Exp $
  */
 
 //	System Headers
@@ -99,90 +99,108 @@ void CKFWThread::run( )
 {
 	bool		error = false;
 
-  try {
-    if ( initialize( ) != cSuccess ) {
-      error = true;
-    }
-  } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	try {
+		if ( initialize( ) != cSuccess ) {
+			error = true;
+		}
+	} catch ( CKException & lException ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread a CKException was thrown: " <<
 			lException.getMessage() << std::endl;
 	} catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread a (char*) exception was thrown: " << charstar <<
 			std::endl;
 	} catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread a std::string exception was thrown: " << str <<
 			std::endl;
 	} catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread a std::exception exception was thrown: " <<
 			excep.what() << std::endl;
 	} catch ( SAException & sae ) {
+		error = true;
 		std::string	excep = (const SAChar *)sae.ErrText();
 		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread a SAException was thrown: " << excep << std::endl;
-  } catch ( ... ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	} catch ( ... ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"initializing the thread an unknown exception was thrown." << std::endl;
-  }
+	}
 
-  try {
-    if ( !error ) {
-      while( process( ) == cSuccess );
-    }
-  } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	try {
+		if ( !error ) {
+			while( process( ) == cSuccess );
+		}
+	} catch ( CKException & lException ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread a CKException was thrown: " <<
 			lException.getMessage() << std::endl;
 	} catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread a (char*) exception was thrown: " << charstar <<
 			std::endl;
 	} catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread a std::string exception was thrown: " << str <<
 			std::endl;
 	} catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread a std::exception exception was thrown: " <<
 			excep.what() << std::endl;
 	} catch ( SAException & sae ) {
+		error = true;
 		std::string	excep = (const SAChar *)sae.ErrText();
 		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread a SAException was thrown: " << excep << std::endl;
-  } catch ( ... ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	} catch ( ... ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"running the thread an unknown exception was thrown." << std::endl;
-  }
+	}
 
-  try {
-    terminate( );
-  } catch ( CKException & lException ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	try {
+		terminate( );
+	} catch ( CKException & lException ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread a CKException was thrown: " <<
 			lException.getMessage() << std::endl;
 	} catch ( char* charstar ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread a (char*) exception was thrown: " << charstar <<
 			std::endl;
 	} catch ( std::string & str ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread a std::string exception was thrown: " << str <<
 			std::endl;
 	} catch ( std::exception & excep ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread a std::exception exception was thrown: " <<
 			excep.what() << std::endl;
 	} catch ( SAException & sae ) {
+		error = true;
 		std::string	excep = (const SAChar *)sae.ErrText();
 		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread a SAException was thrown: " << excep << std::endl;
-  } catch( ... ) {
-    std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
+	} catch( ... ) {
+		error = true;
+		std::cerr << "CKFWThread::run(" << (mTag == NULL ? "" : mTag) << ") - while "
 			"terminating the thread an unknown exception was thrown." << std::endl;
-  }
+	}
 }
 
 int CKFWThread::process( )
