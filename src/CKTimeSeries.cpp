@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.6 2004/05/19 15:51:50 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.7 2004/07/13 21:32:46 drbob Exp $
  */
 
 //	System Headers
@@ -220,7 +220,7 @@ void CKTimeSeries::put( CKTimeSeries & aSeries )
 		// copy over all the elements from teh source
 		std::map<double, double>::iterator	i;
 		for (i = aSeries.mTimeseries.begin(); i != aSeries.mTimeseries.end(); ++i) {
-			mTimeseries[i->first] = i->second;
+			mTimeseries[(*i).first] = (*i).second;
 		}
 		// unlock the source
 		aSeries.mTimeseriesMutex.unlock();
@@ -244,7 +244,7 @@ double CKTimeSeries::get( double aDateTime )
 	// see if it exists in the map
 	std::map<double, double>::iterator	i = mTimeseries.find(aDateTime);
 	if (i != mTimeseries.end()) {
-		retval = i->second;
+		retval = (*i).second;
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -280,7 +280,7 @@ std::vector<double> CKTimeSeries::get( const std::vector<double> & aDateSeries )
 		for (unsigned int d = 0; d < cnt; d++) {
 			i = mTimeseries.find(aDateSeries[d]);
 			if (i != mTimeseries.end()) {
-				retval.push_back(i->second);
+				retval.push_back((*i).second);
 			} else {
 				retval.push_back(NAN);
 			}
@@ -329,7 +329,7 @@ std::vector<long> CKTimeSeries::getDates()
 	// get all the keys from the map no matter what
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		retval.push_back((long) i->first);
+		retval.push_back((long) (*i).first);
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -352,7 +352,7 @@ std::vector<double> CKTimeSeries::getDateTimes()
 	// get all the keys from the map no matter what
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		retval.push_back(i->first);
+		retval.push_back((*i).first);
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
@@ -406,20 +406,20 @@ double CKTimeSeries::interpolate( double aDateTime )
 		// go from low to high finding the best low value
 		std::map<double, double>::iterator	i = mTimeseries.begin();
 		for (unsigned int c = 0; c < cnt; ++i, ++c) {
-			if (((i->first <= aDateTime) && !isnan(i->second)) ||
+			if ((((*i).first <= aDateTime) && !isnan((*i).second)) ||
 				isnan(lowTime)) {
-				lowTime = i->first;
-				lowValue = i->second;
+				lowTime = (*i).first;
+				lowValue = (*i).second;
 			}
 		}
 
 		// go from high to low finding the best high value
 		std::map<double, double>::reverse_iterator	r = mTimeseries.rbegin();
 		for (unsigned int c = 0; c < cnt; ++r, ++c) {
-			if (((r->first >= aDateTime) && !isnan(r->second)) ||
+			if ((((*r).first >= aDateTime) && !isnan((*r).second)) ||
 				isnan(highTime)) {
-				highTime = r->first;
-				highValue = r->second;
+				highTime = (*r).first;
+				highValue = (*r).second;
 			}
 		}
 	}
@@ -570,15 +570,17 @@ bool CKTimeSeries::fillInValues( int anInterval, double aStartDate,
 				// put in the last good value and update the number of fills
 				put(date, lastValue);
 				fills++;
-				if (fills > maxFillsWarning) {
-					char	buff[512];
-					snprintf(buff, 511, "CKTimeSeries::fillInValues(double, double, "
-						"double, int) - we have filled in %17.8lf with %lf "
-						" which is consecutive fill #%d", date, lastValue, fills);
-					std::cerr << buff << std::endl;
-				}
 			}
 		} else {
+			// see if we've passed the magic number of fills
+			if (fills > maxFillsWarning) {
+				char	buff[512];
+				snprintf(buff, 511, "CKTimeSeries::fillInValues(double, double, "
+					"double, int) - we have filled in %17.8lf with %lf "
+					" which is consecutive fill #%d", date, lastValue, fills);
+				std::cerr << buff << std::endl;
+			}
+			// update the last value and reset the number of consecutive fills
 			lastValue = value;
 			fills = 0;
 		}
@@ -618,8 +620,8 @@ bool CKTimeSeries::add( double anOffset )
 	// for each value in the series, add the constant
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second += anOffset;
+		if (!isnan((*i).second)) {
+			(*i).second += anOffset;
 		}
 	}
 	// unlock up this guy for changes
@@ -661,7 +663,7 @@ bool CKTimeSeries::add( CKTimeSeries & aSeries )
 		for (i = mTimeseries.begin(), j = aSeries.mTimeseries.begin();
 			(i != mTimeseries.end()) && (j != aSeries.mTimeseries.end());
 			++i, ++j) {
-			i->second += j->second;
+			(*i).second += (*j).second;
 		}
 
 		// lastly, unlock up the two series for changes
@@ -689,8 +691,8 @@ bool CKTimeSeries::subtract( double anOffset )
 	// for each value in the series, subtract the constant
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second -= anOffset;
+		if (!isnan((*i).second)) {
+			(*i).second -= anOffset;
 		}
 	}
 	// unlock up this guy for changes
@@ -732,7 +734,7 @@ bool CKTimeSeries::subtract( CKTimeSeries & aSeries )
 		for (i = mTimeseries.begin(), j = aSeries.mTimeseries.begin();
 			(i != mTimeseries.end()) && (j != aSeries.mTimeseries.end());
 			++i, ++j) {
-			i->second -= j->second;
+			(*i).second -= (*j).second;
 		}
 
 		// lastly, unlock up the two series for changes
@@ -757,8 +759,8 @@ bool CKTimeSeries::multiply( double aFactor )
 	// for each value in the series, multiply the factor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second *= aFactor;
+		if (!isnan((*i).second)) {
+			(*i).second *= aFactor;
 		}
 	}
 	// unlock up this guy for changes
@@ -781,8 +783,8 @@ bool CKTimeSeries::divide( double aDivisor )
 	// for each value in the series, divide by the divisor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second /= aDivisor;
+		if (!isnan((*i).second)) {
+			(*i).second /= aDivisor;
 		}
 	}
 	// unlock up this guy for changes
@@ -823,13 +825,13 @@ bool CKTimeSeries::computeDailyReturns()
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
 		// hold on to the value as it's going to be 'previous' soon
-		double	value = i->second;
+		double	value = (*i).second;
 		// if the 'previous' is NAN, then this is too...
 		if (isnan(previous)) {
-			i->second = NAN;
+			(*i).second = NAN;
 		} else if (!isnan(value)) {
 			// OK, got good data to divide, so do it
-			i->second = log(value / previous);
+			(*i).second = log(value / previous);
 		}
 		// now update the 'previous' with the last good value
 		if (!isnan(value)) {
@@ -857,8 +859,8 @@ bool CKTimeSeries::inverse()
 	// for each value in the series, invert it
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			i->second = 1.0 / i->second;
+		if (!isnan((*i).second)) {
+			(*i).second = 1.0 / (*i).second;
 		}
 	}
 	// unlock up this guy for changes
@@ -883,8 +885,8 @@ double CKTimeSeries::average()
 	// for each value in the series, multiply the factor
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			retval += i->second;
+		if (!isnan((*i).second)) {
+			retval += (*i).second;
 		}
 	}
 	// now divide by the number
@@ -912,8 +914,8 @@ double CKTimeSeries::max()
 	// check each value in the series for the numerically largest
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second) && ((retval < i->second) || isnan(retval))) {
-			retval = i->second;
+		if (!isnan((*i).second) && ((retval < (*i).second) || isnan(retval))) {
+			retval = (*i).second;
 		}
 	}
 	// unlock up this guy for changes
@@ -932,8 +934,8 @@ double CKTimeSeries::min()
 	// check each value in the series for the numerically smallest
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second) && ((retval > i->second) || isnan(retval))) {
-			retval = i->second;
+		if (!isnan((*i).second) && ((retval > (*i).second) || isnan(retval))) {
+			retval = (*i).second;
 		}
 	}
 	// unlock up this guy for changes
@@ -952,8 +954,8 @@ double CKTimeSeries::rms()
 	// compute the sum of the squares of each value
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			retval += i->second * i->second;
+		if (!isnan((*i).second)) {
+			retval += (*i).second * (*i).second;
 		}
 	}
 	// finally take the square root of the average of the squares
@@ -974,8 +976,8 @@ double CKTimeSeries::linf()
 	// find the largest absolute value of any element
 	std::map<double, double>::iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-		if (!isnan(i->second)) {
-			double	a = fabs(i->second);
+		if (!isnan((*i).second)) {
+			double	a = fabs((*i).second);
 			if ((retval < a) || isnan(retval)) {
 				retval = a;
 			}
@@ -1246,7 +1248,7 @@ double CKTimeSeries::getStartingDate()
 	// now get the first pair in the map
 	std::map<double, double>::iterator	i;
 	i = mTimeseries.begin();
-	retval = i->first;
+	retval = (*i).first;
 	// ...and unlock as we're done
 	mTimeseriesMutex.unlock();
 
@@ -1263,7 +1265,7 @@ double CKTimeSeries::getEndingDate()
 	// now get the last pair in the map
 	std::map<double, double>::reverse_iterator	i;
 	i = mTimeseries.rbegin();
-	retval = i->first;
+	retval = (*i).first;
 	// ...and unlock as we're done
 	mTimeseriesMutex.unlock();
 
@@ -1294,17 +1296,17 @@ char *CKTimeSeries::generateCodeFromValues() const
 	std::map<double, double>::const_iterator	i;
 	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
 		// see if the timestamp is just a date
-		if (i->first == floor(i->first)) {
+		if ((*i).first == floor((*i).first)) {
 			// this will be just YYYYMMDD on the output
-			buff << ((long)floor(i->first)) << "\x01";
+			buff << ((long)floor((*i).first)) << "\x01";
 		} else {
 			// this will be YYYYMMDD.hhmmssss on the output
 			buff.setf(std::ios::fixed, std::ios::floatfield);
 			buff.precision(8);
-			buff << i->first << "\x01";
+			buff << (*i).first << "\x01";
 		}
 		// finish it off with the value in scientific notation
-		buff << i->second << "\x01";
+		buff << (*i).second << "\x01";
 	}
 
 	// now create a new buffer to hold all this
@@ -1457,7 +1459,7 @@ std::string CKTimeSeries::toString() const
 		// now get busy on the looping
 		std::map<double, double>::const_iterator	i;
 		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
-			snprintf(buff, 255, "(%17.8lf, %lf)\n", i->first, i->second);
+			snprintf(buff, 255, "(%17.8lf, %lf)\n", (*i).first, (*i).second);
 			retval.append(buff);
 		}
 	}
