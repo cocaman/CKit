@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  * 
- * $Id: CKIRCProtocolExec.cpp,v 1.1 2004/05/24 18:19:41 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.2 2004/05/25 16:12:29 drbob Exp $
  */
 
 //	System Headers
@@ -164,7 +164,7 @@ int CKIRCProtocolExec::process()
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
 		// now have all the responders take a whack at it
-		if (!mProtocol->alertAllResponders(mMessage)) {
+		if (mProtocol->alertAllResponders(mMessage)) {
 			// send it back to the originator
 			mProtocol->sendMessage(mMessage.userNickname, mMessage.response);
 		}

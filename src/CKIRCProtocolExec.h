@@ -15,8 +15,8 @@
  *                       thread and launches it. The thread itself will clean
  *                       itself up when it's done and there will be no
  *                       long-lasting effects of the spawned processing thread.
- * 
- * $Id: CKIRCProtocolExec.h,v 1.1 2004/05/24 18:19:41 drbob Exp $
+ *
+ * $Id: CKIRCProtocolExec.h,v 1.2 2004/05/25 16:12:29 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOLEXEC_H
 #define __CKIRCPROTOCOLEXEC_H

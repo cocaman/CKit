@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.3 2003/12/16 18:08:57 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.4 2004/05/25 16:12:28 drbob Exp $
  */
 
 //	System Headers
@@ -621,6 +621,7 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 			// create a listener for this guy
 			CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
 			if (buddy == NULL) {
+				error = true;
 				std::ostringstream	msg;
 				msg << "CKIRCProtocol::connect(const std::string & , int) - the "
 					"Listener for this instance could not be created. This is a "
@@ -630,8 +631,10 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 				setListener(buddy);
 			}
 		}
-		// ...now start it
-		getListener()->start();
+		// ...now start it - if it needs to be started
+		if (!getListener()->isRunning()) {
+			getListener()->start();
+		}
 	}
 
 	return !error;
@@ -1328,20 +1331,23 @@ bool CKIRCProtocol::alertAllResponders( CKIRCIncomingMessage & aMsg )
 
 	/*
 	 * Now we're going to scan through all the responders giving each a
-	 * chance to respond to the message provided.
+	 * chance to respond to the message provided. But because we may have
+	 * a lot of messages flowing through here in different threads it's a
+	 * good idea to make a local copy of the list of responders at the
+	 * time we are called, and then iterate on that so as not to lock up
+	 * the list of responders for too long as a pokey responder might do.
 	 */
 	if (!error) {
-		// now we need to lock the list of responders
+		// we need to make a thread-safe local copy of the responder list
 		mRespondersMutex.lock();
+		std::list<CKIRCResponder*>	copy = mResponders;
+		mRespondersMutex.unlock();
 
-		// go through the list, calling each with the message
+		// now go through the list, calling each with the message
 		std::list<CKIRCResponder*>::iterator	i;
-		for (i = mResponders.begin(); i != mResponders.end(); ++i) {
+		for (i = copy.begin(); i != copy.end(); ++i) {
 			(*i)->respondToIRCMessage(aMsg);
 		}
-
-		// finally, we need to unlock the list of responders
-		mRespondersMutex.unlock();
 	}
 
 	return !error;
