@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple semaphore that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWSemaphore.cpp,v 1.3 2003/12/16 18:08:56 drbob Exp $
+ * $Id: CKFWSemaphore.cpp,v 1.4 2004/08/02 18:04:37 drbob Exp $
  */
 
 //	System Headers
@@ -26,6 +26,13 @@
 CKFWSemaphore::CKFWSemaphore( void ) {
   int lError = 0;
   if ( (lError = sem_init( &mSemaphore, 0, 0 ) ) == -1 )
+    throw CKErrNoException( __FILE__, __LINE__, lError );
+  return ;
+}
+
+CKFWSemaphore::CKFWSemaphore( unsigned int aMaxCnt ) {
+  int lError = 0;
+  if ( (lError = sem_init( &mSemaphore, 0, aMaxCnt ) ) == -1 )
     throw CKErrNoException( __FILE__, __LINE__, lError );
   return ;
 }
