@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.5 2004/05/19 15:51:51 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.6 2004/09/02 18:15:50 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -373,7 +373,7 @@ class CKTimeSeries
 		/*
 		 * This method adds or subtracts the count of days from the given
 		 * date and returns the resulting date to the caller. This is nice
-		 * because to add days to a date, make the count positive, to 
+		 * because to add days to a date, make the count positive, to
 		 * subtract days from a date, make the count negative. The method
 		 * respects leap years, etc.
 		 */
