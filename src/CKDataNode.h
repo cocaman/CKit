@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.2 2004/03/02 19:34:45 drbob Exp $
+ * $Id: CKDataNode.h,v 1.3 2004/03/05 15:38:36 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -367,12 +367,27 @@ class CKDataNode
 		 */
 		CKFWMutex *getVarsMutex();
 		/*
+		 * This method returns the actual pointer to the STL map of the
+		 * variables and it's useful for subclasses that have to do
+		 * something with the variables that I didn't originally think
+		 * of.
+		 */
+		std::map<std::string, CKVariant> *getVars();
+
+		/*
 		 * This method returns the actual pointer to the mutex that is
 		 * being used to control access to the list of child nodes in this
 		 * node. This is here primarily as an accessor tool for the
 		 * subclasses that might be implemented on top of this guy.
 		 */
 		CKFWMutex *getKidsMutex();
+		/*
+		 * This method returns the actual pointer to the STL list of the
+		 * children and it's useful for subclasses that have to do
+		 * something with the children that I didn't originally think
+		 * of.
+		 */
+		std::list<CKDataNode*> *getKids();
 
 		/*
 		 * This is the tokenizer/parser that wasn't in the STL string
