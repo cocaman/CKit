@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.22 2005/02/09 16:23:39 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.23 2005/02/09 17:45:05 drbob Exp $
  */
 
 //	System Headers
@@ -899,6 +899,131 @@ CKDataNode *CKDataNode::getNodeAtPath( const CKStringList & aSteps )
 	}
 
 	return retval;
+}
+
+
+/*
+ * This method takes a string that is a series of node identifying
+ * names spearated by a '/' to represent a "path" to a node in the
+ * data tree.
+ *
+ * For example, say the path was:
+ *
+ *     SectionA/Subsection1/GroupQ/Item212
+ *
+ * This method would look for the child identified by the name
+ * "SectionA" and then have it look for a child called "Subsection1"
+ * and it's child called "GroupQ" and it's child called "Item212".
+ * What would be returned is the pointer to the "Item212" child.
+ *
+ * It's important to note that if any node in the path is NOT FOUND
+ * then this method will *create* that node so that the path will
+ * exist when complete unless a serious error occurs.
+ *
+ * If the path string includes a leading '/' then the path is
+ * taken from the root node of the tree that this node is but a
+ * part of. So, even if this node is *not* in the path, the value
+ * will be returned if it's in the tree.
+ */
+CKDataNode *CKDataNode::getOrCreateNodeAtPath( const CKString & aPath )
+{
+	bool		error = false;
+	CKDataNode	*retval = NULL;
+
+	// first, see if we need to start at the root
+	CKDataNode		*node = this;
+	if (!error) {
+		if (aPath[0] == '/') {
+			// travel to the root of this tree
+			while (node->mParent != NULL) {
+				node = node->mParent;
+			}
+		}
+	}
+
+	// next, turn the path into a vector of strings
+	CKStringList	steps;
+	int				stepCnt = 0;
+	if (!error) {
+		steps = pathToSteps(aPath);
+		stepCnt = steps.size();
+		if (stepCnt < 1) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKDataNode::getOrCreateNodeAtPath(const CKString &) - the path "
+				"had insufficient steps to create a valid path. Please make sure "
+				"that a valid path is passed to this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// use the other version to get the value
+			retval = node->getOrCreateNodeAtPath(steps);
+		}
+	}
+
+	return retval;
+}
+
+
+/*
+ * This version of the method takes a vector of strings that is
+ * the path as opposed to a single string delimited by the '/'.
+ * This is useful when you have the data organized in something
+ * like a vector and you don't want to put it all together only
+ * to have this method break it up.
+ */
+CKDataNode *CKDataNode::getOrCreateNodeAtPath( const CKStringList & aSteps )
+{
+	bool		error = false;
+
+	// start right where we are now
+	CKDataNode	*node = this;
+
+	// move down the path step by step...
+	int		stepCnt = aSteps.size();
+	if (!error) {
+		// the last element of the path is the variable name
+		if (stepCnt < 1) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKDataNode::getOrCreateNodeAtPath(const CKStringList &) - "
+				"the path had insufficient steps to create a valid path. Please "
+				"make sure that a valid path is passed to this method.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// OK, we have nodes to move through
+			for (int step = 0; !error && (step < stepCnt); step++) {
+				CKDataNode	*next = node->findChild(aSteps[step]);
+				if (next == NULL) {
+					/*
+					 * With no child of the right name, we need to create
+					 * one and place it in the tree so that we can continue.
+					 * This is one very fast way to build the tree of data.
+					 */
+					next = new CKDataNode(node, aSteps[step]);
+					if (next == NULL) {
+						error = true;
+						std::ostringstream	msg;
+						msg << "CKDataNode::getOrCreateNodeAtPath(const CKStringList &) "
+							"- while trying to extend the tree to include the step '"
+							<< aSteps[step] << "' an error occurred and that step "
+							"could not be created. Please check the logs but this "
+							"is likely an allocation error.";
+						throw CKException(__FILE__, __LINE__, msg.str());
+					} else {
+						// add this guy as a child of this node
+						node->addChild(next);
+						// ...and move into him for the next step
+						node = next;
+					}
+				} else {
+					// move down to the child
+					node = next;
+				}
+			}
+		}
+	}
+
+	return node;
 }
 
 
