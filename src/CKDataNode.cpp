@@ -9,12 +9,10 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.5 2004/03/09 14:15:59 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.6 2004/05/19 15:51:43 drbob Exp $
  */
 
 //	System Headers
-// TODO
-#include <iostream>
 #include <sstream>
 
 //	Third-Party Headers

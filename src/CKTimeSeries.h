@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.4 2004/02/27 14:37:46 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.5 2004/05/19 15:51:51 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -63,6 +63,13 @@
 //	Forward Declarations
 
 //	Public Constants
+/*
+ * The time series can fill in missing data but there's a point at which
+ * each fill is reported as a warning to the logs. This number of consecutive
+ * fills is a parameter to the method, but defaults to the value below. For
+ * most work, more than this is something to be concerned about.
+ */
+#define	DEFAULT_MAX_FILLS		5
 
 //	Public Datatypes
 
@@ -170,6 +177,14 @@ class CKTimeSeries
 		 * test these values.
 		 */
 		std::vector<double> get( const std::vector<double> & aDateSeries );
+		/*
+		 * This method takes today's date and marches back in time the
+		 * provided number of days to arrive at the value to return.
+		 * This is nice in that 0 will get the latest value and 1 will
+		 * get the value yesterday, and n will get you the value n days
+		 * ago.
+		 */
+		double getDaysBack( int aDayCnt );
 
 		/*
 		 * This method gets the complete series of dates for the current
@@ -208,6 +223,22 @@ class CKTimeSeries
 		 * interpolated value.
 		 */
 		std::vector<double> interpolate( const std::vector<double> & aDateSeries );
+		/*
+		 * This method, and it's convenience method, fill in the values
+		 * in the time series by starting at the point furthest back in time
+		 * and "filling in" any values that don't exist on the given interval.
+		 * For example, the convenience method call this guy with the argument
+		 * of 1 - meaning that the resulting time series will be assured to
+		 * have values that are no more than one day apart in time - filling
+		 * in the 'new' values with the one from the most recent past.
+		 *
+		 * This is very useful when a group of time series values need to be
+		 * consistent in their interval and not miss any points in the
+		 * series.
+		 */
+		bool fillInValues( int anInterval, double aStartDate,
+						   double anEndDate, int maxFillsWarning = DEFAULT_MAX_FILLS );
+		bool fillInDailyValues();
 
 		/********************************************************
 		 *
@@ -251,13 +282,13 @@ class CKTimeSeries
 		bool subtractAverage();
 		/*
 		 * This method takes the value at each point in the timeseries and
-		 * first divides it by the first point in the series and then takes
+		 * divides it by the previous point in the series and then takes
 		 * the natural log of the result and keeps that value. This is
-		 * essentially computing the price returns of the data series and
-		 * since this is getting used in financial applications this is a
-		 * pretty obvious thing to do.
+		 * essentially computing the daily price returns of the data series
+		 * and since this is getting used in financial applications this is
+		 * a pretty obvious thing to do.
 		 */
-		bool computeReturns();
+		bool computeDailyReturns();
 		/*
 		 * This method simply takes the inverse of each value in the time
 		 * series so that y -> 1/y for all points. This is marginally useful
@@ -321,6 +352,51 @@ class CKTimeSeries
 		 *                Utility Methods
 		 *
 		 ********************************************************/
+		/*
+		 * This method is very useful when you want to get the current
+		 * date and time in the proper format and data type for some kind
+		 * of operation. There's not a lot to do but it's nice to have a
+		 * method that will create the current date and time as a double
+		 * of the format YYYYMMDD.hhmmssss with a resolution of hundredths
+		 * of a second.
+		 */
+		static double getCurrentTimestamp();
+		/*
+		 * This method gets the current date as a double of the format
+		 * YYYYMMDD which is nice for certain values like the close price
+		 * or other daily numbers. This is a conveninence method that calls
+		 * the more generic method and then drops off the hours, minutes,
+		 * and seconds.
+		 */
+		static double getCurrentDate();
+
+		/*
+		 * This method adds or subtracts the count of days from the given
+		 * date and returns the resulting date to the caller. This is nice
+		 * because to add days to a date, make the count positive, to 
+		 * subtract days from a date, make the count negative. The method
+		 * respects leap years, etc.
+		 */
+		static double addDays( double aDate, int aCnt );
+		/*
+		 * These are convenience methods that call the more general addDays()
+		 * method to move a number of days up or back in the calendar. These
+		 * are nice in case you have a simple request.
+		 */
+		static double moveBackDays( double aDate, int aCnt );
+		static double moveUpDays( double aDate, int aCnt );
+		static double moveBackADay( double aDate );
+		static double moveUpADay( double aDate );
+
+		/*
+		 * These methods allow the caller to get the very first date in the
+		 * series as well as the very last date in the series. This is nice
+		 * because we can then determine what date range this series covers
+		 * and what to operate on, for instance.
+		 */
+		double getStartingDate();
+		double getEndingDate();
+
 		/*
 		 * In order to simplify the move of this object from C++ to Java
 		 * it makes sense to encode the value's data into a (char *) that

@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.4 2004/02/27 14:37:43 drbob Exp $
+ * $Id: CKTable.h,v 1.5 2004/05/19 15:51:49 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -177,6 +177,15 @@ class CKTable {
 		void setTableValue( const std::string & aRowLabel, int aCol, const CKTable *aTableValue );
 		void setTableValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTable *aTableValue );
 		/*
+		 * This sets the value stored in this location as a time series, but
+		 * a local copy will be made so that the caller doesn't have to worry
+		 * about holding on to the parameter, and is free to delete it.
+		 */
+		void setTimeSeriesValue( int aRow, int aCol, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( int aRow, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( const std::string & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue );
+		/*
 		 * This method takes the supplied column number and the header and
 		 * assuming the table is big enough to include that column, sets the
 		 * column header for that column to the supplied value. A copy is
@@ -276,6 +285,15 @@ class CKTable {
 		const CKTable *getTableValue( int aRow, const std::string & aColHeader ) const;
 		const CKTable *getTableValue( const std::string & aRowLabel, int aCol ) const;
 		const CKTable *getTableValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		/*
+		 * This method returns the actual time series value of the data that
+		 * this location is holding. If the user wants to use this value
+		 * outside the scope of this class, then they need to make a copy.
+		 */
+		const CKTimeSeries *getTimeSeriesValue( int aRow, int aCol ) const;
+		const CKTimeSeries *getTimeSeriesValue( int aRow, const std::string & aColHeader ) const;
+		const CKTimeSeries *getTimeSeriesValue( const std::string & aRowLabel, int aCol ) const;
+		const CKTimeSeries *getTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
 
 		/*
 		 * This method returns the actual std::string value that is the
@@ -355,6 +373,21 @@ class CKTable {
 		 * value is up to the caller.
 		 */
 		std::vector<CKVariant> getColumn( const std::string & aColumnHeader ) const;
+
+		/********************************************************
+		 *
+		 *            Table Manipulation Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method allows the user to merge two tables into one larger
+		 * table by adding the rows and columns from the argument to the
+		 * main instance itself. This is very useful when you have several
+		 * tables that need to be combined into one table that share
+		 * either a common set of column headers and/or a common set of
+		 * row labels.
+		 */
+		bool merge( const CKTable & aTable );
 
 		/********************************************************
 		 *

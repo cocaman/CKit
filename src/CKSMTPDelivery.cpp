@@ -6,7 +6,7 @@
  *                      communications. It's used in the Mail Delivery system
  *                      as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.cpp,v 1.3 2003/12/16 18:09:03 drbob Exp $
+ * $Id: CKSMTPDelivery.cpp,v 1.4 2004/05/19 15:51:44 drbob Exp $
  */
 
 //	System Headers
@@ -426,28 +426,20 @@ std::string CKSMTPDelivery::getDateFormat() const
 	 * date.
 	 */
 	time_t		now_t = time(NULL);
-	struct tm	*now = localtime(&now_t);
-	if (now == NULL) {
-		std::ostringstream	msg;
-		msg << "CKSMTPDelivery::getDateFormat() - while trying to "
-			"get the current time formatted into the proper struct for "
-			"manipulation an error occurred. Please check into it as soon as "
-			"possible.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		/*
-		 * Build up all the arguments in the date we need
-		 */
-		char buff[256];
-		snprintf( buff, 255, "%s, %d %s %04d %02d:%02d:%02d",
-					wdays[now->tm_wday],
-					now->tm_mday,
-					months[now->tm_mon],
-					(now->tm_year + 1900),
-					now->tm_hour, now->tm_min, now->tm_sec
-				);
-		retval = buff;
-	}
+	struct tm	now;
+	localtime_r(&now_t, &now);
+	/*
+	 * Build up all the arguments in the date we need
+	 */
+	char buff[256];
+	snprintf( buff, 255, "%s, %d %s %04d %02d:%02d:%02d",
+				wdays[now.tm_wday],
+				now.tm_mday,
+				months[now.tm_mon],
+				(now.tm_year + 1900),
+				now.tm_hour, now.tm_min, now.tm_sec
+			);
+	retval = buff;
 
 	return retval;
 }

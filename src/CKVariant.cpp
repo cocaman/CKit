@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.4 2004/05/11 19:17:09 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.5 2004/05/19 15:51:52 drbob Exp $
  */
 
 //	System Headers
@@ -28,11 +28,6 @@
 //	Forward Declarations
 
 //	Private Constants
-/*
- * We need to check the error number after a few commands and this is
- * the way we need to add support for it.
- */
-int errno;
 
 //	Private Datatypes
 
@@ -245,62 +240,35 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
  */
 void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 {
-	double	val;
-
 	switch (aType) {
 		case eUnknownVariant:
 			/*
-			 * OK... we need to see if this can be successfully
-			 * converted to a number. If it can, then it's likely
-			 * a date (YYYYMMDD) or a double. If it fails, then it's
-			 * a string for sure. If it's a number, then we look to
-			 * see it's length. If it's 8, and the first four digits
-			 * are in the range 1900-2100, the next two are in the
-			 * range 01-12, and the last two are in the range 01-31,
-			 * then it's likely a date.
+			 * OK... we need to see what this data is and act on that.
+			 * Thankfully, we have some helper functions for this.
 			 */
-			val = atof(aValue);
-			if (errno != 0) {
-				/*
-				 * OK, we have a problem converting a number, so it's
-				 * likely that this is a string. Now we need to see if
-				 * it's a table or time series, or just a string.
-				 */
-				if ((aValue[0] != aValue[strlen(aValue) - 1]) ||
-					isalnum(aValue[0]) || (strlen(aValue) < 15)) {
-					// OK, looks like a string for sure
-					setStringValue(aValue);
+			if (isTable(aValue)) {
+				// this could be a table or a timeseries... check the value
+				char	*scanner = (char *)&(aValue[1]);
+				double	v = CKTable::parseDoubleFromBufferToDelim(scanner,
+																  aValue[0]);
+				if ((v > 19760000) && (v < 20100000)) {
+					// make a time series from the string representation
+					CKTimeSeries	ts(aValue);
+					// ...and use that as the value
+					setTimeSeriesValue(&ts);
 				} else {
-					// could be a time series or a table...
-					char	*scanner = (char *)&(aValue[1]);
-					double	v = CKTable::parseDoubleFromBufferToDelim(
-												scanner, aValue[0]);
-					if ((v > 19760000) && (v < 20100000)) {
-						// make a time series from the string representation
-						CKTimeSeries	ts(aValue);
-						// ...and use that as the value
-						setTimeSeriesValue(&ts);
-					} else {
-						// make a table from the string representation
-						CKTable	tbl(aValue);
-						// ...and use that as the value
-						setTableValue(&tbl);
-					}
+					// make a table from the string representation
+					CKTable		tbl(aValue);
+					// ...and use that as the value
+					setTableValue(&tbl);
 				}
+			} else if (isDate(aValue)) {
+				setDateValue((long)atoi(aValue));
+			} else if (isDouble(aValue)) {
+				setDoubleValue(atof(aValue));
 			} else {
-				// could be a date, do a few more tests to be sure
-				if ((val != floor(val)) ||
-					(strlen(aValue) != 8) ||
-					(floor(val/10000) < 1900) ||
-					(floor(val/10000) > 2100) ||
-					(val - floor(val/10000)*10000 <  101) ||
-					(val - floor(val/10000)*10000 > 1231)) {
-					// failed a date test, so leave it as a double
-					setDoubleValue(val);
-				} else {
-					// likely a date, so keep it as such
-					setDateValue((long)val);
-				}
+				// everything else is a string
+				setStringValue(aValue);
 			}
 			break;
 		case eStringVariant:
@@ -625,6 +593,152 @@ void CKVariant::clearValue()
  *
  ********************************************************/
 /*
+ * When parsing the incoming data, it's important to be able
+ * to tell what the data coming back is. That's the purpose of this
+ * function - if the data (string) can be represented as a double
+ * without problems then we return true, otherwise we return false.
+ */
+bool CKVariant::isDouble( const char *aValue )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (aValue == NULL) {
+			error = true;
+		}
+	}
+
+	// find the first character that is NOT a digit
+	if (!error) {
+		int 	len = strlen(aValue);
+		char	c;
+		for (int i = 0; i < len; i++) {
+			c = aValue[i];
+			if (!(isdigit(c) || (c == '.') || (c == '+') || (c == '-') ||
+				  (c == 'e') || (c == 'E'))) {
+				error = true;
+				break;
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+/*
+ * When parsing the incoming data, it's important to be able
+ * to tell what the data coming back is. That's the purpose of this
+ * function - if the data (string) can be represented as an integer
+ * without problems then we return true, otherwise we return false.
+ */
+bool CKVariant::isInteger( const char *aValue )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (aValue == NULL) {
+			error = true;
+		}
+	}
+
+	// find the first character that is NOT a digit
+	if (!error) {
+		int len = strlen(aValue);
+		for (int i = 0; i < len; i++) {
+			if (!isdigit(aValue[i])) {
+				error = true;
+				break;
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+/*
+ * When parsing the incoming data, it's important to be able
+ * to tell what the data coming back is. That's the purpose of this
+ * function - if the data (string) can be represented as an integer
+ * of the form YYYYMMDD without problems then we return true,
+ * otherwise we return false.
+ */
+bool CKVariant::isDate( const char *aValue )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (aValue == NULL) {
+			error = true;
+		}
+	}
+
+	// see if it's not an integer - if it isn't, then we're done
+	if (!error) {
+		if (!isInteger(aValue)) {
+			error = true;
+		}
+	}
+
+	// it's got to be YYYYMMDD which is 8 characters
+	if (!error) {
+		if (strlen(aValue) != 8) {
+			error = true;
+		}
+	}
+
+	// check the components of the value as well
+	if (!error) {
+		double		v = atof(aValue);
+
+		if ((floor(v/10000) < 1900) ||
+			(floor(v/10000) > 2100) ||
+			(v - floor(v/10000)*10000 <  101) ||
+			(v - floor(v/10000)*10000 > 1231)) {
+			error = true;
+		}
+	}
+
+	return !error;
+}
+
+
+/*
+ * When parsing the incoming data, it's important to be able
+ * to tell what the data coming back is. That's the purpose of this
+ * function - if the data (string) can be represented as a table
+ * without problems then we return true, otherwise we return false.
+ */
+bool CKVariant::isTable( const char *aValue )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (aValue == NULL) {
+			error = true;
+		}
+	}
+
+	// find the first character that is NOT a digit
+	if (!error) {
+		if ((aValue[0] != aValue[strlen(aValue) - 1]) ||
+			isalnum(aValue[0]) ||
+			(aValue[0] == '+') || (aValue[0] == '-') ||
+			(aValue[1] != '2') || (strlen(aValue) < 15)) {
+			error = true;
+		}
+	}
+
+	return !error;
+}
+
+
+/*
  * This method returns a copy of the current value as contained in 
  * a string and it is the responsibility of the caller to call
  * 'delete []' on the results. It's also possible that this method
@@ -666,21 +780,15 @@ char *CKVariant::getValueAsString() const
 			break;
 	}
 	// now we need to create a copy of the string
-	const char	*guts = buff.str().c_str();
-	int			gutsLen = strlen(guts);
-	if (guts != NULL) {
-		retval = new char[gutsLen + 1];
-		if (retval == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::getValueAsString"
-				"() - the space to hold the string representation of this "
-				"value could not be created. This is a serious allocation "
-				"error.");
-		} else {
-			// copy the std::string's value into the new (char *) array
-			strncpy( retval, guts, gutsLen );
-			// ...and make sure to NULL terminate it
-			retval[gutsLen] = '\0';
-		}
+	retval = new char[buff.str().size() + 1];
+	if (retval == NULL) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getValueAsString"
+			"() - the space to hold the string representation of this "
+			"value could not be created. This is a serious allocation "
+			"error.");
+	} else {
+		// copy the std::string's value into the new (char *) array
+		strcpy(retval, buff.str().c_str());
 	}
 
 	return retval;
@@ -735,7 +843,7 @@ char *CKVariant::generateCodeFromValues() const
 		// copy over the string's contents
 		strcpy(retval, buff.str().c_str());
 	}
-	
+
 	return retval;
 }
 
