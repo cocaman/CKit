@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.17 2005/02/11 21:41:27 drbob Exp $
+ * $Id: CKString.cpp,v 1.18 2005/02/14 19:07:41 drbob Exp $
  */
 
 //	System Headers
@@ -5483,6 +5483,12 @@ CKString CKStringList::concatenate( const CKString & aSeparator )
 	}
 
 	return retval;
+}
+
+
+CKString CKStringList::concatenate( const CKString & aSeparator ) const
+{
+	return ((CKStringList *)this)->concatenate(aSeparator);
 }
 
 
