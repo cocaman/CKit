@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.4 2004/05/19 15:51:53 drbob Exp $
+ * $Id: CKVariant.h,v 1.5 2004/09/02 18:13:32 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -276,6 +276,14 @@ class CKVariant
 		 * before assuming anything.
 		 */
 		char *getValueAsString() const;
+		/*
+		 * This method returns a STL std::string that is a nice, clean,
+		 * string representation of the data this instance is holding. It's
+		 * functionally equivalent to getValueAsString() except that it
+		 * returns a std::string on the stack so the user doesn't have to
+		 * mess with deleting the memory.
+		 */
+		std::string getValueAsSTLString() const;
 		/*
 		 * In order to simplify the move of this object from C++ to Java
 		 * it makes sense to encode the value's data into a (char *) that

@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.9 2004/08/03 17:00:48 drbob Exp $
+ * $Id: CKTable.cpp,v 1.10 2004/09/02 18:13:34 drbob Exp $
  */
 
 //	System Headers
@@ -2292,7 +2292,17 @@ char *CKTable::generateCodeFromValues() const
 	// now loop over the data and write it all out in an easy manner
 	int		cnt = mNumRows * mNumColumns;
 	for (int i = 0; i < cnt; ++i)  {
-		buff << mTable[i].generateCodeFromValues() << "\x01";
+		char *code = mTable[i].generateCodeFromValues();
+		if (code == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKTable::generateCodeFromValues"
+				"() - the code for the variant element in the table could not "
+				"be obtained and this is a serious problem. Please check into "
+				"it as soon as possible.");
+		} else {
+			buff << code << "\x01";
+			delete [] code;
+			code = NULL;
+		}
 	}
 
 	// now create a new buffer to hold all this

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.7 2004/08/03 18:39:08 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.8 2004/09/02 18:13:33 drbob Exp $
  */
 
 //	System Headers
@@ -160,32 +160,7 @@ CKVariant::CKVariant( const CKVariant & anOther ) :
  */
 CKVariant::~CKVariant()
 {
-	switch (getType()) {
-		case eUnknownVariant:
-			break;
-		case eStringVariant:
-			if (mStringValue != NULL) {
-				delete [] mStringValue;
-				mStringValue = NULL;
-			}
-			break;
-		case eNumberVariant:
-			break;
-		case eDateVariant:
-			break;
-		case eTableVariant:
-			if (mTableValue != NULL) {
-				delete mTableValue;
-				mTableValue = NULL;
-			}
-			break;
-		case eTimeSeriesVariant:
-			if (mTimeSeriesValue != NULL) {
-				delete mTimeSeriesValue;
-				mTimeSeriesValue = NULL;
-			}
-			break;
-	}
+	clearValue();
 }
 
 
@@ -308,12 +283,7 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 void CKVariant::setStringValue( const char *aStringValue )
 {
 	// first, see if we need to delete what's might already be here
-	if (mType == eStringVariant) {
-		if (mStringValue != NULL) {
-			delete [] mStringValue;
-			mStringValue = NULL;
-		}
-	}
+	clearValue();
 	// next, if we have something to set, then create space for it
 	if (aStringValue != NULL) {
 		mStringValue = new char[strlen(aStringValue) + 1];
@@ -338,12 +308,7 @@ void CKVariant::setStringValue( const char *aStringValue )
 void CKVariant::setDateValue( long aDateValue )
 {
 	// first, see if we need to delete what's might already be here
-	if (mType == eStringVariant) {
-		if (mStringValue != NULL) {
-			delete [] mStringValue;
-			mStringValue = NULL;
-		}
-	}
+	clearValue();
 	// next, set what we have been given
 	mDateValue = aDateValue;
 	// ...and don't forget to set the type of data we have now
@@ -357,12 +322,7 @@ void CKVariant::setDateValue( long aDateValue )
 void CKVariant::setDoubleValue( double aDoubleValue )
 {
 	// first, see if we need to delete what's might already be here
-	if (mType == eStringVariant) {
-		if (mStringValue != NULL) {
-			delete [] mStringValue;
-			mStringValue = NULL;
-		}
-	}
+	clearValue();
 	// next, set what we have been given
 	mDoubleValue = aDoubleValue;
 	// ...and don't forget to set the type of data we have now
@@ -378,12 +338,7 @@ void CKVariant::setDoubleValue( double aDoubleValue )
 void CKVariant::setTableValue( const CKTable *aTableValue )
 {
 	// first, see if we need to delete what's might already be here
-	if (mType == eStringVariant) {
-		if (mStringValue != NULL) {
-			delete [] mStringValue;
-			mStringValue = NULL;
-		}
-	}
+	clearValue();
 	// next, if we have something to set, then create space for it
 	if (aTableValue != NULL) {
 		mTableValue = new CKTable(*aTableValue);
@@ -407,12 +362,7 @@ void CKVariant::setTableValue( const CKTable *aTableValue )
 void CKVariant::setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue )
 {
 	// first, see if we need to delete what's might already be here
-	if (mType == eStringVariant) {
-		if (mStringValue != NULL) {
-			delete [] mStringValue;
-			mStringValue = NULL;
-		}
-	}
+	clearValue();
 	// next, if we have something to set, then create space for it
 	if (aTimeSeriesValue != NULL) {
 		mTimeSeriesValue = new CKTimeSeries(*aTimeSeriesValue);
@@ -750,6 +700,33 @@ char *CKVariant::getValueAsString() const
 	char	*retval = NULL;
 
 	// first, create a string and then stream the value into it
+	std::string		ans = getValueAsSTLString();
+	// now we need to create a copy of the string
+	retval = new char[ans.size() + 1];
+	if (retval == NULL) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getValueAsString"
+			"() - the space to hold the string representation of this "
+			"value could not be created. This is a serious allocation "
+			"error.");
+	} else {
+		// copy the std::string's value into the new (char *) array
+		strcpy(retval, ans.c_str());
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method returns a STL std::string that is a nice, clean,
+ * string representation of the data this instance is holding. It's
+ * functionally equivalent to getValueAsString() except that it
+ * returns a std::string on the stack so the user doesn't have to
+ * mess with deleting the memory.
+ */
+std::string CKVariant::getValueAsSTLString() const
+{
+	// first, create a string and then stream the value into it
 	std::ostringstream	buff;
 	switch (mType) {
 		case eUnknownVariant:
@@ -779,19 +756,8 @@ char *CKVariant::getValueAsString() const
 			}
 			break;
 	}
-	// now we need to create a copy of the string
-	retval = new char[buff.str().size() + 1];
-	if (retval == NULL) {
-		throw CKException(__FILE__, __LINE__, "CKVariant::getValueAsString"
-			"() - the space to hold the string representation of this "
-			"value could not be created. This is a serious allocation "
-			"error.");
-	} else {
-		// copy the std::string's value into the new (char *) array
-		strcpy(retval, buff.str().c_str());
-	}
 
-	return retval;
+	return buff.str();
 }
 
 
@@ -825,10 +791,38 @@ char *CKVariant::generateCodeFromValues() const
 			buff << "D:" << mDateValue;
 			break;
 		case eTableVariant:
-			buff << "T:" << mTableValue->generateCodeFromValues();
+			if (mTableValue == NULL) {
+				buff << "U:";
+			} else {
+				char *code = mTableValue->generateCodeFromValues();
+				if (code == NULL) {
+					throw CKException(__FILE__, __LINE__, "CKVariant::"
+						"generateCodeFromValues() - the code for the table value "
+						"of this variant could not be obtained. This is a serious "
+						"problem that needs to be looked into.");
+				} else {
+					buff << "T:" << code;
+					delete [] code;
+					code = NULL;
+				}
+			}
 			break;
 		case eTimeSeriesVariant:
-			buff << "L:" << mTimeSeriesValue->generateCodeFromValues();
+			if (mTimeSeriesValue == NULL) {
+				buff << "U:";
+			} else {
+				char *code = mTimeSeriesValue->generateCodeFromValues();
+				if (code == NULL) {
+					throw CKException(__FILE__, __LINE__, "CKVariant::"
+						"generateCodeFromValues() - the code for the timeseries value "
+						"of this variant could not be obtained. This is a serious "
+						"problem that needs to be looked into.");
+				} else {
+					buff << "L:" << code;
+					delete [] code;
+					code = NULL;
+				}
+			}
 			break;
 	}
 
