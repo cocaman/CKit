@@ -23,8 +23,12 @@ OS_LIBS =
 SHARED = -dynamiclib
 endif
 ifeq ($(shell uname),Linux)
+ifeq ($(shell gcc --version),2.96)
+CXX = g++ -DGPP2 -D_GNU_SOURCE
+else
 CXX = g++
-CXX_DEFS = -DGPP2
+endif
+CXX_DEFS = -O2
 LIB_EXT = so
 OS_LIBS =
 SHARED = -shared
