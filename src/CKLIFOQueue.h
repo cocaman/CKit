@@ -3,7 +3,7 @@
  *                 last-in-first-out queue of something. This is really
  *                 nice in that
  *
- * $Id: CKLIFOQueue.h,v 1.1 2004/12/17 21:04:15 drbob Exp $
+ * $Id: CKLIFOQueue.h,v 1.2 2004/12/20 10:39:37 drbob Exp $
  */
 #ifndef __CKLIFOQUEUE_H
 #define __CKLIFOQUEUE_H
@@ -22,9 +22,11 @@
 #include "CKString.h"
 #include "CKFWMutex.h"
 #include "CKStackLocker.h"
+#include "CKFWConditional.h"
 #include "CKException.h"
 
 //	Forward Declarations
+template <class T> class CKLIFOQueue;
 
 //	Public Constants
 
@@ -46,6 +48,41 @@
  * growing room.
  */
 #define	CKLIFOQUEUE_DEFAULT_INCREMENT_SIZE		16
+
+
+/*******************************************************************
+ *
+ *               Queue CKFWConditional Test Classes
+ *
+ *******************************************************************/
+/*
+ * In order to have popSomething() wait as nicely as possible we need
+ * to have a conditional that's based on the status of the queue. But
+ * since the queue is a template, so must the conditional. So I have to
+ * make it here and be careful about how it's used in the implementation.
+ */
+template <class T> class CKLIFOQueueNotEmptyTest :
+	public ICKFWConditionalSpuriousTest
+{
+	public:
+		CKLIFOQueueNotEmptyTest( CKLIFOQueue<T> *aQueue ) :
+			mQueuePtr(aQueue)
+		{
+		}
+
+		virtual ~CKLIFOQueueNotEmptyTest()
+		{
+			mQueuePtr = NULL;
+		}
+
+		virtual int test()
+		{
+			return ((mQueuePtr != NULL) && mQueuePtr->empty());
+		}
+
+	private:
+		CKLIFOQueue<T>	*mQueuePtr;
+};
 
 
 /*
@@ -74,7 +111,8 @@ template <class T> class CKLIFOQueue
 			mInitialCapacity(anInitialCapacity),
 			mCapacityIncrement(aResizeAmount),
 			mElementsAreUnique(true),
-			mMutex()
+			mMutex(),
+			mConditional(mMutex)
 		{
 			mElements = new T[mCapacity];
 			if (mElements == NULL) {
@@ -100,7 +138,8 @@ template <class T> class CKLIFOQueue
 			mInitialCapacity(0),
 			mCapacityIncrement(0),
 			mElementsAreUnique(true),
-			mMutex()
+			mMutex(),
+			mConditional(mMutex)
 		{
 			// let the '=' operator do it
 			*this = anOther;
@@ -114,7 +153,8 @@ template <class T> class CKLIFOQueue
 			mInitialCapacity(0),
 			mCapacityIncrement(0),
 			mElementsAreUnique(true),
-			mMutex()
+			mMutex(),
+			mConditional(mMutex)
 		{
 			// let the '=' operator do it
 			*this = anOther;
@@ -291,6 +331,11 @@ template <class T> class CKLIFOQueue
 				// put this guy where he belongs and up the count
 				mElements[0] = anElem;
 				mSize++;
+
+				// see if we need to wake any waiters
+				if (mSize == 1) {
+					mConditional.wakeWaiter();
+				}
 			}
 		}
 
@@ -331,6 +376,49 @@ template <class T> class CKLIFOQueue
 			for (int i = 0; i < mSize; i++) {
 				mElements[i] = mElements[i+1];
 			}
+
+			return retval;
+		}
+
+
+		/*
+		 * When you want to remove the next element off the queue,
+		 * this method will return that element and it will be removed
+		 * from the queue itself. The difference with this method is
+		 * that you will be guaranteed of getting something, but you
+		 * may have to wait for it. This version will wait nicely if
+		 * the queue is empty, waiting for the time when something
+		 * is added, and then pop it off.
+		 */
+		T popSomething()
+		{
+			T		retval;
+
+			// first, see if we have anything to do
+			if (mElements == NULL) {
+				std::ostringstream	msg;
+				msg << "CKLIFOQueue<T>::pop(T &) - the storage for this queue "
+					"is NULL and that is a data corruption problem that needs to "
+					"be looked into as soon as possible. This should never happen.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
+
+			// now make a test based on this queue
+			CKLIFOQueueNotEmptyTest<T>	tst(this);
+			// wait until we get something in the queue
+			mConditional.lockAndTest(tst);
+
+			// grab the first one in the list
+			retval = mElements[0];
+
+			// now we need to move everything over one to the left
+			mSize--;
+			for (int i = 0; i < mSize; i++) {
+				mElements[i] = mElements[i+1];
+			}
+
+			// now we can unlock this guy
+			mMutex.unlock();
 
 			return retval;
 		}
@@ -626,6 +714,12 @@ template <class T> class CKLIFOQueue
 		 * that end, we're going to cover the bases with a nice mutex.
 		 */
 		CKFWMutex		mMutex;
+		/*
+		 * When the user is convinced that they need to pop something off
+		 * the queue no matter how long it takes, we need to have a
+		 * conditional, and this is it.
+		 */
+		CKFWConditional	mConditional;
 };
 
 #endif	// __CKLIFOQUEUE_H
