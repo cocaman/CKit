@@ -12,7 +12,7 @@
  *                            set that as the default prior to sending any
  *                            messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.cpp,v 1.2 2003/12/03 16:45:27 drbob Exp $
+ * $Id: CKMailDeliverySystem.cpp,v 1.3 2003/12/16 18:09:01 drbob Exp $
  */
 
 //	System Headers
