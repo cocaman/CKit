@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.2 2003/12/01 15:44:16 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.3 2003/12/02 13:29:39 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H
@@ -77,8 +77,16 @@ class CKBufferedSocket :
 		 * constructor is made for just this type of operation. It takes
 		 * the CKSocket and creates a new CKBufferedSocket so that you
 		 * can take advantage of the buffered reads, etc.
+		 *
+		 * The wrinkle is that if this is all you do you're in trouble
+		 * when the original CKSocket is deleted as it will close out
+		 * the connection, just as you'd expect. So what we do with this
+		 * constructor is to "incapacitate" the incoming CKSocket so that
+		 * when it's deleted it will NOT disconnect the communication and
+		 * then the transfer to this newly created CKBufferedSocket will
+		 * have been complete.
 		 */
-		CKBufferedSocket( const CKSocket & anOther );
+		CKBufferedSocket( CKSocket & anOther );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
