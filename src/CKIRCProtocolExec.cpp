@@ -15,8 +15,8 @@
  *                         thread and launches it. The thread itself will clean
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
- * 
- * $Id: CKIRCProtocolExec.cpp,v 1.6 2004/09/20 16:19:34 drbob Exp $
+ *
+ * $Id: CKIRCProtocolExec.cpp,v 1.7 2005/01/23 18:55:57 drbob Exp $
  */
 
 //	System Headers
@@ -267,6 +267,8 @@ CKIRCProtocolExec::CKIRCProtocolExec() :
 	mMessage(),
 	mProtocol(NULL)
 {
+	// set the tag so that these threads are easy to track down
+	setTag("CKIRCProtocolExec");
 }
 
 
