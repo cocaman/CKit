@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.4 2004/03/05 20:40:21 drbob Exp $
+ * $Id: CKDataNode.h,v 1.5 2004/03/06 15:43:41 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -307,6 +307,16 @@ class CKDataNode
 		 * any one of the steps.
 		 */
 		static std::string stepsToPath( const std::vector<std::string> & aPath );
+
+		/*
+		 * There are times that we want to know the identifying names of
+		 * all the leaf nodes of a certain section of the tree. This is
+		 * really useful when we need to gather data from an external
+		 * source, and need a list of names to data that data for. This
+		 * method does a great job of getting a unique vector of names
+		 * of all the leaf nodes under it, and all it's children.
+		 */
+		std::vector<std::string>	getUniqueLeafNodeNames();
 
 		/********************************************************
 		 *

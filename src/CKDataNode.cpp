@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.3 2004/03/05 20:40:19 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.4 2004/03/06 15:43:41 drbob Exp $
  */
 
 //	System Headers
@@ -862,7 +862,7 @@ std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
 			retval.append(1, '/');
 		}
 
-		// now see if the step needs to be escaped due to a slash		
+		// now see if the step needs to be escaped due to a slash
 		if (i->find('/') != std::string::npos) {
 			// escape this guy as it's got a '/' in it
 			retval.append(1, '"');
@@ -871,6 +871,70 @@ std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
 		} else {
 			retval.append(*i);
 		}
+	}
+
+	return retval;
+}
+
+
+/*
+ * There are times that we want to know the identifying names of
+ * all the leaf nodes of a certain section of the tree. This is
+ * really useful when we need to gather data from an external
+ * source, and need a list of names to data that data for. This
+ * method does a great job of getting a unique vector of names
+ * of all the leaf nodes under it, and all it's children.
+ */
+std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
+{
+	bool						error = false;
+	std::vector<std::string>	retval;
+
+	// OK, we need to look and see if we are a leaf node
+	if (!error) {
+		// lock up the list of kids for this
+		mKidsMutex.lock();
+		// see if we have any at all
+		if (mKids.size() > 0) {
+			// ask all the kids for their unique leaf node names
+			std::list<CKDataNode*>::iterator	i;
+			for (i = mKids.begin(); i != mKids.end(); ++i) {
+				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNames();
+				if (part.size() < 1) {
+					// unlock the list of kids
+					mKidsMutex.unlock();
+					// flag the error and throw the exception
+					error = true;
+					std::ostringstream	msg;
+					msg << "CKDataNode::getUniqueLeafNodeNames() - the node '" <<
+						(*i)->mName << "' (a child of '" << mName << "') had no "
+						"leaf nodes under it. This is simply not possible. It's "
+						"likely that there's a data corruption problem. Check "
+						"on it.";
+					throw CKException(__FILE__, __LINE__, msg.str());
+				} else {
+					/*
+					 * OK... we have some leaf nodes from the child.
+					 * Let's add them to our list if they are unique.
+					 */
+					unsigned int	cnt = part.size();
+					for (unsigned int c = 0; c < cnt; c++) {
+						if (find(retval.begin(), retval.end(), part[c])
+								== retval.end()) {
+							retval.push_back(part[c]);
+						}
+					}
+				}
+			}
+		} else {
+			/*
+			 * We are a leaf node! Then put our name in the vector
+			 * and that's all we have to do.
+			 */
+			retval.push_back(mName);
+		}
+		// unlock the list of kids
+		mKidsMutex.unlock();
 	}
 
 	return retval;
