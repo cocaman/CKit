@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.4 2004/03/06 15:43:41 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.5 2004/03/09 14:15:59 drbob Exp $
  */
 
 //	System Headers
@@ -766,6 +766,57 @@ void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
 	if (!error) {
 		node->putVar(aSteps[stepCnt - 1], aValue);
 	}
+}
+
+
+/*
+ * This method returns a vector of the node identifiers in this
+ * tree leading to the current node. This is basically walking
+ * 'up' the tree to the root, building accumulating the steps
+ * along the way.
+ */
+std::vector<std::string> CKDataNode::getSteps() const
+{
+	std::vector<std::string>	retval;
+
+	// malk up the tree inserting names at the front
+	retval.push_back(mName);
+	CKDataNode *n = mParent;
+	while (n != NULL) {
+		/*
+		 * Insert the node names at the beginning of the list up to
+		 * the point where we're at the root node. If we're at the
+		 * root node, and the name is blank, then don't put it in
+		 * the path - it's not necessary in that case.
+		 */
+		if ((n->mParent != NULL) || (n->mName != "")) {
+			retval.insert(retval.begin(), n->mName);
+		}
+		// ...and move to the parent of this node
+		n = n->mParent;
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method returns a string path to the current node in a
+ * very similar way to the getSteps() method. The path lets the
+ * caller know where in this tree this particular node lies.
+ */
+std::string CKDataNode::getPath() const
+{
+	std::string		retval;
+
+	// first, get the step in the path
+	std::vector<std::string>	steps = getSteps();
+	if (steps.size() > 0) {
+		// now convert it to a path with proper escaping
+		retval = stepsToPath(steps);
+	}
+
+	return retval;
 }
 
 

@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.5 2004/03/06 15:43:41 drbob Exp $
+ * $Id: CKDataNode.h,v 1.6 2004/03/09 14:16:01 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -290,6 +290,20 @@ class CKDataNode
 		 */
 		void putVarAtPath( const std::vector<std::string> & aSteps,
 						   const CKVariant & aValue );
+
+		/*
+		 * This method returns a vector of the node identifiers in this
+		 * tree leading to the current node. This is basically walking
+		 * 'up' the tree to the root, building accumulating the steps
+		 * along the way.
+		 */
+		std::vector<std::string> getSteps() const;
+		/*
+		 * This method returns a string path to the current node in a
+		 * very similar way to the getSteps() method. The path lets the
+		 * caller know where in this tree this particular node lies.
+		 */
+		std::string getPath() const;
 
 		/*
 		 * This method is very nice in that it takes a single string that
