@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.14 2004/12/07 20:03:40 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.15 2005/01/20 19:17:50 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -234,6 +234,15 @@ class CKTimeSeries
 		CKVector<double> getDateTimes();
 
 		/*
+		 * These methods do the same thing - they return the number of
+		 * time/value pairs in the timeseries. This is nice when you need
+		 * to know the number and not necessarily what those values are -
+		 * such as sizing an array or something.
+		 */
+		int size();
+		int length();
+
+		/*
 		 * This method takes a timestamp in the format YYYYMMDD.hhmmssss
 		 * where the seconds are to the hundredth of a second and if
 		 * no data point exists in the timeseries for the time specified
@@ -361,8 +370,10 @@ class CKTimeSeries
 		 */
 		CKTimeSeries & operator+=( double anOffset );
 		CKTimeSeries & operator+=( CKTimeSeries & aSeries );
+		CKTimeSeries & operator+=( const CKTimeSeries & aSeries );
 		CKTimeSeries & operator-=( double anOffset );
 		CKTimeSeries & operator-=( CKTimeSeries & aSeries );
+		CKTimeSeries & operator-=( const CKTimeSeries & aSeries );
 		CKTimeSeries & operator*=( double aFactor );
 		CKTimeSeries & operator/=( double aDivisor );
 

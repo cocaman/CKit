@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.18 2004/12/08 17:34:57 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.19 2005/01/20 19:17:49 drbob Exp $
  */
 
 //	System Headers
@@ -472,6 +472,33 @@ CKVector<double> CKTimeSeries::getDateTimes()
 	mTimeseriesMutex.unlock();
 
 	return retval;
+}
+
+
+/*
+ * These methods do the same thing - they return the number of
+ * time/value pairs in the timeseries. This is nice when you need
+ * to know the number and not necessarily what those values are -
+ * such as sizing an array or something.
+ */
+int CKTimeSeries::size()
+{
+	int		retval = 0;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// get the size of the map
+	retval = mTimeseries.size();
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return retval;
+}
+
+
+int CKTimeSeries::length()
+{
+	return size();
 }
 
 
@@ -1158,6 +1185,13 @@ CKTimeSeries & CKTimeSeries::operator+=( CKTimeSeries & aSeries )
 }
 
 
+CKTimeSeries & CKTimeSeries::operator+=( const CKTimeSeries & aSeries )
+{
+	add((CKTimeSeries &)aSeries);
+	return *this;
+}
+
+
 CKTimeSeries & CKTimeSeries::operator-=( double anOffset )
 {
 	subtract(anOffset);
@@ -1168,6 +1202,13 @@ CKTimeSeries & CKTimeSeries::operator-=( double anOffset )
 CKTimeSeries & CKTimeSeries::operator-=( CKTimeSeries & aSeries )
 {
 	add(aSeries);
+	return *this;
+}
+
+
+CKTimeSeries & CKTimeSeries::operator-=( const CKTimeSeries & aSeries )
+{
+	add((CKTimeSeries &)aSeries);
 	return *this;
 }
 
