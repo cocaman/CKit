@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.15 2004/10/21 09:57:29 drbob Exp $
+ * $Id: CKDataNode.h,v 1.16 2004/12/22 10:50:23 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -303,6 +303,72 @@ class CKDataNode
 						   const CKVariant & aValue );
 
 		/*
+		 * This method takes a string that is a series of node identifying
+		 * names spearated by a '/' to represent a "path" to a node in the
+		 * data tree.
+		 *
+		 * For example, say the path was:
+		 *
+		 *     SectionA/Subsection1/GroupQ/Item212
+		 *
+		 * This method would look for the child identified by the name
+		 * "SectionA" and then have it look for a child called "Subsection1"
+		 * and it's child called "GroupQ" and it's child called "Item212".
+		 * What would be returned is the pointer to the "Item212" child.
+		 *
+		 * It's important to note that if any node in the path is NOT FOUND
+		 * then this method returns a NULL.
+		 *
+		 * If the path string includes a leading '/' then the path is
+		 * taken from the root node of the tree that this node is but a
+		 * part of. So, even if this node is *not* in the path, the value
+		 * will be returned if it's in the tree.
+		 */
+		CKDataNode *getNodeAtPath( const CKString & aPath );
+		/*
+		 * This version of the method takes a vector of strings that is
+		 * the path as opposed to a single string delimited by the '/'.
+		 * This is useful when you have the data organized in something
+		 * like a vector and you don't want to put it all together only
+		 * to have this method break it up.
+		 */
+		CKDataNode *getNodeAtPath( const CKStringList & aSteps );
+
+		/*
+		 * This method takes a string that is a series of node identifying
+		 * names sparated by a '/' to represent a "path" to a node in the
+		 * data tree.
+		 *
+		 * For example, say the path was:
+		 *
+		 *     SectionA/Subsection1/GroupQ/Item212
+		 *
+		 * This method would look for the child identified by the name
+		 * "SectionA" and then have it look for a child called "Subsection1"
+		 * and it's child called "GroupQ" and it's child called "Item212".
+		 * At this point, the method will add the supplied node as a child
+		 * of the "Item212" node.
+		 *
+		 * It's important to note that if any node in the path is NOT FOUND
+		 * then this method will create such nodes as is necessary to make
+		 * the path.
+		 *
+		 * If the path string includes a leading '/' then the path is
+		 * taken from the root node of the tree that this node is but a
+		 * part of. So, even if this node is *not* in the path, the node
+		 * will be placed correctly if the path is in the tree.
+		 */
+		void putNodeAtPath( const CKString & aPath, CKDataNode *aNode );
+		/*
+		 * This version of the method takes a vector of strings that is
+		 * the path as opposed to a single string delimited by the '/'.
+		 * This is useful when you have the data organized in something
+		 * like a vector and you don't want to put it all together only
+		 * to have this method break it up.
+		 */
+		void putNodeAtPath( const CKStringList & aSteps, CKDataNode *aNode );
+
+		/*
 		 * This method returns a vector of the node identifiers in this
 		 * tree leading to the current node. This is basically walking
 		 * 'up' the tree to the root, building accumulating the steps
@@ -502,6 +568,8 @@ class CKDataNode
 		CKVector<CKDataNode*> *getKids();
 
 	private:
+		friend class CKIndexNode;
+
 		/*
 		 * This is the parent of this node, and is just another node in
 		 * the tree. Of course, it can be NULL, and in that case we're
