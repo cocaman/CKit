@@ -61,7 +61,7 @@ LDFLAGS = -fPIC
 #
 # These are the main targets that we'll be making
 #
-APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest
+APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest
 all: $(APPS)
 
 clean:
@@ -99,5 +99,8 @@ vectorTest: vectorTest.cpp ../src/CKVector.h $(LIB_FILE)
 
 queueTest: queueTest.cpp ../src/CKFIFOQueue.h $(LIB_FILE)
 	$(CXX) $(CXXFLAGS) $(DEBUG) queueTest.cpp -o queueTest $(LIBS) $(LDFLAGS)
+
+ParserTest: ParserTest.cpp $(LIB_FILE)
+	$(CXX) $(CXXFLAGS) $(DEBUG) ParserTest.cpp -o ParserTest $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE

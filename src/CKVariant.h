@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.13 2005/02/04 10:37:32 drbob Exp $
+ * $Id: CKVariant.h,v 1.14 2005/02/07 19:06:46 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -88,6 +88,12 @@ class CKVariant
 		CKVariant( const CKString *aStringValue );
 		/*
 		 * This form of the constructor understands that the value that's
+		 * intended to be stored here is an int (double), and the value
+		 * provided is what's to be stored.
+		 */
+		CKVariant( int anIntValue );
+		/*
+		 * This form of the constructor understands that the value that's
 		 * intended to be stored here is a Date (long) of the form YYYYMMDD,
 		 * and the value provided is what's to be stored.
 		 */
@@ -140,6 +146,7 @@ class CKVariant
 		 * make sure that we do this right by always having an equals
 		 * operator on all classes.
 		 */
+		CKVariant & operator=( CKVariant & anOther );
 		CKVariant & operator=( const CKVariant & anOther );
 
 		/*
@@ -350,6 +357,16 @@ class CKVariant
 		 * returns a value of true, otherwise, it returns a false.
 		 */
 		bool operator!=( const CKVariant & anOther ) const;
+		/*
+		 * These methods complete the inequality tests for the CKVariant and
+		 * we need these as we might be doing a lot of testing and this makes
+		 * it a lot easier than converting to the right type and then doing
+		 * a low-level test.
+		 */
+		bool operator<( const CKVariant & anOther ) const;
+		bool operator<=( const CKVariant & anOther ) const;
+		bool operator>( const CKVariant & anOther ) const;
+		bool operator>=( const CKVariant & anOther ) const;
 		/*
 		 * Because there are times when it's useful to have a nice
 		 * human-readable form of the contents of this instance. Most of the
