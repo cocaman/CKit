@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.7 2004/07/08 13:52:02 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.8 2004/07/13 21:32:45 drbob Exp $
  */
 
 //	System Headers
@@ -178,13 +178,13 @@ CKDataNode::~CKDataNode()
 	// for each child, remove me as it's parent
 	std::list<CKDataNode*>::iterator	i;
 	while (!mKids.empty()) {
-		// get the first in the list
+		// get the first kid in the list
 		i = mKids.begin();
 		// if we're his parent, then invalidate that link
 		if (((*i) != NULL) && ((*i)->mParent = this)) {
 			(*i)->mParent = NULL;
 		}
-		// ...and remove this from the list
+		// ...and drop this guy from the list
 		mKids.erase(i);
 	}
 
@@ -308,7 +308,7 @@ CKVariant *CKDataNode::getVar( const std::string & aName )
 	std::map<std::string, CKVariant>::iterator		i;
 	i = mVars.find(aName);
 	if (i != mVars.end()) {
-		retval = &(i->second);
+		retval = &((*i).second);
 	}
 	// now unlock the map
 	mVarsMutex.unlock();
@@ -843,7 +843,7 @@ std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
 
 	// next, convert the path into a series of raw steps
 	std::vector<std::string>	raw;
-	int							rawCnt;
+	int							rawCnt = 0;
 	if (!error && !done) {
 		raw = parseIntoChunks(cleanPath, "/");
 		rawCnt = raw.size();
@@ -1283,9 +1283,9 @@ std::string CKDataNode::toString( bool aDeepFlag ) const
 	std::map<std::string, CKVariant>::const_iterator	i;
 	for (i = mVars.begin(); i != mVars.end(); ++i) {
 		retval.append("   ");
-		retval.append(i->first);
+		retval.append((*i).first);
 		retval.append(" : ");
-		retval.append(i->second.toString());
+		retval.append((*i).second.toString());
 		retval.append("\n");
 	}
 
