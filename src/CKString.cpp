@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.12 2004/11/29 21:38:15 drbob Exp $
+ * $Id: CKString.cpp,v 1.13 2005/01/13 10:32:41 drbob Exp $
  */
 
 //	System Headers
@@ -326,13 +326,48 @@ CKString::~CKString()
  */
 CKString & CKString::operator=( CKString & anOther )
 {
-	return this->operator=(anOther.mString);
+	/*
+	 * First, let's see if what we need to take can already fit in what
+	 * we have allocated. If so, then let's just copy it in, but if not,
+	 * then we need to make a bigger buffer and copy it in.
+	 */
+	mSize = anOther.mSize;
+	if (mSize >= mCapacity) {
+		// make the new capacity just enough to hold this guy
+		mCapacity = mSize + 1;
+
+		// drop the old buffer, if we had one
+		if (mString != NULL) {
+			delete [] mString;
+			mString = NULL;
+		}
+
+		// create the new one
+		mString = new char[mCapacity];
+		if (mString == NULL) {
+			std::ostringstream	msg;
+			msg << "CKString::operator=(CKString &) - the storage needed for "
+				"this string is " << mCapacity << " chars, but the creation "
+				"failed. Please look into this allocation error as soon as "
+				"possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now let's clear out what we have and copy in the string
+	bzero(mString, mCapacity);
+	// now see if we need to copy anything into this buffer
+	if (anOther.mString != NULL) {
+		memcpy(mString, anOther.mString, mSize);
+	}
+
+	return *this;
 }
 
 
 CKString & CKString::operator=( const CKString & anOther )
 {
-	return this->operator=((char *)anOther.mString);
+	return this->operator=((CKString &)anOther);
 }
 
 
@@ -430,17 +465,17 @@ CKString & CKString::operator=( char aChar )
  */
 CKString & CKString::append( CKString & aString )
 {
-	return append((char *)aString.mString);
+	return append((char *)aString.mString, aString.mSize);
 }
 
 
 CKString & CKString::append( const CKString & aString )
 {
-	return append((char *)aString.mString);
+	return append((char *)aString.mString, aString.mSize);
 }
 
 
-CKString & CKString::append( char *aCString )
+CKString & CKString::append( char *aCString, int aLength )
 {
 	bool		error = false;
 
@@ -449,7 +484,7 @@ CKString & CKString::append( char *aCString )
 		if (mString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::append(char *) - the CKString's storage is NULL "
+			msg << "CKString::append(char *, int) - the CKString's storage is NULL "
 				"and that means that there's been a terrible data corruption "
 				"problem. Please check into this as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -462,13 +497,17 @@ CKString & CKString::append( char *aCString )
 		if (aCString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::append(char *) - the passed-in C-String is NULL and "
+			msg << "CKString::append(char *, int) - the passed-in C-String is NULL and "
 				"that means that there's nothing I can do. Please make sure that "
 				"the argument is not NULL before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
 			// this is what we have to add to the buffer
-			newChars = strlen(aCString);
+			if (aLength >= 0) {
+				newChars = aLength;
+			} else {
+				newChars = strlen(aCString);
+			}
 		}
 	}
 
@@ -480,7 +519,7 @@ CKString & CKString::append( char *aCString )
 			if (more == NULL) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKString::append(char *) - the existing buffer of " <<
+				msg << "CKString::append(char *, int) - the existing buffer of " <<
 					mCapacity << " chars was not sufficient to hold the " <<
 					(mSize + newChars + 1) << " characters, and while trying to "
 					"create more space we failed. This is a serious allocation "
@@ -503,7 +542,7 @@ CKString & CKString::append( char *aCString )
 
 	// now copy over the new characters to the string
 	if (!error) {
-		strncpy(&(mString[mSize]), aCString, newChars);
+		memcpy(&(mString[mSize]), aCString, newChars);
 		mSize += newChars;
 	}
 
@@ -511,9 +550,9 @@ CKString & CKString::append( char *aCString )
 }
 
 
-CKString & CKString::append( const char *aCString )
+CKString & CKString::append( const char *aCString, int aLength )
 {
-	return append((char *)aCString);
+	return append((char *)aCString, aLength);
 }
 
 
@@ -667,7 +706,7 @@ CKString & CKString::prepend( char *aCString )
 		// first, move the existing string over the right amount
 		memmove(&(mString[newChars]), mString, mSize);
 		// now copy in the front the new characters
-		strncpy(mString, aCString, newChars);
+		memcpy(mString, aCString, newChars);
 		mSize += newChars;
 	}
 
@@ -1901,7 +1940,7 @@ CKString CKString::substr( int aStartingPos, int aLength )
 			}
 		}
 		// now if we're here, then we just need to copy over the substring
-		strncpy(retval.mString, &(mString[aStartingPos]), newSize);
+		memcpy(retval.mString, &(mString[aStartingPos]), newSize);
 		retval.mSize = newSize;
 	}
 
@@ -3821,15 +3860,16 @@ bool CKString::resize( int aSize )
 	if (!error) {
 		// first, see if we have something to move into this new string
 		if (mString != NULL) {
+			int		cnt = (aSize > mCapacity ? mCapacity : aSize ) - 1;
 			// copy over just what will fit in the new string
-			strncpy(resultant, mString, (aSize-1));
+			memcpy(resultant, mString, cnt);
 			// ...and delete the old string
 			delete [] mString;
 			mString = NULL;
 		}
 		// next, update all the ivars that have been impacted
 		mString = resultant;
-		mSize = strlen(resultant);
+		mSize = (mSize < aSize ? mSize : (aSize-1));
 		mCapacity = aSize;
 	}
 
