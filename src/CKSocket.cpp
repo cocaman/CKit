@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.6 2003/12/16 18:09:04 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.7 2004/04/02 18:27:54 drbob Exp $
  */
 
 //	System Headers
@@ -818,6 +818,25 @@ bool CKSocket::createAndBindListener( int aPort, int aService, int aProtocol )
 			msg << "CKSocket::createAndBindListener(int, int, int) - a "
 				"socket handle could not be created. This typically points to "
 				"a problem at the operating system level. Please look into it.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	/*
+	 * We need to make sure that if this socket dies, that it doesn't
+	 * keep a lock on the socket forever. To do that would mean that
+	 * a restart on the same port would be impossible.
+	 */
+	if (!error) {
+		int		flag = 1;
+		if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR,
+							(char*)&flag, sizeof(flag)) == SOCKET_ERROR) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKSocket::createAndBindListener(int, int, int) - the new "
+				"socket handle could not be configured to release the port at "
+				"death. This typically points to a problem at the operating "
+				"system level. Please look into it.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
