@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.3 2003/12/16 18:08:59 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.4 2004/05/24 18:19:41 drbob Exp $
  */
 
 //	System Headers
@@ -16,6 +16,7 @@
 
 //	Other Headers
 #include "CKIRCProtocolListener.h"
+#include "CKIRCProtocolExec.h"
 #include "CKException.h"
 
 //	Forward Declarations
@@ -88,9 +89,9 @@ CKIRCProtocolListener::~CKIRCProtocolListener()
 CKIRCProtocolListener & CKIRCProtocolListener::operator=( const CKIRCProtocolListener & anOther )
 {
 	// set everything that the other one has
-	setProtocol(anOther.getProtocol());
-	setIsRunning(anOther.isRunning());
-	setTimeToDie(anOther.timeToDie());
+	mProtocol = anOther.mProtocol;
+	mIsRunning = anOther.mIsRunning;
+	mTimeToDie = anOther.mTimeToDie;
 
 	return *this;
 }
@@ -205,7 +206,7 @@ int CKIRCProtocolListener::process()
 	bool			processed = false;
 	if (!error && !timeToDie()) {
 		try {
-			line = getProtocol()->getReply();
+			line = mProtocol->getReply();
 			processed = false;
 		} catch (CKException & e) {
 			/*
@@ -223,7 +224,7 @@ int CKIRCProtocolListener::process()
 	 * to make the client respond to these messages.
 	 */
 	if (!error && !timeToDie() && !processed && (line.size() > 0)) {
-		processed = getProtocol()->isReflexChat(line);
+		processed = mProtocol->isReflexChat(line);
 	}
 
 	/*
@@ -232,7 +233,7 @@ int CKIRCProtocolListener::process()
 	if (!error && !timeToDie() && !processed && (line.size() > 0)) {
 		// now, compute the tagline for this protocol
 		std::string		tag = "PRIVMSG ";
-		tag += getProtocol()->getNickname();
+		tag += mProtocol->getNickname();
 		tag += " :";
 		unsigned int	pos = std::string::npos;
 
@@ -245,13 +246,8 @@ int CKIRCProtocolListener::process()
 			msg.message = line.substr(pos + tag.size());
 			msg.response = "";
 
-			// now have all the responders take a whack at it
-			if (!getProtocol()->alertAllResponders(msg)) {
-				error = true;
-			} else {
-				// send it back to the originator
-				getProtocol()->sendMessage(msg.userNickname, msg.response);
-			}
+			// now process it outside of this thread
+			CKIRCProtocolExec::handleMessage(msg, mProtocol);
 			processed = true;
 		}
 	}
@@ -281,9 +277,9 @@ bool CKIRCProtocolListener::operator==( const CKIRCProtocolListener & anOther ) 
 {
 	bool		equal = true;
 
-	if ((*getProtocol() != *anOther.getProtocol()) ||
-		(isRunning() != anOther.isRunning()) ||
-		(timeToDie() != anOther.timeToDie())) {
+	if ((*mProtocol != *anOther.mProtocol) ||
+		(mIsRunning != anOther.mIsRunning) ||
+		(mTimeToDie != anOther.mTimeToDie)) {
 		equal = false;
 	}
 
@@ -315,9 +311,9 @@ std::string CKIRCProtocolListener::toString() const
 {
 	std::ostringstream	buff;
 
-	buff << "< IRCProtocol=" << getProtocol()->toString() << ", " <<
-		" Running? " << (isRunning() ? "Yes" : "No") << ", " <<
-		" TimeToDie? " << (timeToDie() ? "Yes" : "No") <<
+	buff << "< IRCProtocol=" << mProtocol->toString() << ", " <<
+		" Running? " << (mIsRunning ? "Yes" : "No") << ", " <<
+		" TimeToDie? " << (mTimeToDie ? "Yes" : "No") <<
 		">" << std::endl;
 
 	return buff.str();

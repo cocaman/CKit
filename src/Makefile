@@ -6,7 +6,7 @@
 # compile on a few different systems.
 #
 ifeq ($(shell uname),SunOS)
-CXX = /sbcimp/run/pd/gcc/3.2.1/bin/g++
+CXX = g++
 CXX_DEFS =
 SO_EXT = so
 SO_FLAG = -shared
@@ -64,6 +64,7 @@ OBJS = CKUUID.o \
 	CKSMTPDelivery.o \
 	CKIRCProtocol.o \
 	CKIRCProtocolListener.o \
+	CKIRCProtocolExec.o \
 	CKIRCResponder.o \
 	CKFWConditional.o \
 	CKFWMutex.o \
@@ -139,8 +140,8 @@ CKFWTime.o: CKFWTime.h CKException.h
 CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h
 CKVariant.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
 CKTable.o: CKException.h CKTable.h CKVariant.h
-CKDataNode.o: CKDataNode.h CKException.h CKVariant.h CKTable.h
-CKDataNode.o: CKTimeSeries.h CKFWMutex.h
 CKTimeSeries.o: CKException.h CKTable.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKDataNode.o: CKException.h CKVariant.h CKTable.h CKTimeSeries.h CKFWMutex.h
+CKDataNode.o: CKDataNode.h
 CKStopwatch.o: CKException.h CKStopwatch.h
 CKErrNoException.o: CKErrNoException.h CKException.h
