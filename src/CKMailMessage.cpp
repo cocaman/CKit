@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.6 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.7 2004/09/16 09:34:17 drbob Exp $
  */
 
 //	System Headers
@@ -52,9 +52,9 @@ CKMailMessage::CKMailMessage() :
  * This is the constructor that takes a vector of names, a subject
  * line, and a body text and creates the message based on that.
  */
-CKMailMessage::CKMailMessage( const std::vector<std::string> & aRecipientList,
-			   const std::string & aSubject,
-			   const std::string & aBody ) :
+CKMailMessage::CKMailMessage( const std::vector<CKString> & aRecipientList,
+			   const CKString & aSubject,
+			   const CKString & aBody ) :
 	mRecipients(),
 	mSubject(),
 	mMessageBody()
@@ -119,7 +119,7 @@ CKMailMessage & CKMailMessage::operator=( const CKMailMessage & anOther )
  * that a copy is made of the contents, and the list itself
  * is still under the caller's control.
  */
-void CKMailMessage::setRecipients( const std::vector<std::string> & aList )
+void CKMailMessage::setRecipients( const std::vector<CKString> & aList )
 {
 	mRecipients = aList;
 }
@@ -129,7 +129,7 @@ void CKMailMessage::setRecipients( const std::vector<std::string> & aList )
  * This method sets the subject line for this message when
  * it finally gets delivered.
  */
-void CKMailMessage::setSubject( const std::string & aSubject )
+void CKMailMessage::setSubject( const CKString & aSubject )
 {
 	mSubject = aSubject;
 }
@@ -142,7 +142,7 @@ void CKMailMessage::setSubject( const std::string & aSubject )
  * is a simplistic view of what can be accomplished, but it's
  * also very easy to use if you have a simple message to send.
  */
-void CKMailMessage::setMessageBody( const std::string & aMessage )
+void CKMailMessage::setMessageBody( const CKString & aMessage )
 {
 	mMessageBody.clear();
 	mMessageBody.push_back(aMessage);
@@ -155,7 +155,7 @@ void CKMailMessage::setMessageBody( const std::string & aMessage )
  * actual data, if the caller wants to do something with it, they
  * need to make a copy before it goes out of scope.
  */
-const std::vector<std::string> *CKMailMessage::getRecipients() const
+const std::vector<CKString> *CKMailMessage::getRecipients() const
 {
 	return &mRecipients;
 }
@@ -165,7 +165,7 @@ const std::vector<std::string> *CKMailMessage::getRecipients() const
  * This method returns the subject line for this message when it's
  * sent out through the delivery channel.
  */
-std::string CKMailMessage::getSubject() const
+CKString CKMailMessage::getSubject() const
 {
 	return mSubject;
 }
@@ -177,11 +177,11 @@ std::string CKMailMessage::getSubject() const
  * will insist that the data become a character stream, and this
  * method accomplishes just that.
  */
-std::string CKMailMessage::getMessageBody() const
+CKString CKMailMessage::getMessageBody() const
 {
 	bool			error = false;
 	bool			done = false;
-	std::string		body;
+	CKString		body;
 
 	/*
 	 * See if we're a simple message, because if we are
@@ -212,10 +212,10 @@ std::string CKMailMessage::getMessageBody() const
 	 * in this message. This is necessary because of the unique
 	 * seperator needed in multipart MIME messages.
 	 */
-	std::string		separator = "unique-boundary-1";
+	CKString		separator = "unique-boundary-1";
 	if (!error && !done) {
 		CKUUID	id = CKUUID::newUUID();
-		separator = std::string("msgID-").append(id.getStringValue());
+		separator = CKString("msgID-").append(id.getStringValue());
 	}
 
 	/*
@@ -226,14 +226,18 @@ std::string CKMailMessage::getMessageBody() const
 	 */
 	if (!error && !done) {
 		// put in the Content-Type for a simple message
-		body.append("Content-type: multipart/mixed; boundary=").append(separator).append("\r\n");
+		body.append("Content-type: multipart/mixed; boundary=");
+		body.append(separator);
+		body.append("\r\n");
 		// ...and then a blank line to indicate the start of the msg
 		body.append("\r\n");
 		// ...and finally all the parts of the message
-		std::vector<std::string>::const_iterator	i;
+		std::vector<CKString>::const_iterator	i;
 		for (i = mMessageBody.begin(); i != mMessageBody.end(); ++i) {
 			// start with the separator for this part
-			body.append("--").append(separator).append("\r\n");
+			body.append("--");
+			body.append(separator);
+			body.append("\r\n");
 
 			// now throw in the content type for this nugget
 			body.append(getContentType(*i));
@@ -247,7 +251,9 @@ std::string CKMailMessage::getMessageBody() const
 			body.append("\r\n");
 		}
 		// at the end, we close off this message body
-		body.append("--").append(separator).append("--\r\n");
+		body.append("--");
+		body.append(separator);
+		body.append("--\r\n");
 	}
 
 	return body;
@@ -259,11 +265,11 @@ std::string CKMailMessage::getMessageBody() const
  * for this message. If the address already exists, then it is
  * not added as a safety precaution to getting spammed.
  */
-void CKMailMessage::addToRecipients( const std::string & anAddress )
+void CKMailMessage::addToRecipients( const CKString & anAddress )
 {
 	if (anAddress.length() > 0) {
 		if (mRecipients.size() > 0) {
-			std::vector<std::string>::iterator	i;
+			std::vector<CKString>::iterator	i;
 			i = find(mRecipients.begin(), mRecipients.end(), anAddress);
 			if (i == mRecipients.end()) {
 				mRecipients.push_back(anAddress);
@@ -280,7 +286,7 @@ void CKMailMessage::addToRecipients( const std::string & anAddress )
  * an additional part of the multi-part MIME spec and inserts it
  * in place at the 'end' of the currently being built message.
  */
-void CKMailMessage::addToMessageBody( const std::string & aMessage )
+void CKMailMessage::addToMessageBody( const CKString & aMessage )
 {
 	mMessageBody.push_back(aMessage);
 }
@@ -293,7 +299,7 @@ void CKMailMessage::addToMessageBody( const std::string & aMessage )
  * a simple string so that we can keep things all together as
  * most mailers expect to see them.
  */
-void CKMailMessage::addAttachment( const std::string & anAttachment )
+void CKMailMessage::addAttachment( const CKString & anAttachment )
 {
 	addToMessageBody(anAttachment);
 }
@@ -310,10 +316,10 @@ void CKMailMessage::addAttachment( const CKMailMessage & anAttachment )
  * recipients for this message. If this address isn't in the list
  * then nothing will happen.
  */
-void CKMailMessage::removeFromRecipients( const std::string & anAddress )
+void CKMailMessage::removeFromRecipients( const CKString & anAddress )
 {
 	if (mRecipients.size() > 0) {
-		std::vector<std::string>::iterator	i;
+		std::vector<CKString>::iterator	i;
 		i = find(mRecipients.begin(), mRecipients.end(), anAddress);
 		if (i != mRecipients.end()) {
 			mRecipients.erase(i);
@@ -422,22 +428,25 @@ bool CKMailMessage::operator!=( const CKMailMessage & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKMailMessage::toString() const
+CKString CKMailMessage::toString() const
 {
-	std::ostringstream	buff;
-	std::vector<std::string>::const_iterator	i;
+	std::vector<CKString>::const_iterator	i;
 
-	buff << "Recipients:";
+	CKString	retval = "Recipients:";
 	for (i = mRecipients.begin(); i != mRecipients.end(); ++i) {
-		buff << " '" << (*i) << "'";
+		retval += " '";
+		retval += (*i);
+		retval += " '";
 	}
-	buff << std::endl;
-	buff << "Subject:" << getSubject() << std::endl;
-	buff << getMessageBody();
+	retval += "\n";
+	retval += "Subject:";
+	retval += getSubject();
+	retval += "\n";
+	retval += getMessageBody();
 
-	return buff.str();
+	return retval;
 }
 
 
@@ -447,20 +456,20 @@ std::string CKMailMessage::toString() const
  * correct content type means that the mailers that eventually get
  * this message will know how to decode it.
  */
-std::string CKMailMessage::getContentType( const std::string & anElement ) const
+CKString CKMailMessage::getContentType( const CKString & anElement ) const
 {
-	std::string			retval;
+	CKString			retval;
 
 	/*
 	 * Simply run the tests for the data type and map it to a
 	 * string to return. Start with the simple ones and then work
 	 * on the harder ones.
 	 */		
-	if ((anElement.find("HTML") != std::string::npos) ||
-		(anElement.find("html") != std::string::npos)) {
+	if ((anElement.find("HTML") != -1) ||
+		(anElement.find("html") != -1)) {
 		retval = "Content-type: text/html; charset=US-ASCII\r\n"
 					"Content-Transfer-Encoding: 7bit\r\n";
-	} else if (anElement.find("</") != std::string::npos) {
+	} else if (anElement.find("</") != -1) {
 		retval = "Content-type: text/enriched; charset=US-ASCII\r\n"
 					"Content-Transfer-Encoding: 7bit\r\n";
 	} else {
@@ -478,9 +487,9 @@ std::string CKMailMessage::getContentType( const std::string & anElement ) const
  * through the delivery channel. This is important as all parts
  * need to be encoded properly.
  */
-std::string CKMailMessage::encodeMessagePart( const std::string & anElement ) const
+CKString CKMailMessage::encodeMessagePart( const CKString & anElement ) const
 {
-	std::string		retval;
+	CKString		retval;
 
 	/*
 	 * Simply run the tests for the data type and mapp it to a

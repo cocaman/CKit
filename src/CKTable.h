@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.9 2004/09/11 21:07:49 drbob Exp $
+ * $Id: CKTable.h,v 1.10 2004/09/16 09:34:20 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -50,6 +50,7 @@
 
 //	Other Headers
 #include "CKVariant.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -91,8 +92,8 @@ class CKTable {
 		 * column headers. These lists not only define the structure of the
 		 * table, but also the row labels and column headers.
 		 */
-		CKTable( const std::vector<std::string> aRowLabels,
-				 const std::vector<std::string> aColumnHeaders );
+		CKTable( const std::vector<CKString> aRowLabels,
+				 const std::vector<CKString> aColumnHeaders );
 		/*
 		 * This constructor is interesting in that it takes the data as
 		 * it comes from another CKTable's generateCodeFromValues() method
@@ -133,9 +134,9 @@ class CKTable {
 		 * contents are being examined/copied into the table's datastructures.
 		 */
 		void setValue( int aRow, int aCol, const CKVariant & aValue );
-		void setValue( int aRow, const std::string & aColHeader, const CKVariant & aValue );
-		void setValue( const std::string & aRowLabel, int aCol, const CKVariant & aValue );
-		void setValue( const std::string & aRowLabel, const std::string & aColHeader, const CKVariant & aValue );
+		void setValue( int aRow, const CKString & aColHeader, const CKVariant & aValue );
+		void setValue( const CKString & aRowLabel, int aCol, const CKVariant & aValue );
+		void setValue( const CKString & aRowLabel, const CKString & aColHeader, const CKVariant & aValue );
 		/*
 		 * This method sets the value at this location based on the type
 		 * of data that's represented in the supplied string. This string
@@ -145,11 +146,11 @@ class CKTable {
 		 */
 		void setValueAsType( int aRow, int aCol, CKVariantType aType,
 				const char *aValue );
-		void setValueAsType( int aRow, const std::string & aColHeader,
+		void setValueAsType( int aRow, const CKString & aColHeader,
 				CKVariantType aType, const char *aValue );
-		void setValueAsType( const std::string & aRowLabel, int aCol,
+		void setValueAsType( const CKString & aRowLabel, int aCol,
 				CKVariantType aType, const char *aValue );
-		void setValueAsType( const std::string & aRowLabel, const std::string & aColHeader,
+		void setValueAsType( const CKString & aRowLabel, const CKString & aColHeader,
 				CKVariantType aType, const char *aValue );
 		/*
 		 * This sets the value stored in this location as a string, but a local
@@ -157,49 +158,49 @@ class CKTable {
 		 * holding on to the parameter, and is free to delete it.
 		 */
 		void setStringValue( int aRow, int aCol, const char *aStringValue );
-		void setStringValue( int aRow, const std::string & aColHeader, const char *aStringValue );
-		void setStringValue( const std::string & aRowLabel, int aCol, const char *aStringValue );
-		void setStringValue( const std::string & aRowLabel, const std::string & aColHeader, const char *aStringValue );
+		void setStringValue( int aRow, const CKString & aColHeader, const char *aStringValue );
+		void setStringValue( const CKString & aRowLabel, int aCol, const char *aStringValue );
+		void setStringValue( const CKString & aRowLabel, const CKString & aColHeader, const char *aStringValue );
 		/*
 		 * This method sets the value stored in this location as a date of the
 		 * form YYYYMMDD - stored as a long.
 		 */
 		void setDateValue( int aRow, int aCol, long aDateValue );
-		void setDateValue( int aRow, const std::string & aColHeader, long aDateValue );
-		void setDateValue( const std::string & aRowLabel, int aCol, long aDateValue );
-		void setDateValue( const std::string & aRowLabel, const std::string & aColHeader, long aDateValue );
+		void setDateValue( int aRow, const CKString & aColHeader, long aDateValue );
+		void setDateValue( const CKString & aRowLabel, int aCol, long aDateValue );
+		void setDateValue( const CKString & aRowLabel, const CKString & aColHeader, long aDateValue );
 		/*
 		 * This method sets the value stored in this location as a double.
 		 */
 		void setDoubleValue( int aRow, int aCol, double aDoubleValue );
-		void setDoubleValue( int aRow, const std::string & aColHeader, double aDoubleValue );
-		void setDoubleValue( const std::string & aRowLabel, int aCol, double aDoubleValue );
-		void setDoubleValue( const std::string & aRowLabel, const std::string & aColHeader, double aDoubleValue );
+		void setDoubleValue( int aRow, const CKString & aColHeader, double aDoubleValue );
+		void setDoubleValue( const CKString & aRowLabel, int aCol, double aDoubleValue );
+		void setDoubleValue( const CKString & aRowLabel, const CKString & aColHeader, double aDoubleValue );
 		/*
 		 * This sets the value stored in this location as a table, but a local
 		 * copy will be made so that the caller doesn't have to worry about
 		 * holding on to the parameter, and is free to delete it.
 		 */
 		void setTableValue( int aRow, int aCol, const CKTable *aTableValue );
-		void setTableValue( int aRow, const std::string & aColHeader, const CKTable *aTableValue );
-		void setTableValue( const std::string & aRowLabel, int aCol, const CKTable *aTableValue );
-		void setTableValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTable *aTableValue );
+		void setTableValue( int aRow, const CKString & aColHeader, const CKTable *aTableValue );
+		void setTableValue( const CKString & aRowLabel, int aCol, const CKTable *aTableValue );
+		void setTableValue( const CKString & aRowLabel, const CKString & aColHeader, const CKTable *aTableValue );
 		/*
 		 * This sets the value stored in this location as a time series, but
 		 * a local copy will be made so that the caller doesn't have to worry
 		 * about holding on to the parameter, and is free to delete it.
 		 */
 		void setTimeSeriesValue( int aRow, int aCol, const CKTimeSeries *aTimeSeriesValue );
-		void setTimeSeriesValue( int aRow, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue );
-		void setTimeSeriesValue( const std::string & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue );
-		void setTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( int aRow, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( const CKString & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue );
+		void setTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue );
 		/*
 		 * This method takes the supplied column number and the header and
 		 * assuming the table is big enough to include that column, sets the
 		 * column header for that column to the supplied value. A copy is
 		 * made of the argument so the caller retains control of the memory.
 		 */
-		void setColumnHeader( int aCol, const std::string & aHeader );
+		void setColumnHeader( int aCol, const CKString & aHeader );
 		/*
 		 * This method takes the supplied column number and the header and
 		 * assuming the table is big enough to include that column, sets the
@@ -214,7 +215,7 @@ class CKTable {
 		 * row label for that row to the supplied value. A copy is
 		 * made of the argument so the caller retains control of the memory.
 		 */
-		void setRowLabel( int aRow, const std::string & aLabel );
+		void setRowLabel( int aRow, const CKString & aLabel );
 		/*
 		 * This method takes the supplied row number and the label and
 		 * assuming the table is big enough to include that row, sets the
@@ -232,17 +233,17 @@ class CKTable {
 		 * controlled by this table's methods.
 		 */
 		CKVariant & getValue( int aRow, int aCol ) const;
-		CKVariant & getValue( int aRow, const std::string & aColHeader ) const;
-		CKVariant & getValue( const std::string & aRowLabel, int aCol ) const;
-		CKVariant & getValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		CKVariant & getValue( int aRow, const CKString & aColHeader ) const;
+		CKVariant & getValue( const CKString & aRowLabel, int aCol ) const;
+		CKVariant & getValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method returns the enumerated type of the data that this
 		 * location is currently holding.
 		 */
 		CKVariantType getType( int aRow, int aCol ) const;
-		CKVariantType getType( int aRow, const std::string & aColHeader ) const;
-		CKVariantType getType( const std::string & aRowLabel, int aCol ) const;
-		CKVariantType getType( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		CKVariantType getType( int aRow, const CKString & aColHeader ) const;
+		CKVariantType getType( const CKString & aRowLabel, int aCol ) const;
+		CKVariantType getType( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method will return the integer value of the data stored in this
 		 * location - if the type is numeric. If the data isn't numeric an
@@ -250,9 +251,9 @@ class CKTable {
 		 * sure that this instance is numeric *before* calling this method.
 		 */
 		int getIntValue( int aRow, int aCol ) const;
-		int getIntValue( int aRow, const std::string & aColHeader ) const;
-		int getIntValue( const std::string & aRowLabel, int aCol ) const;
-		int getIntValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		int getIntValue( int aRow, const CKString & aColHeader ) const;
+		int getIntValue( const CKString & aRowLabel, int aCol ) const;
+		int getIntValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method will return the double value of the data stored in this
 		 * location - if the type is numeric. If the data isn't numeric an
@@ -260,9 +261,9 @@ class CKTable {
 		 * sure that this instance is numeric *before* calling this method.
 		 */
 		double getDoubleValue( int aRow, int aCol ) const;
-		double getDoubleValue( int aRow, const std::string & aColHeader ) const;
-		double getDoubleValue( const std::string & aRowLabel, int aCol ) const;
-		double getDoubleValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		double getDoubleValue( int aRow, const CKString & aColHeader ) const;
+		double getDoubleValue( const CKString & aRowLabel, int aCol ) const;
+		double getDoubleValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method will return the date value of the data stored in this
 		 * location in a long of the form YYYYMMDD - if the type is date. If
@@ -271,9 +272,9 @@ class CKTable {
 		 * calling this method.
 		 */
 		long getDateValue( int aRow, int aCol ) const;
-		long getDateValue( int aRow, const std::string & aColHeader ) const;
-		long getDateValue( const std::string & aRowLabel, int aCol ) const;
-		long getDateValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		long getDateValue( int aRow, const CKString & aColHeader ) const;
+		long getDateValue( const CKString & aRowLabel, int aCol ) const;
+		long getDateValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method returns the actual string value of the data that
 		 * this location is holding. If the user wants to use this value
@@ -281,44 +282,44 @@ class CKTable {
 		 * or call the getValueAsString() method that returns a copy.
 		 */
 		const char *getStringValue( int aRow, int aCol ) const;
-		const char *getStringValue( int aRow, const std::string & aColHeader ) const;
-		const char *getStringValue( const std::string & aRowLabel, int aCol ) const;
-		const char *getStringValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		const char *getStringValue( int aRow, const CKString & aColHeader ) const;
+		const char *getStringValue( const CKString & aRowLabel, int aCol ) const;
+		const char *getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method returns the actual table value of the data that
 		 * this location is holding. If the user wants to use this value
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTable *getTableValue( int aRow, int aCol ) const;
-		const CKTable *getTableValue( int aRow, const std::string & aColHeader ) const;
-		const CKTable *getTableValue( const std::string & aRowLabel, int aCol ) const;
-		const CKTable *getTableValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		const CKTable *getTableValue( int aRow, const CKString & aColHeader ) const;
+		const CKTable *getTableValue( const CKString & aRowLabel, int aCol ) const;
+		const CKTable *getTableValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * This method returns the actual time series value of the data that
 		 * this location is holding. If the user wants to use this value
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTimeSeries *getTimeSeriesValue( int aRow, int aCol ) const;
-		const CKTimeSeries *getTimeSeriesValue( int aRow, const std::string & aColHeader ) const;
-		const CKTimeSeries *getTimeSeriesValue( const std::string & aRowLabel, int aCol ) const;
-		const CKTimeSeries *getTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		const CKTimeSeries *getTimeSeriesValue( int aRow, const CKString & aColHeader ) const;
+		const CKTimeSeries *getTimeSeriesValue( const CKString & aRowLabel, int aCol ) const;
+		const CKTimeSeries *getTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader ) const;
 
 		/*
-		 * This method returns the actual std::string value that is the
+		 * This method returns the actual CKString value that is the
 		 * column header for the provided column number assuming that it
 		 * actually exists in the table. As such, if the user wants this
 		 * value outside the scope fo this class they need to make a copy
 		 * of it.
 		 */
-		const std::string & getColumnHeader( int aCol ) const;
+		const CKString & getColumnHeader( int aCol ) const;
 		/*
-		 * This method returns the actual std::string value that is the
+		 * This method returns the actual CKString value that is the
 		 * row label for the provided row number assuming that it
 		 * actually exists in the table. As such, if the user wants this
 		 * value outside the scope fo this class they need to make a copy
 		 * of it.
 		 */
-		const std::string & getRowLabel( int aRow ) const;
+		const CKString & getRowLabel( int aRow ) const;
 
 		/*
 		 * This method will return the current number of rows in the table.
@@ -342,13 +343,13 @@ class CKTable {
 		 * If this header is not a valid column header for this table, then
 		 * this method will return a -1, please check for it.
 		 */
-		int getColumnForHeader( const std::string & aHeader ) const;
+		int getColumnForHeader( const CKString & aHeader ) const;
 		/*
 		 * This method returns the row index for the specified label.
 		 * If this label is not a valid row label for this table, then
 		 * this method will return a -1, please check for it.
 		 */
-		int getRowForLabel( const std::string & aLabel ) const;
+		int getRowForLabel( const CKString & aLabel ) const;
 		/*
 		 * This method returns a complete vector of the CKVariants that
 		 * make up the supplied row in the table. This is nice if you
@@ -364,7 +365,7 @@ class CKTable {
 		 * of data for processing. The management of the returned value
 		 * is up to the caller.
 		 */
-		std::vector<CKVariant> getRow( const std::string & aRowLabel ) const;
+		std::vector<CKVariant> getRow( const CKString & aRowLabel ) const;
 		/*
 		 * This method returns a complete vector of the CKVariants that
 		 * make up the supplied column in the table. This is nice if you
@@ -380,7 +381,7 @@ class CKTable {
 		 * vector of data for processing. The management of the returned
 		 * value is up to the caller.
 		 */
-		std::vector<CKVariant> getColumn( const std::string & aColumnHeader ) const;
+		std::vector<CKVariant> getColumn( const CKString & aColumnHeader ) const;
 
 		/********************************************************
 		 *
@@ -410,9 +411,9 @@ class CKTable {
 		 * before assuming anything.
 		 */
 		char *getValueAsString( int aRow, int aCol ) const;
-		char *getValueAsString( int aRow, const std::string & aColHeader ) const;
-		char *getValueAsString( const std::string & aRowLabel, int aCol ) const;
-		char *getValueAsString( const std::string & aRowLabel, const std::string & aColHeader ) const;
+		char *getValueAsString( int aRow, const CKString & aColHeader ) const;
+		char *getValueAsString( const CKString & aRowLabel, int aCol ) const;
+		char *getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const;
 		/*
 		 * In order to simplify the move of this object from C++ to Java
 		 * it makes sense to encode the table's data into a (char *) that
@@ -462,9 +463,9 @@ class CKTable {
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		friend class CKTimeSeries;
@@ -483,21 +484,21 @@ class CKTable {
 		 */
 		void setTable( CKVariant *aTable );
 		/*
-		 * This method sets an array of std::string values to be the column
+		 * This method sets an array of CKString values to be the column
 		 * headers for the current table. It's important to note that there
 		 * needs to be getNumColumns() of them and it won't be checked, so...
 		 * this class will take care of making sure they are there, and it's
 		 * probably best to let this class to this.
 		 */
-		void setColumnHeaders( const std::vector<std::string> & aList );
+		void setColumnHeaders( const std::vector<CKString> & aList );
 		/*
-		 * This method sets an array of std::string values to be the row
+		 * This method sets an array of CKString values to be the row
 		 * labels for the current table. It's important to note that there
 		 * needs to be getNumRows() of them and it won't be checked, so...
 		 * this class will take care of making sure they are there, and it's
 		 * probably best to let this class to this.
 		 */
-		void setRowLabels( const std::vector<std::string> & aList );
+		void setRowLabels( const std::vector<CKString> & aList );
 		/*
 		 * This method is really here to encapsulate the number of rows
 		 * that this data source represents. Since it's possible to have
@@ -524,21 +525,21 @@ class CKTable {
 		 */
 		CKVariant *getTable() const;
 		/*
-		 * This method returns the actual array of std::string values that
+		 * This method returns the actual array of CKString values that
 		 * are the column headers for this table. The number of elements
 		 * in the array is given my getNumColumns() and if the user wants
 		 * to have this list outside the scope of this class they need to
 		 * make a copy of it and that includes all the strings in it.
 		 */
-		const std::string *getColumnHeaders() const;
+		const CKString *getColumnHeaders() const;
 		/*
-		 * This method returns the actual array of std::string values that
+		 * This method returns the actual array of CKString values that
 		 * are the row labels for this table. The number of elements
 		 * in the array is given my getNumRows() and if the user wants
 		 * to have this list outside the scope of this class they need to
 		 * make a copy of it and that includes all the strings in it.
 		 */
-		const std::string *getRowLabels() const;
+		const CKString *getRowLabels() const;
 
 		/********************************************************
 		 *
@@ -628,21 +629,21 @@ class CKTable {
 		 */
 		CKVariant		*mTable;
 		/*
-		 * This is a array of std::string values that are the column
-		 * headers. The reason for picking the std::string is that it allows
+		 * This is a array of CKString values that are the column
+		 * headers. The reason for picking the CKString is that it allows
 		 * us a lot of freedom in the assignment, sizing and memory
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		std::string		*mColumnHeaders;
+		CKString		*mColumnHeaders;
 		/*
-		 * This is a array of std::string values that are the row
-		 * labels. The reason for picking the std::string is that it allows
+		 * This is a array of CKString values that are the row
+		 * labels. The reason for picking the CKString is that it allows
 		 * us a lot of freedom in the assignment, sizing and memory
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		std::string		*mRowLabels;
+		CKString		*mRowLabels;
 		/*
 		 * This is the current number of rows expressed in the table's
 		 * data structure. It has been used in the creation of the data
@@ -680,8 +681,8 @@ class CKTable {
 		 * if the number of row labels or column headers make no sense, or
 		 * if there's an error in the allocation of the storage.
 		 */
-		void createTable( const std::vector<std::string> & aRowLabels,
-						  const std::vector<std::string> & aColHeaders );
+		void createTable( const std::vector<CKString> & aRowLabels,
+						  const std::vector<CKString> & aColHeaders );
 		/*
 		 * This private method takes care of dealing with the careful
 		 * deallocation of the table's data structure. It's not all

@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.7 2004/09/11 21:07:42 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.8 2004/09/16 09:34:12 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H
@@ -72,7 +72,7 @@ class CKBufferedSocket :
 		 * hostname and port that we wish to make a connection with and
 		 * attempts to make that connection before returning.
 		 */
-		CKBufferedSocket( const std::string & aHost, int aPort );
+		CKBufferedSocket( const CKString & aHost, int aPort );
 		/*
 		 * There are times when you are given a simple CKSocket and you
 		 * want to 'promote' it to a buffered socket. This form of the
@@ -138,7 +138,7 @@ class CKBufferedSocket :
 		 * other "peeking" methods in this class which will probably be
 		 * far more useful to the user.
 		 */
-		std::string getPendingData() const;
+		CKString getPendingData() const;
 
 		/********************************************************
 		 *
@@ -152,7 +152,7 @@ class CKBufferedSocket :
 		 * complete form of the read that can be done and it clears out
 		 * everything.
 		 */
-		std::string read();
+		CKString read();
 		/*
 		 * These methods read data up to - and including, the provided
 		 * 'tag', or stop, data from the socket, and will wait until
@@ -163,20 +163,21 @@ class CKBufferedSocket :
 		 * if data continues to be available at the socket and the terminal
 		 * data has not arrived, reading will continue.
 		 */
-		std::string readUpTo( const std::string & aStopData );
-		std::string readUpTo( const char *aStopData );
+		CKString readUpTo( const std::string & aStopData );
+		CKString readUpTo( const CKString & aStopData );
+		CKString readUpTo( const char *aStopData );
 		/*
 		 * This convenience method reads data up to the convenient line
 		 * ending CRLF combo. This is a common line ending in TCP
 		 * communications and so it's a nice little tool to have.
 		 */
-		std::string readUpToCRLF();
+		CKString readUpToCRLF();
 		/*
 		 * This convenience method reads data up to the convenient line
 		 * ending NEWLINE. This is a common line ending in Unix-based TCP
 		 * communications and so it's a nice little tool to have.
 		 */
-		std::string readUpToNEWLINE();
+		CKString readUpToNEWLINE();
 
 		/*
 		 * This method will read all the available data from the socket,
@@ -186,7 +187,7 @@ class CKBufferedSocket :
 		 * "complete" data set is available at the socket, and if not,
 		 * then do nothing and try again later.
 		 */
-		bool checkForDataUpTo( const std::string & aStopData );
+		bool checkForDataUpTo( const CKString & aStopData );
 		bool checkForDataUpTo( const char *aStopData );
 		/*
 		 * These are convenience methods that make it easier to get a
@@ -220,9 +221,9 @@ class CKBufferedSocket :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -230,7 +231,7 @@ class CKBufferedSocket :
 		 * socket (data pending a read) and replaces it with the supplied
 		 * data. This is a drastic step, so please use this method with care.
 		 */
-		void setPendingData( const std::string & aData );
+		void setPendingData( const CKString & aData );
 
 		/*
 		 * These methods append the provided data to the end of the existing
@@ -238,7 +239,7 @@ class CKBufferedSocket :
 		 * are used in the other methods of this class to update the buffer's
 		 * contents with that which is read from the socket as it's available.
 		 */
-		void appendToPendingData( const std::string & aData );
+		void appendToPendingData( const CKString & aData );
 		void appendToPendingData( const char *aString );
 		/*
 		 * This method simply clears out all the pending data from the
@@ -252,7 +253,7 @@ class CKBufferedSocket :
 		 * socket, so it's probably wise to see if the data you're
 		 * looking for is in the buffer before calling this method.
 		 */
-		void emptyPendingDataUpToAndIncluding( const std::string & aData );
+		void emptyPendingDataUpToAndIncluding( const CKString & aData );
 		void emptyPendingDataUpToAndIncluding( const char *aData );
 
 		/*
@@ -279,7 +280,7 @@ class CKBufferedSocket :
 		 * the user of this class has not yet reead from us and cleared it
 		 * out.
 		 */
-		std::string			mPendingData;
+		CKString			mPendingData;
 };
 
 /*

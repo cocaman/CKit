@@ -8,7 +8,7 @@
  *                       which in turn is used in other higher-level classes
  *                       in CKit.
  *
- * $Id: CKTCPConnection.cpp,v 1.5 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKTCPConnection.cpp,v 1.6 2004/09/16 09:34:19 drbob Exp $
  */
 
 //	System Headers
@@ -50,7 +50,7 @@ CKTCPConnection::CKTCPConnection() :
  * parameters and tries to make the connection to the host on
  * that port before returning to the caller.
  */
-CKTCPConnection::CKTCPConnection( const std::string & aHost, int aPort ) :
+CKTCPConnection::CKTCPConnection( const CKString & aHost, int aPort ) :
 	CKBufferedSocket(aHost, aPort)
 {
 	// start off not tracing any data
@@ -194,9 +194,9 @@ bool CKTCPConnection::operator!=( const CKTCPConnection & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKTCPConnection::toString() const
+CKString CKTCPConnection::toString() const
 {
 	return CKBufferedSocket::toString();
 }

@@ -6,7 +6,7 @@
  *                      communications. It's used in the Mail Delivery system
  *                      as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.cpp,v 1.6 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKSMTPDelivery.cpp,v 1.7 2004/09/16 09:34:18 drbob Exp $
  */
 
 //	System Headers
@@ -61,7 +61,7 @@ CKSMTPDelivery::CKSMTPDelivery() :
  * host name and tries to establish a successful connection to the
  * SMTP service on that host before returning to the caller.
  */
-CKSMTPDelivery::CKSMTPDelivery( const std::string & aHost ) :
+CKSMTPDelivery::CKSMTPDelivery( const CKString & aHost ) :
 	mHostname(aHost),
 	mFromEMailAddress(DEFAULT_SENDER),
 	mHostConnection(aHost)
@@ -76,7 +76,7 @@ CKSMTPDelivery::CKSMTPDelivery( const std::string & aHost ) :
  * and tries to establish a successful connection to the
  * SMTP service on that host before returning to the caller.
  */
-CKSMTPDelivery::CKSMTPDelivery( const std::string & aHost, const std::string & aSender ) :
+CKSMTPDelivery::CKSMTPDelivery( const CKString & aHost, const CKString & aSender ) :
 	mHostname(aHost),
 	mFromEMailAddress(aSender),
 	mHostConnection(aHost)
@@ -191,7 +191,7 @@ bool CKSMTPDelivery::readyToDeliverMessages()
  */
 bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 							  bool aReadReceipt,
-							  const std::vector<std::string> & aPvtRecipients )
+							  const std::vector<CKString> & aPvtRecipients )
 {
 	bool		error = false;
 
@@ -202,7 +202,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-					"bool, const std::vector<std::string> &) - there was an "
+					"bool, const std::vector<CKString> &) - there was an "
 					"error while trying to check the connection to the SMTP "
 					"server on " << mHostname << ". Please make sure it's "
 					"there and available.";
@@ -212,7 +212,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - there was an "
+				"bool, const std::vector<CKString> &) - there was an "
 				"error while trying to verify the connection to the SMTP server "
 				"on " << mHostname << ". Please make sure it's there and "
 				"available.";
@@ -227,7 +227,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-					"bool, const std::vector<std::string> &) - there was an "
+					"bool, const std::vector<CKString> &) - there was an "
 					"error while trying to connect to the SMTP server on " <<
 					mHostname << ". Please make sure it's there and available.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -241,7 +241,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - there was an "
+				"bool, const std::vector<CKString> &) - there was an "
 				"error while trying to set the sender's email address with the "
 				"SMTP server on " << mHostname << ". Please make sure it's "
 				"there and available.";
@@ -255,15 +255,15 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 	 * header component that is a list of all the public
 	 * recipients.
 	 */
-	std::string		publicRecipientList = "To:";
+	CKString		publicRecipientList = "To:";
 	if (!error) {
-		std::vector<std::string>::const_iterator	i;
+		std::vector<CKString>::const_iterator	i;
 		for (i = aMsg.getRecipients()->begin(); i != aMsg.getRecipients()->end(); ++i) {
 			if (!mHostConnection.recipientAddress(*i)) {
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-					"bool, const std::vector<std::string> &) - while trying to "
+					"bool, const std::vector<CKString> &) - while trying to "
 					"add the public recipient '" << (*i) << "' to the list for this message "
 					"an error occurred. Please check into it as soon as possible.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -280,13 +280,13 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 	 * publicRecipientList.
 	 */
 	if (!error) {
-		std::vector<std::string>::const_iterator	i;
+		std::vector<CKString>::const_iterator	i;
 		for (i = aPvtRecipients.begin(); i != aPvtRecipients.end(); ++i) {
 			if (!mHostConnection.recipientAddress(*i)) {
 				error = true;
 				std::ostringstream	msg;
 				msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-					"bool, const std::vector<std::string> &) - while trying to "
+					"bool, const std::vector<CKString> &) - while trying to "
 					"add the private recipient '" << (*i) << "' to the list for this message "
 					"an error occurred. Please check into it as soon as possible.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -307,7 +307,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - while trying to "
+				"bool, const std::vector<CKString> &) - while trying to "
 				"start the message body for this message an error occurred at the "
 				"SMTP server. Please check into it as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -320,7 +320,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 		 * Print message header according to RFC 822:
 		 * Return-path, Received, Date, From, Subject, Sender, To, cc
 		 */
-		std::string msgHeader;
+		CKString msgHeader;
 
 		// First, indicate if it's a MIME message
 		if (aMsg.isMIME()) {
@@ -352,7 +352,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - while trying to "
+				"bool, const std::vector<CKString> &) - while trying to "
 				"add the message header to this message an error occurred. "
 				"Please check into it as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -366,7 +366,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - while trying to "
+				"bool, const std::vector<CKString> &) - while trying to "
 				"add the message body to this message an error occurred. "
 				"Please check into it as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -379,7 +379,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - while trying to "
+				"bool, const std::vector<CKString> &) - while trying to "
 				"end the message section to this message an error occurred. "
 				"Please check into it as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -392,7 +392,7 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKSMTPDelivery::deliverMessage(const CKMailMessage &, "
-				"bool, const std::vector<std::string> &) - while trying to "
+				"bool, const std::vector<CKString> &) - while trying to "
 				"close the connection to the SMTP server and send the message "
 				"on it's way, an error occurred. Please check into it as soon "
 				"as possible.";
@@ -416,9 +416,9 @@ bool CKSMTPDelivery::deliver( const CKMailMessage & aMsg,
  * to be this in order to have the messages properly interpreted
  * by the email clients.
  */
-std::string CKSMTPDelivery::getDateFormat() const
+CKString CKSMTPDelivery::getDateFormat() const
 {
-	std::string		retval;
+	CKString		retval;
 
 	/*
 	 * Get the time right now, and the format it into a reasonable
@@ -483,15 +483,19 @@ bool CKSMTPDelivery::operator!=( const CKSMTPDelivery & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKSMTPDelivery::toString() const
+CKString CKSMTPDelivery::toString() const
 {
-	std::ostringstream	buff;
+	CKString	retval = "< Host=";
+	retval += mHostname;
+	retval += ", ";
+	retval += " Sender=";
+	retval += mFromEMailAddress;
+	retval += ", ";
+	retval += " Connection=";
+	retval +=  mHostConnection.toString();
+	retval += ">\n";
 
-	buff << "< Host=" << mHostname << ", " <<
-		" Sender=" << mFromEMailAddress << ", " <<
-		" Connection=" << mHostConnection << ">" << std::endl;
-
-	return buff.str();
+	return retval;
 }

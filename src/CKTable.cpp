@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.12 2004/09/11 21:07:49 drbob Exp $
+ * $Id: CKTable.cpp,v 1.13 2004/09/16 09:34:20 drbob Exp $
  */
 
 //	System Headers
@@ -95,8 +95,8 @@ CKTable::CKTable( int aNumRows, int aNumColumns ) :
  * column headers. These lists not only define the structure of the
  * table, but also the row labels and column headers.
  */
-CKTable::CKTable( const std::vector<std::string> aRowLabels,
-				  const std::vector<std::string> aColumnHeaders ) :
+CKTable::CKTable( const std::vector<CKString> aRowLabels,
+				  const std::vector<CKString> aColumnHeaders ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
 	mRowLabels(NULL),
@@ -106,8 +106,8 @@ CKTable::CKTable( const std::vector<std::string> aRowLabels,
 	// see if the requestde size makes any sense
 	if (aRowLabels.empty() || aColumnHeaders.empty()) {
 		std::ostringstream	msg;
-		msg << "CKTable::CKTable(const std::vector<std::string> &, const "
-			"std::vector<std::string> &) - the requested size: "
+		msg << "CKTable::CKTable(const std::vector<CKString> &, const "
+			"std::vector<CKString> &) - the requested size: "
 			<< aRowLabels.size() << " by " << aColumnHeaders.size() <<
 			" doesn't make any sense. Please try again.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -253,13 +253,13 @@ void CKTable::setValue( int aRow, int aCol, const CKVariant & aValue )
 }
 
 
-void CKTable::setValue( int aRow, const std::string & aColHeader, const CKVariant & aValue )
+void CKTable::setValue( int aRow, const CKString & aColHeader, const CKVariant & aValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValue(int, const std::string &, const CKVariant &)"
+		msg << "CKTable::setValue(int, const CKString &, const CKVariant &)"
 			" - there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -270,13 +270,13 @@ void CKTable::setValue( int aRow, const std::string & aColHeader, const CKVarian
 }
 
 
-void CKTable::setValue( const std::string & aRowLabel, int aCol, const CKVariant & aValue )
+void CKTable::setValue( const CKString & aRowLabel, int aCol, const CKVariant & aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValue(const std::string &, int, const CKVariant &)"
+		msg << "CKTable::setValue(const CKString &, int, const CKVariant &)"
 			" - there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -287,13 +287,13 @@ void CKTable::setValue( const std::string & aRowLabel, int aCol, const CKVariant
 }
 
 
-void CKTable::setValue( const std::string & aRowLabel, const std::string & aColHeader, const CKVariant & aValue )
+void CKTable::setValue( const CKString & aRowLabel, const CKString & aColHeader, const CKVariant & aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValue(const std::string &, const std::string &, "
+		msg << "CKTable::setValue(const CKString &, const CKString &, "
 			"const CKVariant &) - there is no currently defined row label '" <<
 			aRowLabel << "' please make sure the row labels are properly "
 			"defined.";
@@ -304,7 +304,7 @@ void CKTable::setValue( const std::string & aRowLabel, const std::string & aColH
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValue(const std::string &, const std::string &, "
+		msg << "CKTable::setValue(const CKString &, const CKString &, "
 			"const CKVariant &) - there is no currently defined column header '"
 			<< aColHeader << "' please make sure the column headers are "
 			"properly defined.";
@@ -351,14 +351,14 @@ void CKTable::setValueAsType( int aRow, int aCol, CKVariantType aType,
 }
 
 
-void CKTable::setValueAsType( int aRow, const std::string & aColHeader,
+void CKTable::setValueAsType( int aRow, const CKString & aColHeader,
 							  CKVariantType aType, const char *aValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValueAsType(int, const std::string &, "
+		msg << "CKTable::setValueAsType(int, const CKString &, "
 			"CKVariantType, const char *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -370,14 +370,14 @@ void CKTable::setValueAsType( int aRow, const std::string & aColHeader,
 }
 
 
-void CKTable::setValueAsType( const std::string & aRowLabel, int aCol,
+void CKTable::setValueAsType( const CKString & aRowLabel, int aCol,
 							  CKVariantType aType, const char *aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValueAsType(const std::string &, int, "
+		msg << "CKTable::setValueAsType(const CKString &, int, "
 			"CKVariantType, const char *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -389,14 +389,14 @@ void CKTable::setValueAsType( const std::string & aRowLabel, int aCol,
 }
 
 
-void CKTable::setValueAsType( const std::string & aRowLabel, const std::string & aColHeader,
+void CKTable::setValueAsType( const CKString & aRowLabel, const CKString & aColHeader,
 							  CKVariantType aType, const char *aValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValueAsType(const std::string &, const std::string &, "
+		msg << "CKTable::setValueAsType(const CKString &, const CKString &, "
 			"CKVariantType, const char *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -407,7 +407,7 @@ void CKTable::setValueAsType( const std::string & aRowLabel, const std::string &
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setValueAsType(const std::string &, const std::string &, "
+		msg << "CKTable::setValueAsType(const CKString &, const CKString &, "
 			"CKVariantType, const char *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -450,13 +450,13 @@ void CKTable::setStringValue( int aRow, int aCol, const char *aStringValue )
 }
 
 
-void CKTable::setStringValue( int aRow, const std::string & aColHeader, const char *aStringValue )
+void CKTable::setStringValue( int aRow, const CKString & aColHeader, const char *aStringValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setStringValue(int, const std::string &, "
+		msg << "CKTable::setStringValue(int, const CKString &, "
 			"const char *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -468,13 +468,13 @@ void CKTable::setStringValue( int aRow, const std::string & aColHeader, const ch
 }
 
 
-void CKTable::setStringValue( const std::string & aRowLabel, int aCol, const char *aStringValue )
+void CKTable::setStringValue( const CKString & aRowLabel, int aCol, const char *aStringValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setStringValue(const std::string &, int, "
+		msg << "CKTable::setStringValue(const CKString &, int, "
 			"const char *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -486,13 +486,13 @@ void CKTable::setStringValue( const std::string & aRowLabel, int aCol, const cha
 }
 
 
-void CKTable::setStringValue( const std::string & aRowLabel, const std::string & aColHeader, const char *aStringValue )
+void CKTable::setStringValue( const CKString & aRowLabel, const CKString & aColHeader, const char *aStringValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setStringValue(const std::string &, const std::string &, "
+		msg << "CKTable::setStringValue(const CKString &, const CKString &, "
 			"const char *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -503,7 +503,7 @@ void CKTable::setStringValue( const std::string & aRowLabel, const std::string &
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setStringValue(const std::string &, const std::string &, "
+		msg << "CKTable::setStringValue(const CKString &, const CKString &, "
 			"const char *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -545,13 +545,13 @@ void CKTable::setDateValue( int aRow, int aCol, long aDateValue )
 }
 
 
-void CKTable::setDateValue( int aRow, const std::string & aColHeader, long aDateValue )
+void CKTable::setDateValue( int aRow, const CKString & aColHeader, long aDateValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDateValue(int, const std::string &, "
+		msg << "CKTable::setDateValue(int, const CKString &, "
 			"long) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -563,13 +563,13 @@ void CKTable::setDateValue( int aRow, const std::string & aColHeader, long aDate
 }
 
 
-void CKTable::setDateValue( const std::string & aRowLabel, int aCol, long aDateValue )
+void CKTable::setDateValue( const CKString & aRowLabel, int aCol, long aDateValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDateValue(const std::string &, int, "
+		msg << "CKTable::setDateValue(const CKString &, int, "
 			"long) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -581,13 +581,13 @@ void CKTable::setDateValue( const std::string & aRowLabel, int aCol, long aDateV
 }
 
 
-void CKTable::setDateValue( const std::string & aRowLabel, const std::string & aColHeader, long aDateValue )
+void CKTable::setDateValue( const CKString & aRowLabel, const CKString & aColHeader, long aDateValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDateValue(const std::string &, const std::string &, "
+		msg << "CKTable::setDateValue(const CKString &, const CKString &, "
 			"long) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -598,7 +598,7 @@ void CKTable::setDateValue( const std::string & aRowLabel, const std::string & a
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDateValue(const std::string &, const std::string &, "
+		msg << "CKTable::setDateValue(const CKString &, const CKString &, "
 			"long) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -639,13 +639,13 @@ void CKTable::setDoubleValue( int aRow, int aCol, double aDoubleValue )
 }
 
 
-void CKTable::setDoubleValue( int aRow, const std::string & aColHeader, double aDoubleValue )
+void CKTable::setDoubleValue( int aRow, const CKString & aColHeader, double aDoubleValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDoubleValue(int, const std::string &, "
+		msg << "CKTable::setDoubleValue(int, const CKString &, "
 			"double) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -657,13 +657,13 @@ void CKTable::setDoubleValue( int aRow, const std::string & aColHeader, double a
 }
 
 
-void CKTable::setDoubleValue( const std::string & aRowLabel, int aCol, double aDoubleValue )
+void CKTable::setDoubleValue( const CKString & aRowLabel, int aCol, double aDoubleValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDoubleValue(const std::string &, int, "
+		msg << "CKTable::setDoubleValue(const CKString &, int, "
 			"double) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -675,13 +675,13 @@ void CKTable::setDoubleValue( const std::string & aRowLabel, int aCol, double aD
 }
 
 
-void CKTable::setDoubleValue( const std::string & aRowLabel, const std::string & aColHeader, double aDoubleValue )
+void CKTable::setDoubleValue( const CKString & aRowLabel, const CKString & aColHeader, double aDoubleValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDoubleValue(const std::string &, const std::string &, "
+		msg << "CKTable::setDoubleValue(const CKString &, const CKString &, "
 			"double) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -692,7 +692,7 @@ void CKTable::setDoubleValue( const std::string & aRowLabel, const std::string &
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setDoubleValue(const std::string &, const std::string &, "
+		msg << "CKTable::setDoubleValue(const CKString &, const CKString &, "
 			"double) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -735,13 +735,13 @@ void CKTable::setTableValue( int aRow, int aCol, const CKTable *aTableValue )
 }
 
 
-void CKTable::setTableValue( int aRow, const std::string & aColHeader, const CKTable *aTableValue )
+void CKTable::setTableValue( int aRow, const CKString & aColHeader, const CKTable *aTableValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTableValue(int, const std::string &, "
+		msg << "CKTable::setTableValue(int, const CKString &, "
 			"const CKTable *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -753,13 +753,13 @@ void CKTable::setTableValue( int aRow, const std::string & aColHeader, const CKT
 }
 
 
-void CKTable::setTableValue( const std::string & aRowLabel, int aCol, const CKTable *aTableValue )
+void CKTable::setTableValue( const CKString & aRowLabel, int aCol, const CKTable *aTableValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTableValue(const std::string &, int, "
+		msg << "CKTable::setTableValue(const CKString &, int, "
 			"const CKTable *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -771,13 +771,13 @@ void CKTable::setTableValue( const std::string & aRowLabel, int aCol, const CKTa
 }
 
 
-void CKTable::setTableValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTable *aTableValue )
+void CKTable::setTableValue( const CKString & aRowLabel, const CKString & aColHeader, const CKTable *aTableValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTableValue(const std::string &, const std::string &, "
+		msg << "CKTable::setTableValue(const CKString &, const CKString &, "
 			"const CKTable *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -788,7 +788,7 @@ void CKTable::setTableValue( const std::string & aRowLabel, const std::string & 
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTableValue(const std::string &, const std::string &, "
+		msg << "CKTable::setTableValue(const CKString &, const CKString &, "
 			"const CKTable *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -831,13 +831,13 @@ void CKTable::setTimeSeriesValue( int aRow, int aCol, const CKTimeSeries *aTimeS
 }
 
 
-void CKTable::setTimeSeriesValue( int aRow, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue )
+void CKTable::setTimeSeriesValue( int aRow, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue )
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTimeSeriesValue(int, const std::string &, "
+		msg << "CKTable::setTimeSeriesValue(int, const CKString &, "
 			"const CKTimeSeries *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -849,13 +849,13 @@ void CKTable::setTimeSeriesValue( int aRow, const std::string & aColHeader, cons
 }
 
 
-void CKTable::setTimeSeriesValue( const std::string & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue )
+void CKTable::setTimeSeriesValue( const CKString & aRowLabel, int aCol, const CKTimeSeries *aTimeSeriesValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTimeSeriesValue(const std::string &, int, "
+		msg << "CKTable::setTimeSeriesValue(const CKString &, int, "
 			"const CKTimeSeries *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -867,13 +867,13 @@ void CKTable::setTimeSeriesValue( const std::string & aRowLabel, int aCol, const
 }
 
 
-void CKTable::setTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader, const CKTimeSeries *aTimeSeriesValue )
+void CKTable::setTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader, const CKTimeSeries *aTimeSeriesValue )
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTimeSeriesValue(const std::string &, const std::string &, "
+		msg << "CKTable::setTimeSeriesValue(const CKString &, const CKString &, "
 			"const CKTimeSeries *) - there is no currently defined row "
 			"label '" << aRowLabel << "' please make sure the row labels are "
 			"properly defined.";
@@ -884,7 +884,7 @@ void CKTable::setTimeSeriesValue( const std::string & aRowLabel, const std::stri
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::setTimeSeriesValue(const std::string &, const std::string &, "
+		msg << "CKTable::setTimeSeriesValue(const CKString &, const CKString &, "
 			"const CKTimeSeries *) - there is no currently defined "
 			"column header '" << aColHeader << "' please make sure the column "
 			"headers are properly defined.";
@@ -902,7 +902,7 @@ void CKTable::setTimeSeriesValue( const std::string & aRowLabel, const std::stri
  * column header for that column to the supplied value. A copy is
  * made of the argument so the caller retains control of the memory.
  */
-void CKTable::setColumnHeader( int aCol, const std::string & aHeader )
+void CKTable::setColumnHeader( int aCol, const CKString & aHeader )
 {
 	// first, make sure we have a place to put this data
 	if ((aCol < 0) || (aCol >= mNumColumns)) {
@@ -949,7 +949,7 @@ void CKTable::setColumnHeader( int aCol, const char *aHeader )
  * row label for that row to the supplied value. A copy is
  * made of the argument so the caller retains control of the memory.
  */
-void CKTable::setRowLabel( int aRow, const std::string & aLabel )
+void CKTable::setRowLabel( int aRow, const CKString & aLabel )
 {
 	// first, make sure we have a place to put this data
 	if ((aRow < 0) || (aRow >= mNumRows)) {
@@ -1022,13 +1022,13 @@ CKVariant & CKTable::getValue( int aRow, int aCol ) const
 }
 
 
-CKVariant & CKTable::getValue( int aRow, const std::string & aColHeader ) const
+CKVariant & CKTable::getValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValue(int, const std::string &) "
+		msg << "CKTable::getValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1039,13 +1039,13 @@ CKVariant & CKTable::getValue( int aRow, const std::string & aColHeader ) const
 }
 
 
-CKVariant & CKTable::getValue( const std::string & aRowLabel, int aCol ) const
+CKVariant & CKTable::getValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValue(const std::string &, const std::string &) "
+		msg << "CKTable::getValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1056,13 +1056,13 @@ CKVariant & CKTable::getValue( const std::string & aRowLabel, int aCol ) const
 }
 
 
-CKVariant & CKTable::getValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+CKVariant & CKTable::getValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValue(const std::string &, const std::string &) "
+		msg << "CKTable::getValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1072,7 +1072,7 @@ CKVariant & CKTable::getValue( const std::string & aRowLabel, const std::string 
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValue(const std::string &, const std::string &) "
+		msg << "CKTable::getValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1112,13 +1112,13 @@ CKVariantType CKTable::getType( int aRow, int aCol ) const
 }
 
 
-CKVariantType CKTable::getType( int aRow, const std::string & aColHeader ) const
+CKVariantType CKTable::getType( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getType(int, const std::string &) "
+		msg << "CKTable::getType(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1129,13 +1129,13 @@ CKVariantType CKTable::getType( int aRow, const std::string & aColHeader ) const
 }
 
 
-CKVariantType CKTable::getType( const std::string & aRowLabel, int aCol ) const
+CKVariantType CKTable::getType( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getType(const std::string &, int) "
+		msg << "CKTable::getType(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1146,13 +1146,13 @@ CKVariantType CKTable::getType( const std::string & aRowLabel, int aCol ) const
 }
 
 
-CKVariantType CKTable::getType( const std::string & aRowLabel, const std::string & aColHeader ) const
+CKVariantType CKTable::getType( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getType(const std::string &, const std::string &) "
+		msg << "CKTable::getType(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1162,7 +1162,7 @@ CKVariantType CKTable::getType( const std::string & aRowLabel, const std::string
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getType(const std::string &, const std::string &) "
+		msg << "CKTable::getType(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1212,13 +1212,13 @@ int CKTable::getIntValue( int aRow, int aCol ) const
 }
 
 
-int CKTable::getIntValue( int aRow, const std::string & aColHeader ) const
+int CKTable::getIntValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getIntValue(int, const std::string &) "
+		msg << "CKTable::getIntValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1229,13 +1229,13 @@ int CKTable::getIntValue( int aRow, const std::string & aColHeader ) const
 }
 
 
-int CKTable::getIntValue( const std::string & aRowLabel, int aCol ) const
+int CKTable::getIntValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getIntValue(const std::string &, const std::string &) "
+		msg << "CKTable::getIntValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1246,13 +1246,13 @@ int CKTable::getIntValue( const std::string & aRowLabel, int aCol ) const
 }
 
 
-int CKTable::getIntValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+int CKTable::getIntValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getIntValue(const std::string &, const std::string &) "
+		msg << "CKTable::getIntValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1262,7 +1262,7 @@ int CKTable::getIntValue( const std::string & aRowLabel, const std::string & aCo
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getIntValue(const std::string &, const std::string &) "
+		msg << "CKTable::getIntValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1312,13 +1312,13 @@ double CKTable::getDoubleValue( int aRow, int aCol ) const
 }
 
 
-double CKTable::getDoubleValue( int aRow, const std::string & aColHeader ) const
+double CKTable::getDoubleValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDoubleValue(int, const std::string &) "
+		msg << "CKTable::getDoubleValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1329,13 +1329,13 @@ double CKTable::getDoubleValue( int aRow, const std::string & aColHeader ) const
 }
 
 
-double CKTable::getDoubleValue( const std::string & aRowLabel, int aCol ) const
+double CKTable::getDoubleValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDoubleValue(const std::string &, int) "
+		msg << "CKTable::getDoubleValue(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1346,13 +1346,13 @@ double CKTable::getDoubleValue( const std::string & aRowLabel, int aCol ) const
 }
 
 
-double CKTable::getDoubleValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+double CKTable::getDoubleValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDoubleValue(const std::string &, const std::string &) "
+		msg << "CKTable::getDoubleValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1362,7 +1362,7 @@ double CKTable::getDoubleValue( const std::string & aRowLabel, const std::string
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDoubleValue(const std::string &, const std::string &) "
+		msg << "CKTable::getDoubleValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1413,13 +1413,13 @@ long CKTable::getDateValue( int aRow, int aCol ) const
 }
 
 
-long CKTable::getDateValue( int aRow, const std::string & aColHeader ) const
+long CKTable::getDateValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDateValue(int, const std::string &) "
+		msg << "CKTable::getDateValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1430,13 +1430,13 @@ long CKTable::getDateValue( int aRow, const std::string & aColHeader ) const
 }
 
 
-long CKTable::getDateValue( const std::string & aRowLabel, int aCol ) const
+long CKTable::getDateValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDateValue(const std::string &, int) "
+		msg << "CKTable::getDateValue(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1447,13 +1447,13 @@ long CKTable::getDateValue( const std::string & aRowLabel, int aCol ) const
 }
 
 
-long CKTable::getDateValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+long CKTable::getDateValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDateValue(const std::string &, const std::string &) "
+		msg << "CKTable::getDateValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1463,7 +1463,7 @@ long CKTable::getDateValue( const std::string & aRowLabel, const std::string & a
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getDateValue(const std::string &, const std::string &) "
+		msg << "CKTable::getDateValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1513,13 +1513,13 @@ const char *CKTable::getStringValue( int aRow, int aCol ) const
 }
 
 
-const char *CKTable::getStringValue( int aRow, const std::string & aColHeader ) const
+const char *CKTable::getStringValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getStringValue(int, const std::string &) "
+		msg << "CKTable::getStringValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1530,13 +1530,13 @@ const char *CKTable::getStringValue( int aRow, const std::string & aColHeader ) 
 }
 
 
-const char *CKTable::getStringValue( const std::string & aRowLabel, int aCol ) const
+const char *CKTable::getStringValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getStringValue(const std::string &, int) "
+		msg << "CKTable::getStringValue(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1547,13 +1547,13 @@ const char *CKTable::getStringValue( const std::string & aRowLabel, int aCol ) c
 }
 
 
-const char *CKTable::getStringValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+const char *CKTable::getStringValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getStringValue(const std::string &, const std::string &) "
+		msg << "CKTable::getStringValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1563,7 +1563,7 @@ const char *CKTable::getStringValue( const std::string & aRowLabel, const std::s
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getStringValue(const std::string &, const std::string &) "
+		msg << "CKTable::getStringValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1612,13 +1612,13 @@ const CKTable *CKTable::getTableValue( int aRow, int aCol ) const
 }
 
 
-const CKTable *CKTable::getTableValue( int aRow, const std::string & aColHeader ) const
+const CKTable *CKTable::getTableValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTableValue(int, const std::string &) "
+		msg << "CKTable::getTableValue(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1629,13 +1629,13 @@ const CKTable *CKTable::getTableValue( int aRow, const std::string & aColHeader 
 }
 
 
-const CKTable *CKTable::getTableValue( const std::string & aRowLabel, int aCol ) const
+const CKTable *CKTable::getTableValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTableValue(const std::string &, int) "
+		msg << "CKTable::getTableValue(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1646,13 +1646,13 @@ const CKTable *CKTable::getTableValue( const std::string & aRowLabel, int aCol )
 }
 
 
-const CKTable *CKTable::getTableValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+const CKTable *CKTable::getTableValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTableValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTableValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1662,7 +1662,7 @@ const CKTable *CKTable::getTableValue( const std::string & aRowLabel, const std:
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTableValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTableValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1711,13 +1711,13 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, int aCol ) const
 }
 
 
-const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, const std::string & aColHeader ) const
+const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTimeSeriesValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1728,13 +1728,13 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( int aRow, const std::string & a
 }
 
 
-const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, int aCol ) const
+const CKTimeSeries *CKTable::getTimeSeriesValue( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTimeSeriesValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1745,13 +1745,13 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, 
 }
 
 
-const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, const std::string & aColHeader ) const
+const CKTimeSeries *CKTable::getTimeSeriesValue( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTimeSeriesValue(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1761,7 +1761,7 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, 
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getTimeSeriesValue(const std::string &, const std::string &) "
+		msg << "CKTable::getTimeSeriesValue(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1773,13 +1773,13 @@ const CKTimeSeries *CKTable::getTimeSeriesValue( const std::string & aRowLabel, 
 
 
 /*
- * This method returns the actual std::string value that is the
+ * This method returns the actual CKString value that is the
  * column header for the provided column number assuming that it
  * actually exists in the table. As such, if the user wants this
  * value outside the scope fo this class they need to make a copy
  * of it.
  */
-const std::string & CKTable::getColumnHeader( int aCol ) const
+const CKString & CKTable::getColumnHeader( int aCol ) const
 {
 	// first, make sure we have a place to put this data
 	if ((aCol < 0) || (aCol >= mNumColumns)) {
@@ -1796,13 +1796,13 @@ const std::string & CKTable::getColumnHeader( int aCol ) const
 
 
 /*
- * This method returns the actual std::string value that is the
+ * This method returns the actual CKString value that is the
  * row label for the provided row number assuming that it
  * actually exists in the table. As such, if the user wants this
  * value outside the scope fo this class they need to make a copy
  * of it.
  */
-const std::string & CKTable::getRowLabel( int aRow ) const
+const CKString & CKTable::getRowLabel( int aRow ) const
 {
 	// first, make sure we have a place to put this data
 	if ((aRow < 0) || (aRow >= mNumRows)) {
@@ -1849,7 +1849,7 @@ int CKTable::getNumColumns() const
  * If this header is not a valid column header for this table, then
  * this method will return a -1, please check for it.
  */
-int CKTable::getColumnForHeader( const std::string & aHeader ) const
+int CKTable::getColumnForHeader( const CKString & aHeader ) const
 {
 	int		retval = -1;
 
@@ -1870,7 +1870,7 @@ int CKTable::getColumnForHeader( const std::string & aHeader ) const
  * If this label is not a valid row label for this table, then
  * this method will return a -1, please check for it.
  */
-int CKTable::getRowForLabel( const std::string & aLabel ) const
+int CKTable::getRowForLabel( const CKString & aLabel ) const
 {
 	int		retval = -1;
 
@@ -1931,13 +1931,13 @@ std::vector<CKVariant> CKTable::getRow( int aRow ) const
  * of data for processing. The management of the returned value
  * is up to the caller.
  */
-std::vector<CKVariant> CKTable::getRow( const std::string & aRowLabel ) const
+std::vector<CKVariant> CKTable::getRow( const CKString & aRowLabel ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getRow(const std::string &) - there is no currently "
+		msg << "CKTable::getRow(const CKString &) - there is no currently "
 			"defined row label '" << aRowLabel << "' please make sure the row "
 			"labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -1993,13 +1993,13 @@ std::vector<CKVariant> CKTable::getColumn( int aCol ) const
  * vector of data for processing. The management of the returned
  * value is up to the caller.
  */
-std::vector<CKVariant> CKTable::getColumn( const std::string & aColumnHeader ) const
+std::vector<CKVariant> CKTable::getColumn( const CKString & aColumnHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColumnHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getCol(const std::string &) - there is no currently "
+		msg << "CKTable::getCol(const CKString &) - there is no currently "
 			"defined column header '" << aColumnHeader << "' please make sure "
 			"the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2046,11 +2046,11 @@ bool CKTable::merge( const CKTable & aTable )
 	 * column headers.
 	 */
 	// do the new columns first...
-	std::vector<std::string>	newColumnHeaders;
+	std::vector<CKString>	newColumnHeaders;
 	if (!error) {
 		int		cnt = aTable.mNumColumns;
 		for (int i = 0; i < cnt; i++) {
-			std::string		label = aTable.mColumnHeaders[i];
+			CKString		label = aTable.mColumnHeaders[i];
 			if (label == "") {
 				endingCols++;
 			} else if (getColumnForHeader(label) == -1) {
@@ -2060,11 +2060,11 @@ bool CKTable::merge( const CKTable & aTable )
 		}
 	}
 	// now do the new rows...
-	std::vector<std::string>	newRowLabels;
+	std::vector<CKString>	newRowLabels;
 	if (!error) {
 		int		cnt = aTable.mNumRows;
 		for (int i = 0; i < cnt; i++) {
-			std::string		label = aTable.mRowLabels[i];
+			CKString		label = aTable.mRowLabels[i];
 			if (label == "") {
 				endingRows++;
 			} else if (getRowForLabel(label) == -1) {
@@ -2122,7 +2122,7 @@ bool CKTable::merge( const CKTable & aTable )
 
 		// map all the rows from the source to the new table
 		for (int row = 0; row < aTable.mNumRows; row++) {
-			std::string		label = aTable.mRowLabels[row];
+			CKString		label = aTable.mRowLabels[row];
 			if (label == "") {
 				targetRow.push_back(blankRow++);
 			} else {
@@ -2131,7 +2131,7 @@ bool CKTable::merge( const CKTable & aTable )
 		}
 		// now do the same for all the columns in the source
 		for (int col = 0; col < aTable.mNumColumns; col++) {
-			std::string		label = aTable.mColumnHeaders[col];
+			CKString		label = aTable.mColumnHeaders[col];
 			if (label == "") {
 				targetCol.push_back(blankCol++);
 			} else {
@@ -2189,13 +2189,13 @@ char *CKTable::getValueAsString( int aRow, int aCol ) const
 }
 
 
-char *CKTable::getValueAsString( int aRow, const std::string & aColHeader ) const
+char *CKTable::getValueAsString( int aRow, const CKString & aColHeader ) const
 {
 	// convert the column header to a column index
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValueAsString(int, const std::string &) "
+		msg << "CKTable::getValueAsString(int, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2206,13 +2206,13 @@ char *CKTable::getValueAsString( int aRow, const std::string & aColHeader ) cons
 }
 
 
-char *CKTable::getValueAsString( const std::string & aRowLabel, int aCol ) const
+char *CKTable::getValueAsString( const CKString & aRowLabel, int aCol ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValueAsString(const std::string &, int) "
+		msg << "CKTable::getValueAsString(const CKString &, int) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2223,13 +2223,13 @@ char *CKTable::getValueAsString( const std::string & aRowLabel, int aCol ) const
 }
 
 
-char *CKTable::getValueAsString( const std::string & aRowLabel, const std::string & aColHeader ) const
+char *CKTable::getValueAsString( const CKString & aRowLabel, const CKString & aColHeader ) const
 {
 	// convert the row label to a row index
 	int		row = getRowForLabel(aRowLabel);
 	if (row < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValueAsString(const std::string &, const std::string &) "
+		msg << "CKTable::getValueAsString(const CKString &, const CKString &) "
 			"- there is no currently defined row label '" << aRowLabel <<
 			"' please make sure the row labels are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2239,7 +2239,7 @@ char *CKTable::getValueAsString( const std::string & aRowLabel, const std::strin
 	int		col = getColumnForHeader(aColHeader);
 	if (col < 0) {
 		std::ostringstream	msg;
-		msg << "CKTable::getValueAsString(const std::string &, const std::string &) "
+		msg << "CKTable::getValueAsString(const CKString &, const CKString &) "
 			"- there is no currently defined column header '" << aColHeader <<
 			"' please make sure the column headers are properly defined.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2482,10 +2482,10 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the column headers.
 	 */
-	std::string		*headers = new std::string[aNumColumns];
+	CKString		*headers = new CKString[aNumColumns];
 	if (headers == NULL) {
 		std::ostringstream	msg;
 		msg << "CKTable::resizeTable(int, int) - the array of " <<
@@ -2499,10 +2499,10 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the row labels.
 	 */
-	std::string		*labels = new std::string[aNumRows];
+	CKString		*labels = new CKString[aNumRows];
 	if (labels == NULL) {
 		std::ostringstream	msg;
 		msg << "CKTable::resizeTable(int, int) - the array of " <<
@@ -2626,18 +2626,19 @@ bool CKTable::operator!=( const CKTable & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKTable::toString() const
+CKString CKTable::toString() const
 {
-	std::string		retval = "";
+	CKString		retval = "";
 
 	// make sure we have something to show...
 	if ((mNumRows > 0) && (mNumColumns > 0) && (mTable != NULL)) {
 		// first, put out the column headers
 		retval += "\t";
 		for (int j = 0; j < mNumColumns; j++) {
-			retval += (j == 0 ? "" : "\t") + mColumnHeaders[j];
+			retval += (j == 0 ? "" : "\t");
+			retval += mColumnHeaders[j];
 		}
 		retval += "\n";
 
@@ -2682,18 +2683,18 @@ void CKTable::setTable( CKVariant *aTable )
 
 
 /*
- * This method sets an array of std::string values to be the column
+ * This method sets an array of CKString values to be the column
  * headers for the current table. It's important to note that there
  * needs to be getNumColumns() of them and it won't be checked, so...
  * this class will take care of making sure they are there, and it's
  * probably best to let this class to this.
  */
-void CKTable::setColumnHeaders( const std::vector<std::string> & aList )
+void CKTable::setColumnHeaders( const std::vector<CKString> & aList )
 {
 	// first, check to see that we have something to do
 	if ((int)aList.size() != mNumColumns) {
 		std::ostringstream	msg;
-		msg << "CKTable::setColumnHeaders(const std::vector<std::string> &) - "
+		msg << "CKTable::setColumnHeaders(const std::vector<CKString> &) - "
 			"the passed-in vector of strings did not contain " << mNumColumns <<
 			" elements which is the number of headers in this table. Please make "
 			"sure the data matches before setting.";
@@ -2708,18 +2709,18 @@ void CKTable::setColumnHeaders( const std::vector<std::string> & aList )
 
 
 /*
- * This method sets an array of std::string values to be the row
+ * This method sets an array of CKString values to be the row
  * labels for the current table. It's important to note that there
  * needs to be getNumRows() of them and it won't be checked, so...
  * this class will take care of making sure they are there, and it's
  * probably best to let this class to this.
  */
-void CKTable::setRowLabels( const std::vector<std::string> & aList )
+void CKTable::setRowLabels( const std::vector<CKString> & aList )
 {
 	// first, check to see that we have something to do
 	if ((int)aList.size() != mNumRows) {
 		std::ostringstream	msg;
-		msg << "CKTable::setRowLabels(const std::vector<std::string> &) - "
+		msg << "CKTable::setRowLabels(const std::vector<CKString> &) - "
 			"the passed-in vector of strings did not contain " << mNumRows <<
 			" elements which is the number of labels in this table. Please make "
 			"sure the data matches before setting.";
@@ -2774,26 +2775,26 @@ CKVariant *CKTable::getTable() const
 
 
 /*
- * This method returns the actual array of std::string values that
+ * This method returns the actual array of CKString values that
  * are the column headers for this table. The number of elements
  * in the array is given my getNumColumns() and if the user wants
  * to have this list outside the scopr of this class they need to
  * make a copy of it and that includes all the strings in it.
  */
-const std::string *CKTable::getColumnHeaders() const
+const CKString *CKTable::getColumnHeaders() const
 {
 	return mColumnHeaders;
 }
 
 
 /*
- * This method returns the actual array of std::string values that
+ * This method returns the actual array of CKString values that
  * are the row labels for this table. The number of elements
  * in the array is given my getNumRows() and if the user wants
  * to have this list outside the scopr of this class they need to
  * make a copy of it and that includes all the strings in it.
  */
-const std::string *CKTable::getRowLabels() const
+const CKString *CKTable::getRowLabels() const
 {
 	return mRowLabels;
 }
@@ -3168,38 +3169,29 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the column headers.
 	 */
-	std::string		blank = "";
-	mColumnHeaders = new std::string[mNumColumns];
+	mColumnHeaders = new CKString[mNumColumns];
 	if (mColumnHeaders == NULL) {
 		std::ostringstream	msg;
 		msg << "CKTable::createTable(int, int) - the array of " <<
 			mNumColumns << " column headers could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		for (int i = 0; i < mNumColumns; i++) {
-			mColumnHeaders[i] = blank;
-		}
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the row labels.
 	 */
-	mRowLabels = new std::string[mNumRows];
+	mRowLabels = new CKString[mNumRows];
 	if (mRowLabels == NULL) {
 		std::ostringstream	msg;
 		msg << "CKTable::createTable(int, int) - the array of " <<
 			mNumRows << " row labels could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		for (int i = 0; i < mNumRows; i++) {
-			mRowLabels[i] = blank;
-		}
 	}
 }
 
@@ -3212,14 +3204,14 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
  * if the number of row labels or column headers make no sense, or
  * if there's an error in the allocation of the storage.
  */
-void CKTable::createTable( const std::vector<std::string> & aRowLabels,
-						   const std::vector<std::string> & aColHeaders )
+void CKTable::createTable( const std::vector<CKString> & aRowLabels,
+						   const std::vector<CKString> & aColHeaders )
 {
 	// first, see if we have anything to do - really
 	if (aRowLabels.empty() || aColHeaders.empty()) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<std::string> &, "
-			"const std::vector<std::string> &) - the requested table "
+		msg << "CKTable::createTable(const std::vector<CKString> &, "
+			"const std::vector<CKString> &) - the requested table "
 			"size makes no sense. Please send non-empty lists.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	}
@@ -3240,8 +3232,8 @@ void CKTable::createTable( const std::vector<std::string> & aRowLabels,
 		dropTable();
 		// ...and then throw the exception
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<std::string> &, "
-			"const std::vector<std::string> &) - the array of " <<
+		msg << "CKTable::createTable(const std::vector<CKString> &, "
+			"const std::vector<CKString> &) - the array of " <<
 			mNumRows << "x" << mNumColumns << " (" << mNumRows*mNumColumns <<
 			" elements) values could not be created for this table. "
 			"This is a serious allocation problem.";
@@ -3249,14 +3241,14 @@ void CKTable::createTable( const std::vector<std::string> & aRowLabels,
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the column headers.
 	 */
-	mColumnHeaders = new std::string[mNumColumns];
+	mColumnHeaders = new CKString[mNumColumns];
 	if (mColumnHeaders == NULL) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<std::string> &, "
-			"const std::vector<std::string> &) - the array of " <<
+		msg << "CKTable::createTable(const std::vector<CKString> &, "
+			"const std::vector<CKString> &) - the array of " <<
 			mNumColumns << " column headers could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -3267,14 +3259,14 @@ void CKTable::createTable( const std::vector<std::string> & aRowLabels,
 	}
 
 	/*
-	 * If we're still here then we need to create the array of std::string
+	 * If we're still here then we need to create the array of CKString
 	 * values that will be the row labels.
 	 */
-	mRowLabels = new std::string[mNumRows];
+	mRowLabels = new CKString[mNumRows];
 	if (mRowLabels == NULL) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<std::string> &, "
-			"const std::vector<std::string> &) - the array of " <<
+		msg << "CKTable::createTable(const std::vector<CKString> &, "
+			"const std::vector<CKString> &) - the array of " <<
 			mNumRows << " row labels could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());

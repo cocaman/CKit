@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.10 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.11 2004/09/16 09:34:16 drbob Exp $
  */
 
 //	System Headers
@@ -231,7 +231,7 @@ int CKIRCProtocolListener::process()
 	}
 
 	// next, let's see if we have a line from the IRC Server to process
-	std::string		line("");
+	CKString		line("");
 	bool			processed = false;
 	if (!error && !timeToDie()) {
 		try {
@@ -264,13 +264,13 @@ int CKIRCProtocolListener::process()
 		char	tag[128];
 		bzero(tag, 128);
 		snprintf(tag, 127, "PRIVMSG %s :", mProtocol->getNickname().c_str());
-		unsigned int	pos = line.find(tag);
+		int		pos = line.find(tag);
 
-		if ((line[0] == ':') && (pos != std::string::npos)) {
+		if ((line[0] == ':') && (pos != -1)) {
 			// build up the message packet for tossing around
 			CKIRCIncomingMessage	msg;
-			unsigned int	bang = line.find('!');
-			if (bang == std::string::npos) {
+			int		bang = line.find('!');
+			if (bang == -1) {
 				std::cerr << "CKIRCProtocolListener::process() - the incoming chat "
 					"message seemed to be to me, but the format was wrong: '" <<
 					line << "' so we're ignoring this message." << std::endl;
@@ -339,18 +339,23 @@ bool CKIRCProtocolListener::operator!=( const CKIRCProtocolListener & anOther ) 
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKIRCProtocolListener::toString() const
+CKString CKIRCProtocolListener::toString() const
 {
 	std::ostringstream	buff;
 
-	buff << "< IRCProtocol=" << mProtocol->toString() << ", " <<
-		" Running? " << (mIsRunning ? "Yes" : "No") << ", " <<
-		" TimeToDie? " << (mTimeToDie ? "Yes" : "No") <<
-		">" << std::endl;
+	CKString		retval = "< IRCProtocol=";
+	retval += mProtocol->toString();
+	retval += ", ";
+	retval += " Running? ";
+	retval += (mIsRunning ? "Yes" : "No");
+	retval += ", ";
+	retval += " TimeToDie? ";
+	retval += (mTimeToDie ? "Yes" : "No");
+	retval += ">\n";
 
-	return buff.str();
+	return retval;
 }
 
 

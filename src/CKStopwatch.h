@@ -10,13 +10,12 @@
  *                 This means that the list of split times it a "scan once"
  *                 scheme, but that's not a real limitation for this guy.
  * 
- * $Id: CKStopwatch.h,v 1.4 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKStopwatch.h,v 1.5 2004/09/16 09:34:19 drbob Exp $
  */
 #ifndef __CKSTOPWATCH_H
 #define __CKSTOPWATCH_H
 
 //	System Headers
-#include <string>
 #include <list>
 #ifdef GPP2
 #include <ostream.h>
@@ -29,6 +28,7 @@
 //	Third-Party Headers
 
 //	Other Headers
+#include "CKString.h"
 
 //	Forward Declarations
 /*
@@ -137,7 +137,7 @@ class CKStopwatch
 		 * user time, the second is the system time (both in seconds) and
 		 * the last is the real time in minutes and seconds.
 		 */
-		std::string getFormattedTime() const;
+		CKString getFormattedTime() const;
 
 		/*
 		 * This method is used to remove the top time on the timer - if,
@@ -198,9 +198,9 @@ class CKStopwatch
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*

@@ -1,7 +1,7 @@
 /*
  * CKDataNode.h - this file defines a class that can be used to represent a
  *                general tree of data where each node contains a map of
- *                key/value pairs where the key is a std::string (name) and
+ *                key/value pairs where the key is a CKString (name) and
  *                the value is a CKVariant that can hold almost anything
  *                you need to hold. In addition to the data, this node has
  *                a list of children nodes (pointers to CKDataNodes) and a
@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.9 2004/09/11 21:07:43 drbob Exp $
+ * $Id: CKDataNode.h,v 1.10 2004/09/16 09:34:13 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -32,6 +32,7 @@
 
 //	Other Headers
 #include "CKVariant.h"
+#include "CKString.h"
 #include "CKFWMutex.h"
 
 //	Forward Declarations
@@ -72,7 +73,7 @@ class CKDataNode
 		 * populated later. The parent node is not controlled by the
 		 * instance because no parent nodes are controlled by the nodes.
 		 */
-		CKDataNode( CKDataNode *aParent, const std::string & aName );
+		CKDataNode( CKDataNode *aParent, const CKString & aName );
 		/*
 		 * This constructor creates a node with the given parent node
 		 * reference as well as the provided identifying name and also
@@ -82,8 +83,8 @@ class CKDataNode
 		 * and the value could be a variant time-series of the price
 		 * data. This would make creating a tree of nodes very easy.
 		 */
-		CKDataNode( CKDataNode *aParent, const std::string & aName,
-					const std::string & aKey, const CKVariant & aValue );
+		CKDataNode( CKDataNode *aParent, const CKString & aName,
+					const CKString & aKey, const CKVariant & aValue );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -131,7 +132,7 @@ class CKDataNode
 		 * is useful because most data sets (trees) have an identifying
 		 * name for each data point.
 		 */
-		void setName( const std::string & aName );
+		void setName( const CKString & aName );
 
 		/*
 		 * This method returns the pointer that is the actual reference
@@ -145,28 +146,28 @@ class CKDataNode
 		 * data structures it makes sense to name the nodes and this is
 		 * the way to see what this node's name is.
 		 */
-		std::string getName() const;
+		CKString getName() const;
 
 		/*
 		 * Each node can have many variables (attributes) stored in a map
-		 * as a std::string name and CKVariant value. This method returns a
+		 * as a CKString name and CKVariant value. This method returns a
 		 * pointer to the actual named value so if you want to do something
 		 * with it, make a copy. If there is no variable with this name the
 		 * method will return a NULL.
 		 */
-		CKVariant *getVar( const std::string & aName );
+		CKVariant *getVar( const CKString & aName );
 		/*
 		 * Each node can have many variables (attributes) stored in a map
-		 * as a std::string name and CKVariant value. This method places a
+		 * as a CKString name and CKVariant value. This method places a
 		 * value into that map for this instance at the name provided.
 		 */
-		void putVar( const std::string & aName, const CKVariant & aValue );
+		void putVar( const CKString & aName, const CKVariant & aValue );
 		/*
 		 * Since each node can hold many variables (attributes), it's
 		 * sometimes necessary to clean out the old ones. This method
 		 * removes the named variable from this node if it exists.
 		 */
-		void removeVar( const std::string & aName );
+		void removeVar( const CKString & aName );
 		/*
 		 * When you want to clear out all the variables (attributes) from
 		 * this node, call this method and the entire map of variables will
@@ -205,7 +206,7 @@ class CKDataNode
 		 * iterate over the children assuming they all have distinct names
 		 * as would be the case in most data sets.
 		 */
-		std::vector<std::string> getChildNames();
+		std::vector<CKString> getChildNames();
 		/*
 		 * This method returns the pointer to the actual node that is
 		 * both a child of this node and has the identifying name that
@@ -213,7 +214,7 @@ class CKDataNode
 		 * pointer, so if you want to do anything with it, you need to
 		 * make a copy.
 		 */
-		CKDataNode *findChild( const std::string & aName );
+		CKDataNode *findChild( const CKString & aName );
 		/*
 		 * This method returns the number of child nodes this node has. This
 		 * is useful for a lot of things, and among them is the core of the
@@ -254,7 +255,7 @@ class CKDataNode
 		 * part of. So, even if this node is *not* in the path, the value
 		 * will be returned if it's in the tree.
 		 */
-		CKVariant *getVarAtPath( const std::string & aPath );
+		CKVariant *getVarAtPath( const CKString & aPath );
 		/*
 		 * This method takes a vector of strings as the path as opposed
 		 * to a single string delimited with '/'. This makes it a little
@@ -262,7 +263,7 @@ class CKDataNode
 		 * you don't really want to make a single string just to store
 		 * the value.
 		 */
-		CKVariant *getVarAtPath( const std::vector<std::string> & aSteps );
+		CKVariant *getVarAtPath( const std::vector<CKString> & aSteps );
 
 		/*
 		 * This method is part of the "pathing" capabilities of this class
@@ -292,7 +293,7 @@ class CKDataNode
 		 * any value in any node in that same tree without having to assume
 		 * a currently defined structure.
 		 */
-		void putVarAtPath( const std::string & aPath, const CKVariant & aValue );
+		void putVarAtPath( const CKString & aPath, const CKVariant & aValue );
 		/*
 		 * This version of the method takes a vector of strings that is
 		 * the path as opposed to a single string delimited by the '/'.
@@ -300,7 +301,7 @@ class CKDataNode
 		 * like a vector and you don't want to put it all together only
 		 * to have this method break it up.
 		 */
-		void putVarAtPath( const std::vector<std::string> & aSteps,
+		void putVarAtPath( const std::vector<CKString> & aSteps,
 						   const CKVariant & aValue );
 
 		/*
@@ -309,13 +310,13 @@ class CKDataNode
 		 * 'up' the tree to the root, building accumulating the steps
 		 * along the way.
 		 */
-		std::vector<std::string> getSteps() const;
+		std::vector<CKString> getSteps() const;
 		/*
 		 * This method returns a string path to the current node in a
 		 * very similar way to the getSteps() method. The path lets the
 		 * caller know where in this tree this particular node lies.
 		 */
-		std::string getPath() const;
+		CKString getPath() const;
 
 		/*
 		 * This method is very nice in that it takes a single string that
@@ -325,14 +326,14 @@ class CKDataNode
 		 * path escaped by double-quotes will be kept intact. This is the
 		 * way for a component of the path to include a '/' character.
 		 */
-		static std::vector<std::string> pathToSteps( const std::string & aPath );
+		static std::vector<CKString> pathToSteps( const CKString & aPath );
 		/*
 		 * This method is useful in that it takes a vector of path steps,
 		 * or components, and then assembles them into a single string
 		 * that is properly escaped for the presence of '/' characters in
 		 * any one of the steps.
 		 */
-		static std::string stepsToPath( const std::vector<std::string> & aPath );
+		static CKString stepsToPath( const std::vector<CKString> & aPath );
 
 		/*
 		 * There are times that we want to know the identifying names of
@@ -342,7 +343,7 @@ class CKDataNode
 		 * method does a great job of getting a unique vector of names
 		 * of all the leaf nodes under it, and all it's children.
 		 */
-		std::vector<std::string>	getUniqueLeafNodeNames();
+		std::vector<CKString>	getUniqueLeafNodeNames();
 		/*
 		 * This method is interesting in that it will return the list of
 		 * unique leaf node names that are *missing* the provided variable
@@ -350,8 +351,8 @@ class CKDataNode
 		 * it allows us to ask the question: Who needs 'price'? and have
 		 * a list of node names that is returned.
 		 */
-		std::vector<std::string>	getUniqueLeafNodeNamesWithoutVar(
-											const std::string & aVarName );
+		std::vector<CKString>	getUniqueLeafNodeNamesWithoutVar(
+											const CKString & aVarName );
 		/*
 		 * This method is interesting in that it will return the list of
 		 * unique leaf node names that contain the provided variable
@@ -359,8 +360,8 @@ class CKDataNode
 		 * it allows us to ask the question: Who has 'price'? and have
 		 * a list of node names that is returned.
 		 */
-		std::vector<std::string>	getUniqueLeafNodeNamesWithVar(
-											const std::string & aVarName );
+		std::vector<CKString>	getUniqueLeafNodeNamesWithVar(
+											const CKString & aVarName );
 
 		/*
 		 * This method will return the number of steps that need to be
@@ -447,14 +448,14 @@ class CKDataNode
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 *
 		 * If the default 'false' is used then the only information that's
 		 * returned is with regards to the node itself and not a complete
 		 * dump of the tree rooted at this node. Pass in a 'true' if you
 		 * want to see the entire tree at this node.
 		 */
-		virtual std::string toString( bool aDeepFlag = false ) const;
+		virtual CKString toString( bool aDeepFlag = false ) const;
 
 	protected:
 		/*
@@ -470,7 +471,7 @@ class CKDataNode
 		 * something with the variables that I didn't originally think
 		 * of.
 		 */
-		std::map<std::string, CKVariant> *getVars();
+		std::map<CKString, CKVariant> *getVars();
 
 		/*
 		 * This method returns the actual pointer to the mutex that is
@@ -496,8 +497,8 @@ class CKDataNode
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		static std::vector<std::string> parseIntoChunks( const std::string & aString,
-														 const std::string & aDelim );
+		static std::vector<CKString> parseIntoChunks( const CKString & aString,
+													  const CKString & aDelim );
 
 	private:
 		/*
@@ -514,14 +515,14 @@ class CKDataNode
 		 * done, but it's a nice touch that will make using the class a
 		 * little bit nicer.
 		 */
-		std::string							mName;
+		CKString							mName;
 		/*
 		 * This is the STL map that holds the variables for the node
-		 * each is identified by a std::string and holds a CKVariant
+		 * each is identified by a CKString and holds a CKVariant
 		 * so that it can actually hold almost any data you can think
 		 * of. It's very slick. :)
 		 */
-		std::map<std::string, CKVariant>	mVars;
+		std::map<CKString, CKVariant>		mVars;
 		/*
 		 * This list holds all the children of this node and there will
 		 * be plenty of helper methods to make it easy to get nodes in

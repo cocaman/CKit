@@ -6,7 +6,7 @@
  *                      user really only needs to subclass off this class and
  *                      then write that one method.
  *
- * $Id: CKIRCResponder.cpp,v 1.5 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCResponder.cpp,v 1.6 2004/09/16 09:34:16 drbob Exp $
  */
 
 //	System Headers
@@ -134,11 +134,11 @@ bool CKIRCResponder::operator!=( const CKIRCResponder & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKIRCResponder::toString() const
+CKString CKIRCResponder::toString() const
 {
-	return std::string("<there's nothing for this class to present>");
+	return CKString("<there's nothing for this class to present>");
 }
 
 

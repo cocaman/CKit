@@ -5,7 +5,7 @@
  *              order to be more generally useful, we need more advanced
  *              features and more object-oriented behaviors.
  *
- * $Id: CKSocket.h,v 1.7 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKSocket.h,v 1.8 2004/09/16 09:34:18 drbob Exp $
  */
 #ifndef __CKSOCKET_H
 #define __CKSOCKET_H
@@ -32,10 +32,10 @@
 #include <arpa/inet.h>
 #endif
 
-
 //	Third-Party Headers
 
 //	Other Headers
+#include <CKString.h>
 
 //	Forward Declarations
 
@@ -143,7 +143,7 @@ class CKSocket
 		 * to establish that connection so that it's ready to send or
 		 * receive data after a successful return.
 		 */
-		CKSocket( const std::string & aHost, int aPort );
+		CKSocket( const CKString & aHost, int aPort );
 		/*
 		 * This form of the constructor is the most detailed in that it
 		 * allows the user to specify not only the hostname and port
@@ -151,7 +151,7 @@ class CKSocket
 		 * be using. This is important in certain specific applications,
 		 * but for the most part, isn't required for general communications.
 		 */
-		CKSocket( const std::string & aHost, int aPort, int aService, int aProtocol );
+		CKSocket( const CKString & aHost, int aPort, int aService, int aProtocol );
 		/*
 		 * This form of the constructor sets up the CKSocket into a state
 		 * that it is ready to receive connections from other hosts. In
@@ -199,7 +199,7 @@ class CKSocket
 		 * hostname, and those will call this method to set the host
 		 * after the connection is made.
 		 */
-		void setHostname( const std::string & aHostname );
+		void setHostname( const CKString & aHostname );
 		/*
 		 * This method sets the port number that this socket will try to
 		 * connect to the next time the connect() method is called. Of
@@ -246,7 +246,7 @@ class CKSocket
 		 * class - call this after a connection and it's the active
 		 * hostname.
 		 */
-		const std::string getHostname() const;
+		const CKString getHostname() const;
 		/*
 		 * This method returns the port number that the next connection will
 		 * be made on, or the currently established connection. The difference
@@ -316,8 +316,8 @@ class CKSocket
 		 * but sets everything after the establishment of the connection.
 		 */
 		bool connect();
-		bool connect( const std::string & aHost, int aPort );
-		bool connect( const std::string & aHost, int aPort, int aService, int aProtocol );
+		bool connect( const CKString & aHost, int aPort );
+		bool connect( const CKString & aHost, int aPort, int aService, int aProtocol );
 		/*
 		 * This is a convenience method that allows the user to easily
 		 * determine whether or not the socket is set up as a connector
@@ -450,6 +450,7 @@ class CKSocket
 		bool send( const char *aBuffer );
 		bool send( const char *aBuffer, int aLength );
 		bool send( const std::string & aString );
+		bool send( const CKString & aString );
 		/*
 		 * When data needs to be read in from the socket, this is the
 		 * method to call. It does not wait for data at the socket, but
@@ -457,7 +458,7 @@ class CKSocket
 		 * allows the user to determine how to handle the error without
 		 * creating a blocking condition.
 		 */
-		std::string readAvailableData();
+		CKString readAvailableData();
 		/*
 		 * This method waits for any data to be present at the socket
 		 * before returning. If a timeout is specified, then this method
@@ -494,9 +495,9 @@ class CKSocket
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -567,7 +568,7 @@ class CKSocket
 		 * be changed in concert with the disconnection and connection
 		 * methods to point to a different machine.
 		 */
-		std::string			mHostname;
+		CKString			mHostname;
 		/*
 		 * This is the port number that this connection is going to be with
 		 * on the host 'mHostname'. This is also important as it's the other

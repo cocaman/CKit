@@ -7,13 +7,12 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.8 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.9 2004/09/16 09:34:21 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
 
 //	System Headers
-#include <string>
 #include <vector>
 #include <map>
 #ifdef GPP2
@@ -59,6 +58,7 @@
 
 //	Other Headers
 #include "CKFWMutex.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -437,9 +437,9 @@ class CKTimeSeries
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*

@@ -12,7 +12,7 @@
  *                        takes place during a connection. So, if you can, scan
  *                        the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.cpp,v 1.5 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKSMTPConnection.cpp,v 1.6 2004/09/16 09:34:17 drbob Exp $
  */
 
 //	System Headers
@@ -76,14 +76,14 @@ CKSMTPConnection::CKSMTPConnection() :
  * host name and tries to establish a successful connection to the
  * SMTP service on that host before returning to the caller.
  */
-CKSMTPConnection::CKSMTPConnection( const std::string & aHost ) :
+CKSMTPConnection::CKSMTPConnection( const CKString & aHost ) :
 	CKTCPConnection(),
 	mState(0)
 {
 	// let's try to make the connection based on this information
 	if (!connectToHost(aHost)) {
 		std::ostringstream	msg;
-		msg << "CKSMTPConnection::CKSMTPConnection(const std::string &) - the "
+		msg << "CKSMTPConnection::CKSMTPConnection(const CKString &) - the "
 			"SMTP connection to the host " << aHost << " could not be "
 			"established. This is a serious problem. Please make sure that the "
 			"remote service is ready to accept the connection.";
@@ -149,7 +149,7 @@ CKSMTPConnection & CKSMTPConnection::operator=( const CKSMTPConnection & anOther
  * host and exchanges the initial messages that are necessary
  * in order to get the communication underway properly.
  */
-bool CKSMTPConnection::connectToHost( const std::string & aHost )
+bool CKSMTPConnection::connectToHost( const CKString & aHost )
 {
 	bool		error = false;
 
@@ -158,7 +158,7 @@ bool CKSMTPConnection::connectToHost( const std::string & aHost )
 		if (isConnected()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::connectToHost(const std::string &) - "
+			msg << "CKSMTPConnection::connectToHost(const CKString &) - "
 				"there is already an established connection to the SMTP service "
 				"on the host: " << getHostname() << ". Please disconnect from "
 				"this host before making the new connection.";
@@ -171,7 +171,7 @@ bool CKSMTPConnection::connectToHost( const std::string & aHost )
 		if (!connect(aHost, DEFAULT_SMTP_PORT)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::connectToHost(const std::string &) - "
+			msg << "CKSMTPConnection::connectToHost(const CKString &) - "
 				"the connection to the SMPT service on the host " << aHost <<
 				" could not be established. This is a serious problem. Please "
 				"make sure that the remote service is ready to accept the "
@@ -185,7 +185,7 @@ bool CKSMTPConnection::connectToHost( const std::string & aHost )
 		if (getReply() > SMTP_MAX_OK_RETURN_CODE) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::connectToHost(const std::string &) - "
+			msg << "CKSMTPConnection::connectToHost(const CKString &) - "
 				"the 'hello' reply from the SMTP service on " << aHost <<
 				" returned the error: " << stringForLastSMTPReturnCode() <<
 				". Please check into this as soon as possible.";
@@ -198,7 +198,7 @@ bool CKSMTPConnection::connectToHost( const std::string & aHost )
 		if (hello() > SMTP_MAX_OK_RETURN_CODE) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::connectToHost(const std::string &) - "
+			msg << "CKSMTPConnection::connectToHost(const CKString &) - "
 				"the reply from my 'hello' to the SMTP service on " << aHost <<
 				" returned the error: " << stringForLastSMTPReturnCode() << ". "
 				"Please check into this as soon as possible.";
@@ -315,7 +315,7 @@ bool CKSMTPConnection::startMessageBody()
  * It simply calls the other SMTP methods, but makes
  * programming to the SMTP host "look" nicer.
  */
-bool CKSMTPConnection::addToMessageBody( const std::string & aString )
+bool CKSMTPConnection::addToMessageBody( const CKString & aString )
 {
 	return (send(aString) ? true : false);
 }
@@ -342,12 +342,12 @@ bool CKSMTPConnection::closeMessageBody()
  * while rcptTo() can be called any number of times, this
  * method can only be called once without error.
  */
-int CKSMTPConnection::mailFrom( const std::string & aFromAddress )
+int CKSMTPConnection::mailFrom( const CKString & aFromAddress )
 {
 	int		retval = -1;
 
 	// build up the command that needs to be sent
-	std::string		cmd = SMTP_MAIL_FROM;
+	CKString		cmd = SMTP_MAIL_FROM;
 	cmd += "<";
 	cmd += aFromAddress;
 	cmd += ">";
@@ -355,7 +355,7 @@ int CKSMTPConnection::mailFrom( const std::string & aFromAddress )
 	retval = sendCommand(cmd);
 	if (retval > SMTP_MAX_OK_RETURN_CODE) {
 		std::ostringstream	msg;
-		msg << "CKSMTPConnection::mailFrom(const std::string &) - the reply "
+		msg << "CKSMTPConnection::mailFrom(const CKString &) - the reply "
 			"from my 'mail from' message to the SMTP service on " << getHostname() <<
 			" returned the error: " << stringForLastSMTPReturnCode() <<
 			". Please check into this as soon as possible.";
@@ -372,12 +372,12 @@ int CKSMTPConnection::mailFrom( const std::string & aFromAddress )
  * any number of times, but must be done consecutively. This
  * is a limitation of the SMTP protocol.
  */
-int CKSMTPConnection::rcptTo( const std::string & aToAddress )
+int CKSMTPConnection::rcptTo( const CKString & aToAddress )
 {
 	int		retval = -1;
 
 	// build up the command that needs to be sent
-	std::string		cmd = SMTP_RCPT_TO;
+	CKString		cmd = SMTP_RCPT_TO;
 	cmd += "<";
 	cmd += aToAddress;
 	cmd += ">";
@@ -385,7 +385,7 @@ int CKSMTPConnection::rcptTo( const std::string & aToAddress )
 	retval = sendCommand(cmd);
 	if (retval > SMTP_MAX_OK_RETURN_CODE) {
 		std::ostringstream	msg;
-		msg << "CKSMTPConnection::rcptTo(const std::string &) - the reply "
+		msg << "CKSMTPConnection::rcptTo(const CKString &) - the reply "
 			"from my 'rcpt to' message to the SMTP service on " << getHostname() <<
 			" returned the error: " << stringForLastSMTPReturnCode() <<
 			". Please check into this as soon as possible.";
@@ -408,7 +408,7 @@ int CKSMTPConnection::rcptTo( const std::string & aToAddress )
  * called many times, this method can only be called once
  * without error.
  */
-bool CKSMTPConnection::senderAddress( const std::string & anAddress )
+bool CKSMTPConnection::senderAddress( const CKString & anAddress )
 {
 	return (mailFrom(anAddress) > SMTP_MAX_OK_RETURN_CODE ? false : true);
 }
@@ -420,7 +420,7 @@ bool CKSMTPConnection::senderAddress( const std::string & anAddress )
  * This can be called any number of times, but must be done
  * consecutively. This is a limitation of the SMTP protocol.
  */
-bool CKSMTPConnection::recipientAddress( const std::string & anAddress )
+bool CKSMTPConnection::recipientAddress( const CKString & anAddress )
 {
 	return (rcptTo(anAddress) > SMTP_MAX_OK_RETURN_CODE ? false : true);
 }
@@ -468,16 +468,18 @@ bool CKSMTPConnection::operator!=( const CKSMTPConnection & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKSMTPConnection::toString() const
+CKString CKSMTPConnection::toString() const
 {
-	std::ostringstream	buff;
+	CKString	retval = "< Socket=";
+	retval += CKTCPConnection::toString();
+	retval += ", ";
+	retval += " State=";
+	retval += getState();
+	retval += ">\n";
 
-	buff << "< Socket=" << CKTCPConnection::toString() << ", " <<
-		" State=" << getState() << ">" << std::endl;
-
-	return buff.str();
+	return retval;
 }
 
 
@@ -529,7 +531,7 @@ int CKSMTPConnection::hello()
 	// now, send it in the 'hello' message to the SMTP server
 	if (!error) {
 		// build up the message that needs to be sent
-		std::string		cmd = SMTP_HELLO;
+		CKString		cmd = SMTP_HELLO;
 		cmd += host;
 		// ...and then send it to the SMTP server
 		retval = sendCommand(cmd);
@@ -561,19 +563,19 @@ int CKSMTPConnection::hello()
  * CKException so that most reporting of errors can
  * happen at this level.
  */
-int CKSMTPConnection::sendCommand( const std::string & aCommand )
+int CKSMTPConnection::sendCommand( const CKString & aCommand )
 {
 	bool		error = false;
 	int			retval = -1;
 
 	// build up the command to send to the SMTP server
-	std::string cmd = aCommand;
+	CKString cmd = aCommand;
 	cmd += "\r\n";
 	if (!error) {
 		error = !send(cmd);
 		if (error) {
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::sendCommand(const std::string &) - the "
+			msg << "CKSMTPConnection::sendCommand(const CKString &) - the "
 				"command: '" << aCommand << "' could not be sent to the SMTP "
 				"service on " << getHostname() << ". Please check into this as "
 				"soon as possible.";
@@ -587,7 +589,7 @@ int CKSMTPConnection::sendCommand( const std::string & aCommand )
 		if (retval > SMTP_MAX_OK_RETURN_CODE) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::sendCommand(const std::string &) - the "
+			msg << "CKSMTPConnection::sendCommand(const CKString &) - the "
 				"command: '" << aCommand << "' when sent to the SMTP service "
 				"on " << getHostname() << " returned the error: " <<
 				stringForLastSMTPReturnCode() << ". Please check into this as "
@@ -611,7 +613,7 @@ int CKSMTPConnection::getReply()
 	int			retval = -1;
 
 	// first, get the data up to the CRLF as it's the terminator
-	std::string		data;
+	CKString		data;
 	if (!error) {
 		data = readUpToCRLF();
 		if (data.size() == 0) {
@@ -652,7 +654,7 @@ int CKSMTPConnection::getReply()
  * This routine throws CKExceptions in the event that a
  * processing error occurs, and returns a -1.
  */
-int CKSMTPConnection::grabSMTPReturnCodeOnData( const std::string & aData )
+int CKSMTPConnection::grabSMTPReturnCodeOnData( const CKString & aData )
 {
 	bool		error = false;
 	int			retval = -1;
@@ -662,7 +664,7 @@ int CKSMTPConnection::grabSMTPReturnCodeOnData( const std::string & aData )
 		if (aData.size() < 5) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const std::string &) "
+			msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const CKString &) "
 				"- the size of the SMTP reply data is too small to include a "
 				"return code: '" << aData << "'. This is a serious problem that "
 				"needs to be looked into.";
@@ -682,7 +684,7 @@ int CKSMTPConnection::grabSMTPReturnCodeOnData( const std::string & aData )
 			if ((retval < 211) || (retval > 554)) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const std::string &) "
+				msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const CKString &) "
 					"- the reply data: '" << aData << "' did not have a valid "
 					"SMTP reply code (between 211 and 554) as the first thing in "
 					"the data. This is a serious data corruption problem that "
@@ -692,7 +694,7 @@ int CKSMTPConnection::grabSMTPReturnCodeOnData( const std::string & aData )
 		} else {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const std::string &) "
+			msg << "CKSMTPConnection::grabSMTPReturnCodeOnData(const CKString &) "
 					"- the reply data: '" << aData << "' did not have a three "
 					"digit SMTP reply code as the first thing in the data. This "
 					"is a serious data corruption problem that needs to be "
@@ -714,9 +716,9 @@ int CKSMTPConnection::grabSMTPReturnCodeOnData( const std::string & aData )
  * descriptive error string is returned and a CKException
  * is thrown.
  */
-std::string CKSMTPConnection::stringForSMTPReturnCode( int aCode )
+CKString CKSMTPConnection::stringForSMTPReturnCode( int aCode )
 {
-	std::string		retval;
+	CKString		retval;
 
 	switch (aCode) {
 		case 211 :
@@ -812,9 +814,9 @@ std::string CKSMTPConnection::stringForSMTPReturnCode( int aCode )
  * last SMTP return value and then passes it to
  * stringForSMTPReturnCode() to convert that to a string.
  */
-std::string CKSMTPConnection::stringForLastSMTPReturnCode()
+CKString CKSMTPConnection::stringForLastSMTPReturnCode()
 {
-	std::string		retval = "The SMTP server is in an indeterminate state, and "
+	CKString		retval = "The SMTP server is in an indeterminate state, and "
 							"does not have a valid return code.";
 	if (getState() > 0) {
 		retval = stringForSMTPReturnCode(getState());

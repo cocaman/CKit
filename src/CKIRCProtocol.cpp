@@ -3,10 +3,10 @@
  *                     simple conduit to a simple IRC server. The basics of
  *                     the IRC communication is handled by this class and you
  *                     can register for all incoming messages to be processed
- *                     and return a std::string as a reply. This is the core
+ *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.10 2004/09/11 21:07:45 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.11 2004/09/16 09:34:16 drbob Exp $
  */
 
 //	System Headers
@@ -79,7 +79,7 @@ CKIRCProtocol::CKIRCProtocol() :
  * form of the constructor because it creates the protocol object
  * and connects to a specific IRC server.
  */
-CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort ) :
+CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort ) :
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
@@ -99,7 +99,7 @@ CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort ) :
 	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
 	if (buddy == NULL) {
 		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const std::string &, int) - the "
+		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int) - the "
 			"Listener for this instance could not be created. This is a serious "
 			"allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -113,7 +113,7 @@ CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort ) :
 		setListener(NULL);
 		// ...and then log the message and toss an exception
 		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const std::string &, int) - the "
+		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int) - the "
 			"connection to the IRC server at " << aHost << ":" << aPort <<
 			" could not be established. Please check to see that there is an IRC "
 			"server on that machine at that port.";
@@ -128,8 +128,8 @@ CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort ) :
  * solid connection to the server, and in so doing, allows the user
  * to start sending messages right away.
  */
-CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort,
-							  const std::string & aNick ) :
+CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort,
+							  const CKString & aNick ) :
 	mHostname(),
 	mPort(DEFAULT_IRC_PORT),
 	mCommPort(),
@@ -149,8 +149,8 @@ CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort,
 	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
 	if (buddy == NULL) {
 		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const std::string &, int, "
-			"const std::string &) - the Listener for this instance could not be "
+		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int, "
+			"const CKString &) - the Listener for this instance could not be "
 			"created. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
@@ -163,8 +163,8 @@ CKIRCProtocol::CKIRCProtocol( const std::string & aHost, int aPort,
 		setListener(NULL);
 		// ...and then log the message and toss an exception
 		std::ostringstream	msg;
-		msg << "CKIRCProtocol::CKIRCProtocol(const std::string &, int, "
-			"const std::string &) - the connection to the IRC server at " <<
+		msg << "CKIRCProtocol::CKIRCProtocol(const CKString &, int, "
+			"const CKString &) - the connection to the IRC server at " <<
 			aHost << ":" << aPort << " could not be established. Please check "
 			"to see that there is an IRC server on that machine at that port.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -283,12 +283,12 @@ CKIRCProtocol & CKIRCProtocol::operator=( const CKIRCProtocol & anOther )
  * throw a CKException if a connection is already
  * established to a server.
  */
-void CKIRCProtocol::setHostname( const std::string & aHost )
+void CKIRCProtocol::setHostname( const CKString & aHost )
 {
 	// first, see if we're currently connected to some host
 	if (isConnected() && (getHostname() != aHost)) {
 		std::ostringstream	msg;
-		msg << "CKIRCProtocol::setHostname(const std::string &) - there's an "
+		msg << "CKIRCProtocol::setHostname(const CKString &) - there's an "
 			"established connection to the server on " << getHostname() << ":" <<
 			getPort() << " and that connection needs to be closed before we can "
 			"change the host to connect to. Please call disconnect().";
@@ -328,7 +328,7 @@ void CKIRCProtocol::setPort( int aPort )
  * This method sets the password we'll be using in all communications
  * with the IRC server.
  */
-void CKIRCProtocol::setPassword( const std::string & aPassword )
+void CKIRCProtocol::setPassword( const CKString & aPassword )
 {
 	mPassword = aPassword;
 }
@@ -338,7 +338,7 @@ void CKIRCProtocol::setPassword( const std::string & aPassword )
  * This method sets the nickname we'll be using in all
  * communications with the IRC server.
  */
-void CKIRCProtocol::setNickname( const std::string & aNick )
+void CKIRCProtocol::setNickname( const CKString & aNick )
 {
 	mNickname = aNick;
 }
@@ -348,7 +348,7 @@ void CKIRCProtocol::setNickname( const std::string & aNick )
  * This method sets the USER host we'll be using in all
  * communications with the IRC server.
  */
-void CKIRCProtocol::setUserHost( const std::string & aHost )
+void CKIRCProtocol::setUserHost( const CKString & aHost )
 {
 	mUserHost = aHost;
 }
@@ -358,7 +358,7 @@ void CKIRCProtocol::setUserHost( const std::string & aHost )
  * This method sets the USER server we'll be using in all
  * communications with the IRC server.
  */
-void CKIRCProtocol::setUserServer( const std::string & aServer )
+void CKIRCProtocol::setUserServer( const CKString & aServer )
 {
 	mUserServer = aServer;
 }
@@ -368,7 +368,7 @@ void CKIRCProtocol::setUserServer( const std::string & aServer )
  * This method sets the real name we'll be using in all
  * communications with the IRC server.
  */
-void CKIRCProtocol::setRealName( const std::string & aName )
+void CKIRCProtocol::setRealName( const CKString & aName )
 {
 	mRealName = aName;
 }
@@ -381,7 +381,7 @@ void CKIRCProtocol::setRealName( const std::string & aName )
  * standard getter accessor method for the host name that
  * will be used in all subsequent connections.
  */
-const std::string CKIRCProtocol::getHostname() const
+const CKString CKIRCProtocol::getHostname() const
 {
 	return mHostname;
 }
@@ -431,7 +431,7 @@ bool CKIRCProtocol::isLoggedIn() const
  * This method returns the password we'll be using in all
  * communications with the IRC server.
  */
-const std::string CKIRCProtocol::getPassword() const
+const CKString CKIRCProtocol::getPassword() const
 {
 	return mPassword;
 }
@@ -441,7 +441,7 @@ const std::string CKIRCProtocol::getPassword() const
  * This method returns the nickname we'll be using in all
  * communications with the IRC server.
  */
-const std::string CKIRCProtocol::getNickname() const
+const CKString CKIRCProtocol::getNickname() const
 {
 	return mNickname;
 }
@@ -451,7 +451,7 @@ const std::string CKIRCProtocol::getNickname() const
  * This method returns the USER host we'll be using in all
  * communications with the IRC server.
  */
-const std::string CKIRCProtocol::getUserHost() const
+const CKString CKIRCProtocol::getUserHost() const
 {
 	return mUserHost;
 }
@@ -461,7 +461,7 @@ const std::string CKIRCProtocol::getUserHost() const
  * This method returns the USER server we'll be using in all
  * communications with the IRC server.
  */
-const std::string CKIRCProtocol::getUserServer() const
+const CKString CKIRCProtocol::getUserServer() const
 {
 	return mUserServer;
 }
@@ -471,21 +471,21 @@ const std::string CKIRCProtocol::getUserServer() const
  * This method returns the real name we'll be using in all
  * communications with the IRC server.
  */
-const std::string CKIRCProtocol::getRealName() const
+const CKString CKIRCProtocol::getRealName() const
 {
 	return mRealName;
 }
 
 
 /*
- * This method returns a pointer to a std::list of std::strings that
+ * This method returns a pointer to a std::list of CKStrings that
  * is the list of Channels that this IRC Connection has JOINed. Note
  * that this method will not return a NULL as it's a pointer to the
  * instance variable and therefore should also not be released, etc.
  * If you want to make a copy, do so, but otherwise, leave this guy
  * alone.
  */
-const std::list<std::string>	*CKIRCProtocol::getChannelList() const
+const std::list<CKString>	*CKIRCProtocol::getChannelList() const
 {
 	return & mChannelList;
 }
@@ -511,7 +511,7 @@ CKIRCProtocolListener *CKIRCProtocol::getListener() const
  * once per connection to the IRC server, and to do mroe than
  * once is wasting bandwidth.
  */
-bool CKIRCProtocol::isChannelInChannelList( const std::string & aChannel )
+bool CKIRCProtocol::isChannelInChannelList( const CKString & aChannel )
 {
 	bool	retval = false;
 
@@ -519,7 +519,7 @@ bool CKIRCProtocol::isChannelInChannelList( const std::string & aChannel )
 	mChannelListMutex.lock();
 
 	// try to find the channel in the list
-	std::list<std::string>::iterator	i;
+	std::list<CKString>::iterator	i;
 	i = find(mChannelList.begin(), mChannelList.end(), aChannel);
 	if (i != mChannelList.end()) {
 		// yippee! we have it
@@ -557,7 +557,7 @@ bool CKIRCProtocol::connect()
  * IRC protocol port and so the user really only needs to
  * specify the host and most connections will be made.
  */
-bool CKIRCProtocol::connect( const std::string & aHost )
+bool CKIRCProtocol::connect( const CKString & aHost )
 {
 	return connect(aHost, getPort());
 }
@@ -569,7 +569,7 @@ bool CKIRCProtocol::connect( const std::string & aHost )
  * the other connection mathods as it is the most general
  * form of the function.
  */
-bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
+bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 {
 	bool		error = false;
 
@@ -578,7 +578,7 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 		if (isConnected() && ((getHostname() != aHost) || (getPort() != aPort))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::connect(const std::string & , int) - there's an "
+			msg << "CKIRCProtocol::connect(const CKString & , int) - there's an "
 				"established connection to the server on " << getHostname() << ":" <<
 				getPort() << " and that connection needs to be closed before we can "
 				"connect to another host and/or port. Please call disconnect().";
@@ -600,7 +600,7 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 			// ...now flag the error and throw the exception
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::connect(const std::string & , int) - the "
+			msg << "CKIRCProtocol::connect(const CKString & , int) - the "
 				"connection to the server on " << getHostname() << ":" <<
 				getPort() << " could not be created and that's a serious problem. "
 				"Please make sure that there's an IRC server on that box.";
@@ -624,7 +624,7 @@ bool CKIRCProtocol::connect( const std::string & aHost, int aPort )
 			if (buddy == NULL) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKIRCProtocol::connect(const std::string & , int) - the "
+				msg << "CKIRCProtocol::connect(const CKString & , int) - the "
 					"Listener for this instance could not be created. This is a "
 					"serious allocation problem.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -685,7 +685,7 @@ void CKIRCProtocol::disconnect()
  * This is a simple cover method for the sending of a message to the
  * IRC server. The 'aDest' can be a channel or a user.
  */
-void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & aMsg )
+void CKIRCProtocol::sendMessage( const CKString & aDest, const CKString & aMsg )
 {
 	bool		error = false;
 
@@ -694,7 +694,7 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
 		if (aDest.size() == 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::sendMessage(const std::string &, const std::string &)"
+			msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
 				" - the supplied chat destination is empty, and that means that "
 				"there's nothing I can do. Please make sure that there is a valid "
 				"destination before calling this method.";
@@ -705,7 +705,7 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
 		if (aMsg.size() == 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::sendMessage(const std::string &, const std::string &)"
+			msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
 				" - the supplied chat message is empty, and that means that "
 				"there's nothing I can do. Please make sure that there is a valid "
 				"destination before calling this method.";
@@ -721,13 +721,13 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
 	}
 
 	// now let's chunk up this message into a series of lines
-	std::vector<std::string>	lines;
+	std::vector<CKString>	lines;
 	if (!error) {
-		lines = parseIntoChunks(aMsg, std::string("\n"));
+		lines = parseIntoChunks(aMsg, "\n");
 		if (lines.size() == 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::sendMessage(const std::string &, const std::string &)"
+			msg << "CKIRCProtocol::sendMessage(const CKString &, const CKString &)"
 				" - the supplied chat message could not be broken up into a series "
 				"of NEWLINE-delimited strings. This is a problem because there "
 				"should at least be the one, original message line.";
@@ -743,7 +743,7 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
 	if (!error) {
 		for (unsigned int i = 0; i < lines.size(); i++) {
 			// get the next line to send to the server
-			std::string		line = lines[i];
+			CKString		line = lines[i];
 			// see if it's too long to fit as one message
 			while (line.length() > MAX_MESSAGE_LEN) {
 				// try to cut it right at the limit
@@ -788,7 +788,7 @@ void CKIRCProtocol::sendMessage( const std::string & aDest, const std::string & 
  * will return true, otherwise, it hasn't been handled and
  * needs to be passed to all the responders for their input.
  */
-bool CKIRCProtocol::isReflexChat( std::string & aLine )
+bool CKIRCProtocol::isReflexChat( CKString & aLine )
 {
 	bool		error = false;
 	bool		handled = false;
@@ -973,32 +973,43 @@ bool CKIRCProtocol::operator!=( const CKIRCProtocol & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKIRCProtocol::toString() const
+CKString CKIRCProtocol::toString() const
 {
-	std::ostringstream	buff;
-
-	buff << "< IRC Host=" << getHostname() << ", " <<
-		" IRC Port=" << getPort() << ", " <<
-		" CommPort=" << mCommPort << ", " <<
-		" isLoggedIn? " << (isLoggedIn() ? "Yes" : "No") << ", " <<
-		" Password=" << getPassword() << ", " <<
-		" Nickname=" << getNickname() << ", " <<
-		" UserHost=" << getUserHost() << ", " <<
-		" UserServer=" << getUserServer() << ", " <<
-		" RealName=" << getRealName() << ", " <<
-		" ChannelList: [";
-	std::list<std::string>::const_iterator	i;
+	CKString	retval = "< IRC Host=";
+	retval += getHostname();
+	retval += ", ";
+	retval += " IRC Port=";
+	retval += getPort();
+	retval += ", ";
+	retval += " CommPort=";
+	retval += mCommPort.toString();
+	retval += ", ";
+	retval += " isLoggedIn? ";
+	retval += (isLoggedIn() ? "Yes" : "No");
+	retval += ", ";
+	retval += " Password=";
+	retval += getPassword();
+	retval += " Nickname=";
+	retval += getNickname();
+	retval += " UserHost=";
+	retval += getUserHost();
+	retval += " UserServer=";
+	retval += getUserServer();
+	retval += " RealName=";
+	retval += getRealName();
+	retval += " ChannelList: [";
+	std::list<CKString>::const_iterator	i;
 	for (i = mChannelList.begin(); i != mChannelList.end(); ++i) {
 		if (i != mChannelList.begin()) {
-			buff << ", ";
+			retval += ", ";
 		}
-		buff << (*i);
+		retval += (*i);
 	}
-	buff << "]>" << std::endl;
+	retval += "]>\n";
 
-	return buff.str();
+	return retval;
 }
 
 
@@ -1045,7 +1056,7 @@ void CKIRCProtocol::setIsLoggedIn( bool aFlag )
  * as a copy and not as an assumption of the memory management of
  * the elements of the list.
  */
-void CKIRCProtocol::setChannelList( const std::list<std::string> & aList )
+void CKIRCProtocol::setChannelList( const std::list<CKString> & aList )
 {
 	// first, lock the list for changes
 	mChannelListMutex.lock();
@@ -1089,13 +1100,13 @@ void CKIRCProtocol::setListener( CKIRCProtocolListener *aListener )
  * JOINed channels for this instance. It is only added, of course,
  * if the channel does not already exist in the list.
  */
-void CKIRCProtocol::addToChannelList( const std::string & aChannel )
+void CKIRCProtocol::addToChannelList( const CKString & aChannel )
 {
 	// first, lock the list against any changes
 	mChannelListMutex.lock();
 
 	// try to find the channel in the list
-	std::list<std::string>::iterator	i;
+	std::list<CKString>::iterator	i;
 	i = find(mChannelList.begin(), mChannelList.end(), aChannel);
 	if (i == mChannelList.end()) {
 		// we don't have it, so add it
@@ -1158,20 +1169,20 @@ void CKIRCProtocol::stopListener()
  * the return value is created on the stack, the user needs to
  * save it if they want it to stay around.
  */
-std::vector<std::string> CKIRCProtocol::parseIntoChunks(
-												const std::string & aString,
-												const std::string & aDelim )
+std::vector<CKString> CKIRCProtocol::parseIntoChunks(
+												const CKString & aString,
+												const CKString & aDelim )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// first, see if we have anything to do
 	if (!error) {
 		if (aString.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the source string is 0 and "
+			msg << "CKIRCProtocol::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the source string is 0 and "
 				"that means that there's nothing for me to do. Please make sure "
 				"that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1183,8 +1194,8 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 		if (delimLength <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the delimiter string is 0 "
+			msg << "CKIRCProtocol::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the delimiter string is 0 "
 				"and that means that there's nothing for me to do. Please make "
 				"sure that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1192,7 +1203,7 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 	}
 
 	// now, copy the source to a buffer so I can consume it in the process
-	std::string		buff(aString);
+	CKString		buff(aString);
 
 	/*
 	 * Now loop picking off the parts bettween the delimiters. Do this by
@@ -1205,13 +1216,13 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 	 */
 	while (!error) {
 		// find out wherre, if anyplace, the delimiter sits
-		unsigned int	pos = buff.find(aDelim);
-		if (pos == std::string::npos) {
+		int		pos = buff.find(aDelim);
+		if (pos == -1) {
 			// nothing left to parse out, bail out
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back("");
+			retval.push_back(CKString(""));
 		} else {
 			// pick off the substring up to the delimiter
 			retval.push_back(buff.substr(0, pos));
@@ -1244,10 +1255,10 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
  * and use it to determine when to recycle and check for
  * things needing to be done.
  */
-std::string CKIRCProtocol::getReply()
+CKString CKIRCProtocol::getReply()
 {
 	bool			error = false;
-	std::string		retval("");
+	CKString		retval("");
 
 	/*
 	 * First, see if we're connected to some IRC server, and if not, then
@@ -1385,7 +1396,7 @@ bool CKIRCProtocol::alertAllResponders( CKIRCIncomingMessage & aMsg )
  * IRC functions are all available and waiting without
  * circumventing the designed flow.
  */
-void CKIRCProtocol::executeCommand( const std::string & aCmd )
+void CKIRCProtocol::executeCommand( const CKString & aCmd )
 {
 	bool		error = false;
 
@@ -1398,7 +1409,7 @@ void CKIRCProtocol::executeCommand( const std::string & aCmd )
 		if (!isConnected()) {
 			if (!connect()) {
 				std::ostringstream	msg;
-				msg << "CKIRCProtocol::executeCommand(const std::string &) - this "
+				msg << "CKIRCProtocol::executeCommand(const CKString &) - this "
 					"protocol is not currently connected to any IRC server, and a "
 					"connection to the default server could not be made. Therefore, "
 					"it's not possible to execute any IRC commands to the server. "
@@ -1412,12 +1423,12 @@ void CKIRCProtocol::executeCommand( const std::string & aCmd )
 
 	// now send out the command terminated in a NEWLINE
 	if (!error) {
-		std::string		cmd = aCmd;
+		CKString		cmd = aCmd;
 		cmd += "\n";
 		if (!mCommPort.send(cmd)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKIRCProtocol::executeCommand(const std::string &) - while "
+			msg << "CKIRCProtocol::executeCommand(const CKString &) - while "
 				"trying to send the command '" << aCmd << "' to the IRC server an "
 				"error occurred. Please check the logs for a possible cause.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1431,9 +1442,9 @@ void CKIRCProtocol::executeCommand( const std::string & aCmd )
  * channel to the remote host. This is meant to supply a password
  * to the IRC server to ensure at least some level of security.
  */
-void CKIRCProtocol::doPASS( const std::string & aPassword )
+void CKIRCProtocol::doPASS( const CKString & aPassword )
 {
-	std::string		cmd = "PASS ";
+	CKString		cmd = "PASS ";
 	cmd += aPassword;
 	executeCommand(cmd);
 }
@@ -1445,9 +1456,9 @@ void CKIRCProtocol::doPASS( const std::string & aPassword )
  * nickname to the IRC server so that everyone knows who this is coming
  * from.
  */
-void CKIRCProtocol::doNICK( const std::string & aNick )
+void CKIRCProtocol::doNICK( const CKString & aNick )
 {
-	std::string		cmd = "NICK ";
+	CKString		cmd = "NICK ";
 	cmd += aNick;
 	executeCommand(cmd);
 }
@@ -1458,12 +1469,12 @@ void CKIRCProtocol::doNICK( const std::string & aNick )
  * channel to the remote host. This is meant to supply real
  * information about the user to the IRC server.
  */
-void CKIRCProtocol::doUSER( const std::string & aNick,
-							const std::string & aHost,
-							const std::string & aServer,
-							const std::string & aRealName )
+void CKIRCProtocol::doUSER( const CKString & aNick,
+							const CKString & aHost,
+							const CKString & aServer,
+							const CKString & aRealName )
 {
-	std::string		cmd = "USER ";
+	CKString		cmd = "USER ";
 	cmd += aNick;
 	cmd += " ";
 	cmd += aHost;
@@ -1480,9 +1491,9 @@ void CKIRCProtocol::doUSER( const std::string & aNick,
  * channel to the remote host. This is meant to log off this
  * connection and leave a message on the way out.
  */
-void CKIRCProtocol::doQUIT( const std::string & aMsg )
+void CKIRCProtocol::doQUIT( const CKString & aMsg )
 {
-	std::string		cmd = "QUIT :";
+	CKString		cmd = "QUIT :";
 	cmd += aMsg;
 	executeCommand(cmd);
 }
@@ -1493,12 +1504,12 @@ void CKIRCProtocol::doQUIT( const std::string & aMsg )
  * channel to the remote host. This puts us in the channel on the
  * server so that we can send messages to it.
  */
-void CKIRCProtocol::doJOIN( const std::string & aChannel )
+void CKIRCProtocol::doJOIN( const CKString & aChannel )
 {
 	// do this only if we haven't already joined this channel
 	if (!isChannelInChannelList(aChannel)) {
 		// do the join with the server
-		std::string		cmd = "JOIN ";
+		CKString		cmd = "JOIN ";
 		cmd += aChannel;
 		executeCommand(cmd);
 		// ...and add it to our list
@@ -1513,9 +1524,9 @@ void CKIRCProtocol::doJOIN( const std::string & aChannel )
  * message to the supplied user or channel and includes a return
  * code - the doNOTICE is different in that no return code is sent.
  */
-void CKIRCProtocol::doPRIVMSG( const std::string & aDest, const std::string & aMsg )
+void CKIRCProtocol::doPRIVMSG( const CKString & aDest, const CKString & aMsg )
 {
-	std::string		cmd = "PRIVMSG ";
+	CKString		cmd = "PRIVMSG ";
 	cmd += aDest;
 	cmd += " :";
 	cmd += aMsg;
@@ -1528,9 +1539,9 @@ void CKIRCProtocol::doPRIVMSG( const std::string & aDest, const std::string & aM
  * communication channel to the remote host. This is similar to
  * doPRIVMSG() but here we do NOT get a reply from the IRC server.
  */
-void CKIRCProtocol::doNOTICE( const std::string & aDest, const std::string & aMsg )
+void CKIRCProtocol::doNOTICE( const CKString & aDest, const CKString & aMsg )
 {
-	std::string		cmd = "MOTICE ";
+	CKString		cmd = "MOTICE ";
 	cmd += aDest;
 	cmd += " :";
 	cmd += aMsg;
@@ -1545,7 +1556,7 @@ void CKIRCProtocol::doNOTICE( const std::string & aDest, const std::string & aMs
  */
 void CKIRCProtocol::doPONG()
 {
-	std::string		cmd = "PONG ";
+	CKString		cmd = "PONG ";
 	char	host[MAXHOSTNAMELEN];
 	if (gethostname(host, MAXHOSTNAMELEN) < 0) {
 		strcpy(host, "localhost");

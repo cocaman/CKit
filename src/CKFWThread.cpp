@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.8 2004/09/11 21:07:44 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.9 2004/09/16 09:34:15 drbob Exp $
  */
 
 //	System Headers

@@ -6,7 +6,7 @@
  *                    user really only needs to subclass off this class and
  *                    then write that one method.
  *
- * $Id: CKIRCResponder.h,v 1.5 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCResponder.h,v 1.6 2004/09/16 09:34:17 drbob Exp $
  */
 #ifndef __CKIRCRESPONDER_H
 #define __CKIRCRESPONDER_H
@@ -23,6 +23,7 @@
 
 //	Other Headers
 #include "CKIRCProtocol.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -106,9 +107,9 @@ class CKIRCResponder
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	private:
 };

@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.7 2004/09/11 21:07:51 drbob Exp $
+ * $Id: CKVariant.h,v 1.8 2004/09/16 09:34:21 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -22,6 +22,7 @@
 
 //	Other Headers
 #include "CKTimeSeries.h"
+#include "CKString.h"
 
 //	Forward Declarations
 class CKTable;
@@ -324,9 +325,9 @@ class CKVariant
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*

@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.14 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.15 2004/09/16 09:34:18 drbob Exp $
  */
 
 //	System Headers
@@ -134,7 +134,7 @@ CKSocket::CKSocket( int aPort ) :
  * to establish that connection so that it's ready to send or
  * receive data after a successful return.
  */
-CKSocket::CKSocket( const std::string & aHost, int aPort ) :
+CKSocket::CKSocket( const CKString & aHost, int aPort ) :
 	mHostname(),
 	mPort(-1),
 	mSocketHandle(INVALID_SOCKET),
@@ -165,7 +165,7 @@ CKSocket::CKSocket( const std::string & aHost, int aPort ) :
 	// let's try to make the connection based on this information
 	if (!connect(aHost, aPort)) {
 		std::ostringstream	msg;
-		msg << "CKSocket::CKSocket(const std::string &, int) - the connection "
+		msg << "CKSocket::CKSocket(const CKString &, int) - the connection "
 			"to the socket " << aHost << ":" << aPort << " could not be "
 			"established. This is a serious problem. Please make sure that the "
 			"remote service is ready to accept the connection.";
@@ -181,7 +181,7 @@ CKSocket::CKSocket( const std::string & aHost, int aPort ) :
  * be using. This is important in certain specific applications,
  * but for the most part, isn't required for general communications.
  */
-CKSocket::CKSocket( const std::string & aHost, int aPort, int aService, int aProtocol ) :
+CKSocket::CKSocket( const CKString & aHost, int aPort, int aService, int aProtocol ) :
 	mHostname(),
 	mPort(-1),
 	mSocketHandle(INVALID_SOCKET),
@@ -212,7 +212,7 @@ CKSocket::CKSocket( const std::string & aHost, int aPort, int aService, int aPro
 	// let's try to make the connection based on this information
 	if (!connect(aHost, aPort, aService, aProtocol)) {
 		std::ostringstream	msg;
-		msg << "CKSocket::CKSocket(const std::string &, int, int, int) - the "
+		msg << "CKSocket::CKSocket(const CKString &, int, int, int) - the "
 			"connection to the socket " << aHost << ":" << aPort << " could "
 			"not be established. This is a serious problem. Please make sure "
 			"that the remote service is ready to accept the connection.";
@@ -397,7 +397,7 @@ CKSocket & CKSocket::operator=( const CKSocket & anOther )
  * hostname, and those will call this method to set the host
  * after the connection is made.
  */
-void CKSocket::setHostname( const std::string & aHostname )
+void CKSocket::setHostname( const CKString & aHostname )
 {
 	mHostname = aHostname;
 }
@@ -473,7 +473,7 @@ void CKSocket::setTraceIncomingData( bool aFlag )
  * class - call this after a connection and it's the active
  * hostname.
  */
-const std::string CKSocket::getHostname() const
+const CKString CKSocket::getHostname() const
 {
 	return mHostname;
 }
@@ -592,13 +592,13 @@ bool CKSocket::connect()
 }
 
 
-bool CKSocket::connect( const std::string & aHost, int aPort )
+bool CKSocket::connect( const CKString & aHost, int aPort )
 {
 	return connect( aHost, aPort, DEFAULT_SERVICE, DEFAULT_PROTOCOL );
 }
 
 
-bool CKSocket::connect( const std::string & aHost, int aPort, int aService, int aProtocol )
+bool CKSocket::connect( const CKString & aHost, int aPort, int aService, int aProtocol )
 {
 	bool				error = false;
 	SOCKET				newSocket;
@@ -612,7 +612,7 @@ bool CKSocket::connect( const std::string & aHost, int aPort, int aService, int 
 		if (newSocket == INVALID_SOCKET) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSocket::connect(const std::string &, int, int, int) - a "
+			msg << "CKSocket::connect(const CKString &, int, int, int) - a "
 				"socket handle could not be created and this likely points to "
 				"a problem at the operating system level.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -633,7 +633,7 @@ bool CKSocket::connect( const std::string & aHost, int aPort, int aService, int 
 				error = true;
 				serverAddr.s_addr = 0x0;
 				std::ostringstream	msg;
-				msg << "CKSocket::connect(const std::string &, int, int, int) - an "
+				msg << "CKSocket::connect(const CKString &, int, int, int) - an "
 					"IP address for the host '" << aHost << "' could not be "
 					"located. Please check the DNS entries to make sure the "
 					"host is resolved properly.";
@@ -666,7 +666,7 @@ bool CKSocket::connect( const std::string & aHost, int aPort, int aService, int 
 						sizeof(socketINetAddr)) == SOCKET_ERROR) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKSocket::connect(const std::string &, int, int, int) - the "
+			msg << "CKSocket::connect(const CKString &, int, int, int) - the "
 				"socket could not be connected to port " << aPort << " on the "
 				"host '" << aHost << "'. Please make sure that the remote host "
 				"is ready and capable of receiving connections on this port.";
@@ -1292,6 +1292,12 @@ bool CKSocket::send( const std::string & aString )
 }
 
 
+bool CKSocket::send( const CKString & aString )
+{
+	return send(aString.c_str(), aString.size());
+}
+
+
 /*
  * When data needs to be read in from the socket, this is the
  * method to call. It does not wait for data at the socket, but
@@ -1299,7 +1305,7 @@ bool CKSocket::send( const std::string & aString )
  * allows the user to determine how to handle the error without
  * creating a blocking condition.
  */
-std::string CKSocket::readAvailableData()
+CKString CKSocket::readAvailableData()
 {
 	bool			error = false;
 	int				incomingSize = getReadBufferSize();
@@ -1341,7 +1347,7 @@ std::string CKSocket::readAvailableData()
 
 	/*
 	 * Now that I have the character data from the socket, I need to
-	 * NULL terminate it and then create a std::string out of it.
+	 * NULL terminate it and then create a CKString out of it.
 	 */
 	if (!error) {
 		// we thankfully left room at the very end
@@ -1353,7 +1359,7 @@ std::string CKSocket::readAvailableData()
 		}
 	}
 
-    return std::string(incomingPtr);
+    return CKString(incomingPtr);
 }
 
 
@@ -1431,28 +1437,41 @@ bool CKSocket::operator!=( const CKSocket & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKSocket::toString() const
+CKString CKSocket::toString() const
 {
-	std::ostringstream	buff;
+	CKString		retval = "< Host=";
+	retval += getHostname();
+	retval += ", ";
+	retval += " Port=";
+	retval += getPort();
+	retval += " SocketHandle=";
+	retval += getSocketHandle();
+	retval += ", ";
+	retval += " ReadBufferSize=";
+	retval += getReadBufferSize();
+	retval += ", ";
+	retval += " WaitForIncomingConnectionTimeout=";
+	retval += getWaitForIncomingConnectionTimeout();
+	retval += " sec., ";
+	retval += " ActivelyListening=";
+	retval += (isActivelyListening() ? "Yes" : "No");
+	retval += ", ";
+	retval += " ConnectionEstablished=";
+	retval += (isConnectionEstablished() ? "Yes" : "No");
+	retval += ", ";
+	retval += " traceOutgoingData=";
+	retval += (traceOutgoingData() ? "Yes" : "No");
+	retval += ", ";
+	retval += " traceIncomingData=";
+	retval += (traceIncomingData() ? "Yes" : "No");
+	retval += ", ";
+	retval += " isBlockingForTransferredData=";
+	retval += (isBlockingForTransferredData() ? "Yes" : "No");
+	retval += ">\n";
 
-	buff << "< Host=" << getHostname() << ", " <<
-		" Port=" << getPort() << ", " <<
-		" SocketHandle=" << getSocketHandle() << ", " <<
-		" ReadBufferSize=" << getReadBufferSize() << ", " <<
-		" WaitForIncomingConnectionTimeout=" <<
-					getWaitForIncomingConnectionTimeout() << " sec., " <<
-		" ActivelyListening=" << (isActivelyListening() ? "Yes" : "No") << ", " <<
-		" ConnectionEstablished=" << (isConnectionEstablished() ? "Yes" : "No") <<
-					", " <<
-		" traceOutgoingData=" << (traceOutgoingData() ? "Yes" : "No") << ", " <<
-		" traceIncomingData=" << (traceIncomingData() ? "Yes" : "No") << ", " <<
-		" isBlockingForTransferredData=" <<
-					(isBlockingForTransferredData() ? "Yes" : "No") <<
-		">" << std::endl;
-
-	return buff.str();
+	return retval;
 }
 
 
