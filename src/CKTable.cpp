@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.8 2004/07/24 19:21:59 drbob Exp $
+ * $Id: CKTable.cpp,v 1.9 2004/08/03 17:00:48 drbob Exp $
  */
 
 //	System Headers
@@ -193,9 +193,6 @@ CKTable::~CKTable()
  */
 CKTable & CKTable::operator=( const CKTable & anOther )
 {
-	// first, let's drop any table that we might already have
-	dropTable();
-
 	// now see if the requested size makes any sense to copy
 	if ((anOther.mNumRows > 0) && (anOther.mNumColumns > 0)) {
 		// create the data table structure

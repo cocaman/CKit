@@ -2,10 +2,10 @@
  * CKVariant.cpp - this file defines a class that can be used to represent a
  *                 general data value. The power of this class is that all the
  *                 different kinds of values that this object can rperesent can
- *                 then be treated as a single data type and thus really 
+ *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
- * 
- * $Id: CKVariant.cpp,v 1.5 2004/05/19 15:51:52 drbob Exp $
+ *
+ * $Id: CKVariant.cpp,v 1.6 2004/08/03 17:00:51 drbob Exp $
  */
 
 //	System Headers
@@ -42,7 +42,7 @@
  ********************************************************/
 /*
  * This is the default constructor that defaults to a String but
- * contains nothing. After this, you're certainly going to have to 
+ * contains nothing. After this, you're certainly going to have to
  * set the value's type and contents.
  */
 CKVariant::CKVariant() :
@@ -198,7 +198,8 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
 {
 	switch (anOther.getType()) {
 		case eUnknownVariant:
-			setStringValue(NULL);
+			mType = eUnknownVariant;
+			mStringValue = NULL;
 			break;
 		case eStringVariant:
 			setStringValue(anOther.getStringValue());
@@ -440,7 +441,7 @@ CKVariantType CKVariant::getType() const
 
 /*
  * This method will return the integer value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an 
+ * instance - if the type is numeric. If the data isn't numeric an
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -459,7 +460,7 @@ int CKVariant::getIntValue() const
 
 /*
  * This method will return the double value of the data stored in this
- * instance - if the type is numeric. If the data isn't numeric an 
+ * instance - if the type is numeric. If the data isn't numeric an
  * exception will be thrown as it's assumed that the user should make
  * sure that this instance is numeric *before* calling this method.
  */
@@ -581,7 +582,7 @@ void CKVariant::clearValue()
 			}
 			break;
 	}
-	
+
 	// don't forget to set it to 'unknown'
 	mType = eUnknownVariant;
 }
@@ -739,7 +740,7 @@ bool CKVariant::isTable( const char *aValue )
 
 
 /*
- * This method returns a copy of the current value as contained in 
+ * This method returns a copy of the current value as contained in
  * a string and it is the responsibility of the caller to call
  * 'delete []' on the results. It's also possible that this method
  * will return NULL, so you have better check the return value
@@ -996,7 +997,11 @@ std::string CKVariant::toString() const
 			break;
 		case eStringVariant:
 			retval = "(String)";
-			retval.append(mStringValue);
+			if (mStringValue == NULL) {
+				retval.append("NULL");
+			} else {
+				retval.append(mStringValue);
+			}
 			break;
 		case eNumberVariant:
 			snprintf(buff, 127, "(Number)%f", mDoubleValue);
