@@ -15,8 +15,8 @@
  *                       thread and launches it. The thread itself will clean
  *                       itself up when it's done and there will be no
  *                       long-lasting effects of the spawned processing thread.
- *
- * $Id: CKIRCProtocolExec.h,v 1.2 2004/05/25 16:12:29 drbob Exp $
+ * 
+ * $Id: CKIRCProtocolExec.h,v 1.3 2004/09/11 02:15:20 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOLEXEC_H
 #define __CKIRCPROTOCOLEXEC_H
@@ -140,6 +140,8 @@ class CKIRCProtocolExec :
 		virtual std::string toString();
 
 	private:
+		friend class CKIRCProtocol;
+
 		/*
 		 * This is the default constructor for the crontab execution thread
 		 * and it's private because the public API for this class is to call

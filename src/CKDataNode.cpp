@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.10 2004/08/31 11:18:04 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.11 2004/09/11 02:15:17 drbob Exp $
  */
 
 //	System Headers
@@ -302,10 +302,11 @@ CKVariant *CKDataNode::getVar( const std::string & aName )
 	// make sure we do this in a thread-safe manner
 	mVarsMutex.lock();
 	// now look for the entry
-	std::map<std::string, CKVariant>::iterator		i;
-	i = mVars.find(aName);
-	if (i != mVars.end()) {
-		retval = &((*i).second);
+	if (!mVars.empty()) {
+		std::map<std::string, CKVariant>::iterator	i = mVars.find(aName);
+		if (i != mVars.end()) {
+			retval = &((*i).second);
+		}
 	}
 	// now unlock the map
 	mVarsMutex.unlock();
@@ -340,7 +341,12 @@ void CKDataNode::removeVar( const std::string & aName )
 	// make sure we do this in a thread-safe manner
 	mVarsMutex.lock();
 	// ...erase all entries with this name (only one possible)
-	mVars.erase(aName);
+	if (!mVars.empty()) {
+		std::map<std::string, CKVariant>::iterator	i = mVars.find(aName);
+		if (i != mVars.end()) {
+			mVars.erase(i);
+		}
+	}
 	// now unlock the map
 	mVarsMutex.unlock();
 }
@@ -356,7 +362,9 @@ void CKDataNode::clearVars()
 	// make sure we do this in a thread-safe manner
 	mVarsMutex.lock();
 	// ...erase all entries - period.
-	mVars.clear();
+	if (!mVars.empty()) {
+		mVars.clear();
+	}
 	// now unlock the map
 	mVarsMutex.unlock();
 }
@@ -402,10 +410,13 @@ void CKDataNode::addChild( CKDataNode *aNode )
 		// gotta be thread-safe on this guy
 		mKidsMutex.lock();
 		// look for first occurrence
-		std::list<CKDataNode*>::iterator		i;
-		i = find(mKids.begin(), mKids.end(), aNode);
-		if (i == mKids.end()) {
-			mKids.push_back(aNode);
+		if (!mKids.empty()) {
+			std::list<CKDataNode*>::iterator	i = find(mKids.begin(),
+														 mKids.end(),
+														 aNode);
+			if (i == mKids.end()) {
+				mKids.push_back(aNode);
+			}
 		}
 		// unlock the list of kids
 		mKidsMutex.unlock();
@@ -441,15 +452,18 @@ void CKDataNode::removeChild( const CKDataNode *aNode )
 		// gotta be thread-safe on this guy
 		mKidsMutex.lock();
 		// look for first occurrence
-		std::list<CKDataNode*>::iterator		i;
-		i = find(mKids.begin(), mKids.end(), aNode);
-		if (i != mKids.end()) {
-			// first thing is to remove me as it's parent
-			if ((*i)->mParent == this) {
-				(*i)->mParent = NULL;
+		if (!mKids.empty()) {
+			std::list<CKDataNode*>::iterator	i = find(mKids.begin(),
+														 mKids.end(),
+														 aNode);
+			if (i != mKids.end()) {
+				// first thing is to remove me as it's parent
+				if ((*i)->mParent == this) {
+					(*i)->mParent = NULL;
+				}
+				// ...and remove it from the list
+				mKids.erase(i);
 			}
-			// ...and remove it from the list
-			mKids.erase(i);
 		}
 		// unlock the list of kids
 		mKidsMutex.unlock();
@@ -470,9 +484,13 @@ std::vector<std::string> CKDataNode::getChildNames()
 	// lock up the list to be safe
 	mKidsMutex.lock();
 	// go through all children and add their names to the vector
-	std::list<CKDataNode*>::iterator	i;
-	for (i = mKids.begin(); i != mKids.end(); ++i) {
-		retval.push_back((*i)->mName);
+	if (!mKids.empty()) {
+		std::list<CKDataNode*>::iterator	i;
+		for (i = mKids.begin(); i != mKids.end(); ++i) {
+			if ((*i) != NULL) {
+				retval.push_back((*i)->mName);
+			}
+		}
 	}
 	// now unlock the list of kids for modification
 	mKidsMutex.unlock();
@@ -495,11 +513,58 @@ CKDataNode *CKDataNode::findChild( const std::string & aName )
 	// lock up the list to be safe
 	mKidsMutex.lock();
 	// go through all children and look to their names for the right one
-	std::list<CKDataNode*>::iterator	i;
-	for (i = mKids.begin(); i != mKids.end(); ++i) {
-		if ((*i)->mName == aName) {
-			retval = (*i);
+	if (!mKids.empty()) {
+		std::list<CKDataNode*>::iterator	i;
+		for (i = mKids.begin(); i != mKids.end(); ++i) {
+			if (((*i) != NULL) && ((*i)->mName == aName)) {
+				retval = (*i);
+				break;
+			}
 		}
+	}
+	// now unlock the list of kids for modification
+	mKidsMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method returns the number of child nodes this node has. This
+ * is useful for a lot of things, and among them is the core of the
+ * isLeaf() method, below.
+ */
+int CKDataNode::getChildCount()
+{
+	int		retval = 0;
+
+	// lock up the list to be safe
+	mKidsMutex.lock();
+	// count up all the children
+	if (!mKids.empty()) {
+		retval = (int) mKids.size();
+	}
+	// now unlock the list of kids for modification
+	mKidsMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * This method will return true if there are no child nodes attached
+ * to this node. This then, would make this node a leaf node in the
+ * tree.
+ */
+bool CKDataNode::isLeaf()
+{
+	bool		retval = false;
+
+	// lock up the list to be safe
+	mKidsMutex.lock();
+	// count up all the children
+	if (!mKids.empty()) {
+		retval = true;
 	}
 	// now unlock the list of kids for modification
 	mKidsMutex.unlock();
@@ -922,7 +987,7 @@ std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
  * There are times that we want to know the identifying names of
  * all the leaf nodes of a certain section of the tree. This is
  * really useful when we need to gather data from an external
- * source, and need a list of names to data that data for. This
+ * source, and need a list of names to request that data for. This
  * method does a great job of getting a unique vector of names
  * of all the leaf nodes under it, and all it's children.
  */
@@ -983,6 +1048,116 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
 
 
 /*
+ * This method is interesting in that it will return the list of
+ * unique leaf node names that are *missing* the provided variable
+ * name in their list of variables. This is really nice in that
+ * it allows us to ask the question: Who needs 'price'? and have
+ * a list of node names that is returned.
+ */
+std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
+												const std::string & aVarName )
+{
+	bool						error = false;
+	std::vector<std::string>	retval;
+
+	// OK, we need to look and see if we are a leaf node
+	if (!error) {
+		// lock up the list of kids for this
+		mKidsMutex.lock();
+		// see if we have any at all
+		if (!mKids.empty()) {
+			// ask all the kids for their unique leaf node names
+			std::list<CKDataNode*>::iterator	i;
+			for (i = mKids.begin(); i != mKids.end(); ++i) {
+				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
+				if (part.size() >= 1) {
+					/*
+					 * OK... we have some leaf nodes that have this
+					 * variable. Let's add them to our list if they
+					 * are unique.
+					 */
+					unsigned int	cnt = part.size();
+					for (unsigned int c = 0; c < cnt; c++) {
+						if (find(retval.begin(), retval.end(), part[c])
+								== retval.end()) {
+							retval.push_back(part[c]);
+						}
+					}
+				}
+			}
+		} else {
+			/*
+			 * We are a leaf node! Put our name in the list ONLY if
+			 * we DO NOT have the variable named 'aVarName' in our list.
+			 */
+			if (getVar(aVarName) == NULL) {
+				retval.push_back(mName);
+			}
+		}
+		// unlock the list of kids
+		mKidsMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method is interesting in that it will return the list of
+ * unique leaf node names that contain the provided variable
+ * name in their list of variables. This is really nice in that
+ * it allows us to ask the question: Who has 'price'? and have
+ * a list of node names that is returned.
+ */
+std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithVar(
+												const std::string & aVarName )
+{
+	bool						error = false;
+	std::vector<std::string>	retval;
+
+	// OK, we need to look and see if we are a leaf node
+	if (!error) {
+		// lock up the list of kids for this
+		mKidsMutex.lock();
+		// see if we have any at all
+		if (!mKids.empty()) {
+			// ask all the kids for their unique leaf node names
+			std::list<CKDataNode*>::iterator	i;
+			for (i = mKids.begin(); i != mKids.end(); ++i) {
+				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
+				if (part.size() >= 1) {
+					/*
+					 * OK... we have some leaf nodes that have this
+					 * variable. Let's add them to our list if they
+					 * are unique.
+					 */
+					unsigned int	cnt = part.size();
+					for (unsigned int c = 0; c < cnt; c++) {
+						if (find(retval.begin(), retval.end(), part[c])
+								== retval.end()) {
+							retval.push_back(part[c]);
+						}
+					}
+				}
+			}
+		} else {
+			/*
+			 * We are a leaf node! Put our name in the list ONLY if
+			 * we have the variable named 'aVarName' in our list.
+			 */
+			if (getVar(aVarName) != NULL) {
+				retval.push_back(mName);
+			}
+		}
+		// unlock the list of kids
+		mKidsMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+/*
  * This method will return the number of steps that need to be
  * taken from this node to a leaf node. For example, if this node
  * contained a child node that also contained a child node, then
@@ -994,12 +1169,13 @@ int CKDataNode::getNumOfStepsToLeaf()
 	bool		error = false;
 	int			retval = 0;
 
-	// we need to recursively count the number of child nodes
+	// we need to recursively count the number of first child nodes
 	if (!error) {
 		// lock up the list of kids for this
 		mKidsMutex.lock();
 		// see if we have any at all
 		if (!mKids.empty()) {
+			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i = mKids.begin();
 			if ((*i) != NULL) {
 				retval = (*i)->getNumOfStepsToLeaf() + 1;

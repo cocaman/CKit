@@ -7,19 +7,19 @@
 #
 ifeq ($(shell uname),SunOS)
 CXX = g++
-CXX_DEFS =
+CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
 endif
 ifeq ($(shell uname),Linux)
 CXX = g++
-CXX_DEFS = -DGPP2
+CXX_DEFS = -DGPP2 -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
-CXX_DEFS =
+CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = dylib
 SO_FLAG = -dynamiclib
 endif
@@ -44,7 +44,7 @@ LIB_FILE = $(LIB_DIR)/libCKit.$(SO_EXT)
 #
 INCLUDES = -I. -I$(INCLUDE_DIR)
 DEFINES = $(CXX_DEFS)
-CXXFLAGS = -O2 -fPIC -g -Wall $(INCLUDES) $(DEFINES)
+CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi
 LDFLAGS = -fPIC $(LIBS)
 

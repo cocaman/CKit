@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.5 2003/12/16 18:08:55 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.6 2004/09/11 02:15:18 drbob Exp $
  */
 
 //	System Headers

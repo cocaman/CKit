@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional
  *
- * $Id: CKFWConditional.h,v 1.4 2003/12/16 18:08:55 drbob Exp $
+ * $Id: CKFWConditional.h,v 1.5 2004/09/11 02:15:18 drbob Exp $
  */
 #ifndef __CKFW_CONDITIONAL_H
 #define __CKFW_CONDITIONAL_H

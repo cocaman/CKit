@@ -6,7 +6,7 @@
  *                   and return a std::string as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.4 2004/05/24 18:19:40 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.5 2004/09/11 02:15:20 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H

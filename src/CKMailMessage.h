@@ -6,7 +6,7 @@
  *                   all delivery mechanisms will use this one message
  *                   structure.
  *
- * $Id: CKMailMessage.h,v 1.3 2003/12/16 18:09:01 drbob Exp $
+ * $Id: CKMailMessage.h,v 1.4 2004/09/11 02:15:21 drbob Exp $
  */
 #ifndef __CKMAILMESSAGE_H
 #define __CKMAILMESSAGE_H

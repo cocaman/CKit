@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.8 2004/09/02 20:50:58 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.9 2004/09/11 02:15:20 drbob Exp $
  */
 
 //	System Headers

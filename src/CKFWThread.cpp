@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.6 2004/08/31 11:18:06 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.7 2004/09/11 02:15:19 drbob Exp $
  */
 
 //	System Headers
@@ -80,17 +80,17 @@ void CKFWThread::setTag( const char *aTag )
 			mTag = NULL;
 	}
 	if (aTag != NULL) {
-		int		size = strlen(aTag) + 1;
-		mTag = new char[size];
-		if (mTag == NULL) {
-			std::ostringstream	msg;
-			msg << "CKFWThread::setTag(const char*) - space for the tag ('" <<
-					aTag << "') could not be created. This is a serious allocation "
-					"error.";
-			throw CKException(__FILE__, __LINE__, msg.str());
-		} else {
-				strncpy(mTag, aTag, size);
-		}
+			int		size = strlen(aTag) + 1;
+			mTag = new char[size];
+			if (mTag == NULL) {
+				std::ostringstream	msg;
+				msg << "CKFWThread::setTag(const char*) - space for the tag ('" <<
+						aTag << "') could not be created. This is a serious allocation "
+						"error.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			} else {
+					strncpy(mTag, aTag, size);
+			}
 	}
 }
 

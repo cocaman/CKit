@@ -8,7 +8,7 @@
  *                       which in turn is used in other higher-level classes
  *                       in CKit.
  *
- * $Id: CKTCPConnection.cpp,v 1.3 2003/12/16 18:09:07 drbob Exp $
+ * $Id: CKTCPConnection.cpp,v 1.4 2004/09/11 02:15:23 drbob Exp $
  */
 
 //	System Headers

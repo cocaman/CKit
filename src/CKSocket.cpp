@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.12 2004/09/02 20:49:29 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.13 2004/09/11 02:15:22 drbob Exp $
  */
 
 //	System Headers
@@ -1369,12 +1369,12 @@ std::string CKSocket::readAvailableData()
 bool CKSocket::waitForData( float aTimeoutInSec )
 {
 	bool	retval = false;
-
+	
 	if (poll(getSocketHandle(), (int)(1000 * aTimeoutInSec)) == POLL_OK) {
 		// something is there *before* the timeout
 		retval = true;
 	}
-
+	
 	return retval;
 }
 
