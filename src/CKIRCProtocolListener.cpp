@@ -6,11 +6,12 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.4 2004/05/24 18:19:41 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.5 2004/05/25 16:12:30 drbob Exp $
  */
 
 //	System Headers
 #include <sstream>
+#include <iostream>
 
 //	Third-Party Headers
 
@@ -200,6 +201,32 @@ int CKIRCProtocolListener::process()
 
 	// first, let's make sure to let everyone know we're running
 	setIsRunning(true);
+
+	// next, let's make sure that we have a CKIRCProtocol to use
+	if (!error && !timeToDie()) {
+		if (mProtocol == NULL) {
+			error = true;
+			std::cerr << "CKIRCProtocolListener::process() - the CKIRCProtocol "
+				"that was set in the constructor is NULL and that's a very serious "
+				"data corruption problem. Please check into it as soon as "
+				"possible." << std::endl;
+		}
+	}
+
+	// next, let's make sure that we're connected to an IRC server
+	if (!error && !timeToDie()) {
+		if (!mProtocol->isConnected()) {
+			if (!mProtocol->connect()) {
+				error = true;
+				std::cerr << "CKIRCProtocolListener::process() - the CKIRCProtocol "
+					"that was set in the constructor is is no longer connected to "
+					"an IRC server, and the attempt to re-establich the connection "
+					"failed. This is a serious problem as we cannot continue to "
+					"monitor chats or chat messages. Please check into this as soon "
+					"as possible." << std::endl;
+			}
+		}
+	}
 
 	// next, let's see if we have a line from the IRC Server to process
 	std::string		line;
