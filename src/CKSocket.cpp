@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.8 2004/05/24 18:19:44 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.9 2004/05/26 20:10:03 drbob Exp $
  */
 
 //	System Headers
@@ -955,14 +955,29 @@ CKSocket *CKSocket::socketByAcceptingConnectionFromListener()
 			newSocketHandle = accept(getSocketHandle(), &newSocketAddr,
 										&newSocketAddrLength);
 			if (newSocketHandle == INVALID_SOCKET) {
-				error = true;
-				std::ostringstream	msg;
-				msg << "CKSocket::socketByAcceptingConnectionFromListener() - the "
-					"socket indicated to us that there was something interesting "
-					"happening on the socket, but when we went to establish the "
-					"connection nothing was there. This is a serious socket level "
-					"problem that needs to be looked into.";
-				throw CKException(__FILE__, __LINE__, msg.str());
+				// see if it's an error we can handle
+				if (errno == EWOULDBLOCK) {
+					/*
+					 * OK, while this is an error, what's likely to have
+					 * happened is that the client connected and then dropped
+					 * the connection before we could get to it. In this case
+					 * there is no one there and so the best thing to do is
+					 * to return a NULL. The easiest way to do that is to
+					 * simply flag an error now.
+					 */
+					error = true;
+				} else {
+					// OK, this is a bad error that we can't handle easily
+					error = true;
+					std::ostringstream	msg;
+					msg << "CKSocket::socketByAcceptingConnectionFromListener() - the "
+						"socket indicated to us that there was something interesting "
+						"happening on the socket, but when we went to establish the "
+						"connection nothing was there. This is a serious socket level "
+						"problem that needs to be looked into. The errno=" << errno <<
+						":" << strerror(errno);
+					throw CKException(__FILE__, __LINE__, msg.str());
+				}
 			}
 		} else if (p == POLL_TIMEOUT) {
 			error = true;
