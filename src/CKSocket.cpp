@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.11 2004/07/27 20:01:29 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.12 2004/09/02 20:49:29 drbob Exp $
  */
 
 //	System Headers
@@ -1203,6 +1203,12 @@ bool CKSocket::setBlockingForTransferredData( bool aShouldBlock )
  * have the same effect of sending a byte stream out the socket
  * to the receiver.
  */
+bool CKSocket::send( const char *aBuffer )
+{
+	return send(aBuffer, strlen(aBuffer));
+}
+
+
 bool CKSocket::send( const char *aBuffer, int aLength )
 {
 	bool		error = false;
@@ -1299,7 +1305,6 @@ std::string CKSocket::readAvailableData()
 	int				incomingSize = getReadBufferSize();
 	char			incomingPtr[incomingSize];
 	int				bytesRead = 0;
-	std::string		retval;
 
 	// First, make sure we have a socket to read from
 	if (!error) {
@@ -1341,7 +1346,6 @@ std::string CKSocket::readAvailableData()
 	if (!error) {
 		// we thankfully left room at the very end
 		incomingPtr[bytesRead] = '\0';
-		retval = std::string(incomingPtr, bytesRead);
 		// now log this out if we're supposed to be doing this
 		if (traceIncomingData() && (bytesRead > 0)) {
 			std::cout << "Received " << bytesRead << " bytes: " << incomingPtr <<
@@ -1349,7 +1353,7 @@ std::string CKSocket::readAvailableData()
 		}
 	}
 
-    return retval;
+    return std::string(incomingPtr);
 }
 
 
@@ -1365,12 +1369,12 @@ std::string CKSocket::readAvailableData()
 bool CKSocket::waitForData( float aTimeoutInSec )
 {
 	bool	retval = false;
-	
+
 	if (poll(getSocketHandle(), (int)(1000 * aTimeoutInSec)) == POLL_OK) {
 		// something is there *before* the timeout
 		retval = true;
 	}
-	
+
 	return retval;
 }
 
