@@ -6,13 +6,12 @@
  *                    communications. It's used in the Mail Delivery system
  *                    as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.h,v 1.5 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKSMTPDelivery.h,v 1.6 2004/09/16 09:34:18 drbob Exp $
  */
 #ifndef __CKSMTPDELIVERY_H
 #define __CKSMTPDELIVERY_H
 
 //	System Headers
-#include <string>
 #ifdef GPP2
 #include <ostream.h>
 #else
@@ -24,6 +23,7 @@
 //	Other Headers
 #include "CKMailDelivery.h"
 #include "CKSMTPConnection.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -71,14 +71,14 @@ class CKSMTPDelivery :
 		 * host name and tries to establish a successful connection to the
 		 * SMTP service on that host before returning to the caller.
 		 */
-		CKSMTPDelivery( const std::string & aHost );
+		CKSMTPDelivery( const CKString & aHost );
 		/*
 		 * This form of the constructor is nice in that it takes the
 		 * host name as well as the name to be the originator of the email
 		 * and tries to establish a successful connection to the
 		 * SMTP service on that host before returning to the caller.
 		 */
-		CKSMTPDelivery( const std::string & aHost, const std::string & aSender );
+		CKSMTPDelivery( const CKString & aHost, const CKString & aSender );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -136,7 +136,7 @@ class CKSMTPDelivery :
 		 */
 		virtual bool deliver( const CKMailMessage & aMsg,
 							  bool aReadReceipt,
-							  const std::vector<std::string> & aPvtRecipients );
+							  const std::vector<CKString> & aPvtRecipients );
 
 		/********************************************************
 		 *
@@ -149,7 +149,7 @@ class CKSMTPDelivery :
 		 * to be this in order to have the messages properly interpreted
 		 * by the email clients.
 		 */
-		std::string getDateFormat() const;
+		CKString getDateFormat() const;
 
 		/*
 		 * This method checks to see if the two CKSMTPDeliverys are equal to
@@ -171,9 +171,9 @@ class CKSMTPDelivery :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	private:
 		/*
@@ -182,14 +182,14 @@ class CKSMTPDelivery :
 		 * typically, this is going to be the default for a location and
 		 * we won't have to worry too much about it.
 		 */
-		std::string			mHostname;
+		CKString			mHostname;
 		/*
 		 * This is the 'sender' of the messages through this SMTP channel.
 		 * Typically, this is the logged in user, but it can be defaulted
 		 * about anything, and that's a very interesting issue in open
 		 * SMTP servers... spoofing the sender's address.
 		 */
-		std::string			mFromEMailAddress;
+		CKString			mFromEMailAddress;
 		/*
 		 * This is the actual connection to the SMTP server that we'll be
 		 * using to send the messages out through.

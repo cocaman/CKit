@@ -9,7 +9,7 @@
  *                        and writing. Rather, this class focuses on the
  *                        higher-level features.
  *
- * $Id: CKTelnetConnection.h,v 1.5 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKTelnetConnection.h,v 1.6 2004/09/16 09:34:20 drbob Exp $
  */
 #ifndef __CKTELNETCONNECTION_H
 #define __CKTELNETCONNECTION_H
@@ -63,7 +63,7 @@ class CKTelnetConnection :
 		 * hostname and tries to make the connection to the host on
 		 * the default telnet port (23) before returning to the caller.
 		 */
-		CKTelnetConnection( const std::string & aHost );
+		CKTelnetConnection( const CKString & aHost );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -100,14 +100,14 @@ class CKTelnetConnection :
 		 * just specify the host and away you go. The connection assumes
 		 * the default telnet port (23).
 		 */
-		bool connect( const std::string & aHost );
+		bool connect( const CKString & aHost );
 		/*
 		 * This method is an easy way to establish a connection to a non-
 		 * standard telnet, or telnet-like, port. This is used a lot in
 		 * the SMTP, FTP, etc. clients as they are basically telnet-like
 		 * connections on different ports.
 		 */
-		bool connect( const std::string & aHost, int aPort );
+		bool connect( const CKString & aHost, int aPort );
 
 		/********************************************************
 		 *
@@ -134,9 +134,9 @@ class CKTelnetConnection :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 };
 
 /*

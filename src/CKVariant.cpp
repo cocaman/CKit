@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.10 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.11 2004/09/16 09:34:21 drbob Exp $
  */
 
 //	System Headers
@@ -977,11 +977,11 @@ bool CKVariant::operator!=( const CKVariant & anOther ) const
  * form of the contents of this instance. Most of the time this means
  * that it's used for debugging, but it could be used for just about anything.
  * In these cases, it's nice not to have to worry about the ownership of
- * the representation, so this returns a std::string.
+ * the representation, so this returns a CKString.
  */
-std::string CKVariant::toString() const
+CKString CKVariant::toString() const
 {
-	std::string		retval;
+	CKString		retval;
 	char			buff[128];
 	// first, send out the type as if it were a 'cast' of the data
 	switch (mType) {

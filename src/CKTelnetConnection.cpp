@@ -9,7 +9,7 @@
  *                          and writing. Rather, this class focuses on the
  *                          higher-level features.
  *
- * $Id: CKTelnetConnection.cpp,v 1.5 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKTelnetConnection.cpp,v 1.6 2004/09/16 09:34:20 drbob Exp $
  */
 
 //	System Headers
@@ -50,13 +50,13 @@ CKTelnetConnection::CKTelnetConnection() :
  * hostname and tries to make the connection to the host on
  * the default telnet port (23) before returning to the caller.
  */
-CKTelnetConnection::CKTelnetConnection( const std::string & aHost ) :
+CKTelnetConnection::CKTelnetConnection( const CKString & aHost ) :
 	CKTCPConnection()
 {
 	// let's try to make the connection based on this information
 	if (!connect(aHost)) {
 		std::ostringstream	msg;
-		msg << "CKTelnetConnection::CKTelnetConnection(const std::string &) - "
+		msg << "CKTelnetConnection::CKTelnetConnection(const CKString &) - "
 			"the telnet connection to the host " << aHost << " could not be "
 			"established. This is a serious problem. Please make sure that the "
 			"telnet service is ready to accept the connection.";
@@ -119,7 +119,7 @@ CKTelnetConnection & CKTelnetConnection::operator=( const CKTelnetConnection & a
  * just specify the host and away you go. The connection assumes
  * the default telnet port (23).
  */
-bool CKTelnetConnection::connect( const std::string & aHost )
+bool CKTelnetConnection::connect( const CKString & aHost )
 {
 	return CKTCPConnection::connect(aHost, (int)DEFAULT_TELNET_PORT);
 }
@@ -131,7 +131,7 @@ bool CKTelnetConnection::connect( const std::string & aHost )
  * the SMTP, FTP, etc. clients as they are basically telnet-like
  * connections on different ports.
  */
-bool CKTelnetConnection::connect( const std::string & aHost, int aPort )
+bool CKTelnetConnection::connect( const CKString & aHost, int aPort )
 {
 	return CKTCPConnection::connect(aHost, aPort);
 }
@@ -173,9 +173,9 @@ bool CKTelnetConnection::operator!=( const CKTelnetConnection & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKTelnetConnection::toString() const
+CKString CKTelnetConnection::toString() const
 {
 	// the super does fine on this for me
 	return CKTCPConnection::toString();

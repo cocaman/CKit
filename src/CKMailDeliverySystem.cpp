@@ -12,7 +12,7 @@
  *                            set that as the default prior to sending any
  *                            messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.cpp,v 1.5 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKMailDeliverySystem.cpp,v 1.6 2004/09/16 09:34:17 drbob Exp $
  */
 
 //	System Headers
@@ -135,7 +135,7 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 {
 	bool		error = false;
 
-	std::vector<std::string>	list;
+	std::vector<CKString>	list;
 	error = !cDefaultDelivery->deliver( aMsg, aReadReceipt, list );
 
 	return !error;
@@ -143,7 +143,7 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 
 
 bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-					const std::vector<std::string> & aPvtRecipients )
+					const std::vector<CKString> & aPvtRecipients )
 {
 	bool		error = false;
 
@@ -154,7 +154,7 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 
 
 bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-					const std::vector<std::string> & aPvtRecipients,
+					const std::vector<CKString> & aPvtRecipients,
 					CKMailDelivery & aChannel )
 {
 	bool		error = false;
@@ -200,11 +200,11 @@ bool CKMailDeliverySystem::operator!=( const CKMailDeliverySystem & anOther ) co
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKMailDeliverySystem::toString() const
+CKString CKMailDeliverySystem::toString() const
 {
-	return std::string("<this object has no instance variables>");
+	return "<this object has no instance variables>";
 }
 
 

@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.1 2004/09/14 15:39:52 drbob Exp $
+ * $Id: CKString.h,v 1.2 2004/09/16 09:34:19 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -172,22 +172,22 @@ class CKString
 		 * or 'false' if not. There are quite a few to be as generally
 		 * useful as possible.
 		 */
-		bool append( CKString & aString );
-		bool append( const CKString & aString );
-		bool append( char *aCString );
-		bool append( const char *aCString );
-		bool append( std::string & aSTLString );
-		bool append( const std::string & aSTLString );
+		CKString & append( CKString & aString );
+		CKString & append( const CKString & aString );
+		CKString & append( char *aCString );
+		CKString & append( const char *aCString );
+		CKString & append( std::string & aSTLString );
+		CKString & append( const std::string & aSTLString );
 		/*
 		 * These methods add the string representation of the different
 		 * kinds of base data objects to the end of the existing string
 		 * and return 'true' if successful, or 'false' if not. There are
 		 * quite a few to be as generally useful as possible.
 		 */
-		bool append( char aChar );
-		bool append( int anInteger, int aNumOfDigits = -1 );
-		bool append( long aLong, int aNumOfDigits = -1 );
-		bool append( double aDouble );
+		CKString & append( char aChar );
+		CKString & append( int anInteger, int aNumOfDigits = -1 );
+		CKString & append( long aLong, int aNumOfDigits = -1 );
+		CKString & append( double aDouble );
 
 		/*
 		 * These methods add the different kinds of strings to the
@@ -195,22 +195,33 @@ class CKString
 		 * or 'false' if not. There are quite a few to be as generally
 		 * useful as possible.
 		 */
-		bool prepend( CKString & aString );
-		bool prepend( const CKString & aString );
-		bool prepend( char *aCString );
-		bool prepend( const char *aCString );
-		bool prepend( std::string & aSTLString );
-		bool prepend( const std::string & aSTLString );
+		CKString & prepend( CKString & aString );
+		CKString & prepend( const CKString & aString );
+		CKString & prepend( char *aCString );
+		CKString & prepend( const char *aCString );
+		CKString & prepend( std::string & aSTLString );
+		CKString & prepend( const std::string & aSTLString );
 		/*
 		 * These methods add the string representation of the different
 		 * kinds of base data objects to the beginning of the existing string
 		 * and return 'true' if successful, or 'false' if not. There are
 		 * quite a few to be as generally useful as possible.
 		 */
-		bool prepend( char aChar );
-		bool prepend( int anInteger, int aNumOfDigits = -1 );
-		bool prepend( long aLong, int aNumOfDigits = -1 );
-		bool prepend( double aDouble );
+		CKString & prepend( char aChar );
+		CKString & prepend( int anInteger, int aNumOfDigits = -1 );
+		CKString & prepend( long aLong, int aNumOfDigits = -1 );
+		CKString & prepend( double aDouble );
+
+		/*
+		 * When you need to remove (erase) a section of the string, this
+		 * method is the one to call. You give it a starting index and
+		 * optionally a number of characters to delete and they will be
+		 * removed from the string. If the length is not supplied, then
+		 * the characters from 'aStartingIndex' to the end of the string
+		 * will be removed.
+		 */
+		bool erase( int aStartingIndex,  int aLength = -1 );
+		bool erase( int aStartingIndex,  int aLength = -1 ) const;
 
 		/*
 		 * This method returns the current size of the string in characters.
@@ -283,6 +294,14 @@ class CKString
 		 */
 		char operator[]( int aPosition );
 		char operator[]( int aPosition ) const;
+
+		/*
+		 * This method allows the user to clear out the buffer explicitly.
+		 * It's handy from time to time if you're going to be re-using the
+		 * same string again and again.
+		 */
+		bool clear();
+		bool clear() const;
 
 		/********************************************************
 		 *
@@ -536,27 +555,28 @@ class CKString
 
 		/*
 		 * These methods all search for the FIRST occurrence of the
-		 * argument in the current string and return the starting
-		 * position of the match if one is found, or a -1 if there
-		 * is nothing in the current string that matches the  argument.
+		 * argument in the current string *ON OR AFTER* the supplied
+		 * index and return the starting position of the match if one
+		 * is found, or a -1 if there is nothing in the current string
+		 * that matches the  argument.
 		 */
-		int find( char aChar );
-		int find( char aChar ) const;
+		int find( char aChar, int aStartingIndex = 0 );
+		int find( char aChar, int aStartingIndex = 0 ) const;
 
-		int find( char *aCString );
-		int find( char *aCString ) const;
-		int find( const char *aCString );
-		int find( const char *aCString ) const;
+		int find( char *aCString, int aStartingIndex = 0 );
+		int find( char *aCString, int aStartingIndex = 0 ) const;
+		int find( const char *aCString, int aStartingIndex = 0 );
+		int find( const char *aCString, int aStartingIndex = 0 ) const;
 
-		int find( CKString & aString );
-		int find( const CKString & aString );
-		int find( CKString & aString ) const;
-		int find( const CKString & aString ) const;
+		int find( CKString & aString, int aStartingIndex = 0 );
+		int find( const CKString & aString, int aStartingIndex = 0 );
+		int find( CKString & aString, int aStartingIndex = 0 ) const;
+		int find( const CKString & aString, int aStartingIndex = 0 ) const;
 
-		int find( std::string & anSTLString );
-		int find( const std::string & anSTLString );
-		int find( std::string & anSTLString ) const;
-		int find( const std::string & anSTLString ) const;
+		int find( std::string & anSTLString, int aStartingIndex = 0 );
+		int find( const std::string & anSTLString, int aStartingIndex = 0 );
+		int find( std::string & anSTLString, int aStartingIndex = 0 ) const;
+		int find( const std::string & anSTLString, int aStartingIndex = 0 ) const;
 
 		/*
 		 * These methods all search for the LAST occurrence of the
@@ -564,23 +584,23 @@ class CKString
 		 * position of the match if one is found, or a -1 if there
 		 * is nothing in the current string that matches the  argument.
 		 */
-		int findLast( char aChar );
-		int findLast( char aChar ) const;
+		int findLast( char aChar, int aStartingIndex = -1 );
+		int findLast( char aChar, int aStartingIndex = -1 ) const;
 
-		int findLast( char *aCString );
-		int findLast( char *aCString ) const;
-		int findLast( const char *aCString );
-		int findLast( const char *aCString ) const;
+		int findLast( char *aCString, int aStartingIndex = -1 );
+		int findLast( char *aCString, int aStartingIndex = -1 ) const;
+		int findLast( const char *aCString, int aStartingIndex = -1 );
+		int findLast( const char *aCString, int aStartingIndex = -1 ) const;
 
-		int findLast( CKString & aString );
-		int findLast( const CKString & aString );
-		int findLast( CKString & aString ) const;
-		int findLast( const CKString & aString ) const;
+		int findLast( CKString & aString, int aStartingIndex = -1 );
+		int findLast( const CKString & aString, int aStartingIndex = -1 );
+		int findLast( CKString & aString, int aStartingIndex = -1 ) const;
+		int findLast( const CKString & aString, int aStartingIndex = -1 ) const;
 
-		int findLast( std::string & anSTLString );
-		int findLast( const std::string & anSTLString );
-		int findLast( std::string & anSTLString ) const;
-		int findLast( const std::string & anSTLString ) const;
+		int findLast( std::string & anSTLString, int aStartingIndex = -1 );
+		int findLast( const std::string & anSTLString, int aStartingIndex = -1 );
+		int findLast( std::string & anSTLString, int aStartingIndex = -1 ) const;
+		int findLast( const std::string & anSTLString, int aStartingIndex = -1 ) const;
 
 		/********************************************************
 		 *
@@ -616,6 +636,7 @@ class CKString
 		bool operator==( const std::string & anSTLString );
 		bool operator==( std::string & anSTLString ) const;
 		bool operator==( const std::string & anSTLString ) const;
+
 		/*
 		 * This method checks to see if the two CKStrings are not equal to
 		 * one another based on the values they represent and *not* on the
@@ -645,6 +666,130 @@ class CKString
 		bool operator!=( const std::string & anSTLString );
 		bool operator!=( std::string & anSTLString ) const;
 		bool operator!=( const std::string & anSTLString ) const;
+
+		/*
+		 * This method checks to see if the argument CKString is greather
+		 * than or equal to this string (thus this one being less than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<( CKString & anOther );
+		bool operator<( const CKString & anOther );
+		bool operator<( CKString & anOther ) const;
+		bool operator<( const CKString & anOther ) const;
+		/*
+		 * This method checks to see if the argument string is greather
+		 * than or equal to this string (thus this one being less than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<( char *aCString );
+		bool operator<( const char *aCString );
+		bool operator<( char *aCString ) const;
+		bool operator<( const char *aCString ) const;
+		/*
+		 * This method checks to see if the argument STL string is greather
+		 * than or equal to this string (thus this one being less than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<( std::string & anSTLString );
+		bool operator<( const std::string & anSTLString );
+		bool operator<( std::string & anSTLString ) const;
+		bool operator<( const std::string & anSTLString ) const;
+
+		/*
+		 * This method checks to see if the argument CKString is greather
+		 * than this string (thus this one being less than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<=( CKString & anOther );
+		bool operator<=( const CKString & anOther );
+		bool operator<=( CKString & anOther ) const;
+		bool operator<=( const CKString & anOther ) const;
+		/*
+		 * This method checks to see if the argument string is greather
+		 * than this string (thus this one being less than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<=( char *aCString );
+		bool operator<=( const char *aCString );
+		bool operator<=( char *aCString ) const;
+		bool operator<=( const char *aCString ) const;
+		/*
+		 * This method checks to see if the argument STL string is greather
+		 * than this string (thus this one being less than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator<=( std::string & anSTLString );
+		bool operator<=( const std::string & anSTLString );
+		bool operator<=( std::string & anSTLString ) const;
+		bool operator<=( const std::string & anSTLString ) const;
+
+		/*
+		 * This method checks to see if the argument CKString is less
+		 * than or equal to this string (thus this one being greater than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>( CKString & anOther );
+		bool operator>( const CKString & anOther );
+		bool operator>( CKString & anOther ) const;
+		bool operator>( const CKString & anOther ) const;
+		/*
+		 * This method checks to see if the argument string is less
+		 * than or equal to this string (thus this one being greater than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>( char *aCString );
+		bool operator>( const char *aCString );
+		bool operator>( char *aCString ) const;
+		bool operator>( const char *aCString ) const;
+		/*
+		 * This method checks to see if the argument STL string is less
+		 * than or equal to this string (thus this one being greater than),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>( std::string & anSTLString );
+		bool operator>( const std::string & anSTLString );
+		bool operator>( std::string & anSTLString ) const;
+		bool operator>( const std::string & anSTLString ) const;
+
+		/*
+		 * This method checks to see if the argument CKString is less
+		 * than this string (thus this one being greater than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>=( CKString & anOther );
+		bool operator>=( const CKString & anOther );
+		bool operator>=( CKString & anOther ) const;
+		bool operator>=( const CKString & anOther ) const;
+		/*
+		 * This method checks to see if the argument string is less
+		 * than this string (thus this one being greater than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>=( char *aCString );
+		bool operator>=( const char *aCString );
+		bool operator>=( char *aCString ) const;
+		bool operator>=( const char *aCString ) const;
+		/*
+		 * This method checks to see if the argument STL string is less
+		 * than this string (thus this one being greater than or equal),
+		 * based on the values they represent and *not* on the actual
+		 * pointers themselves.
+		 */
+		bool operator>=( std::string & anSTLString );
+		bool operator>=( const std::string & anSTLString );
+		bool operator>=( std::string & anSTLString ) const;
+		bool operator>=( const std::string & anSTLString ) const;
 
 		/*
 		 * Because there are times when it's useful to have a nice

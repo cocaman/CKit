@@ -12,13 +12,12 @@
  *                      takes place during a connection. So, if you can, scan
  *                      the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.h,v 1.5 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKSMTPConnection.h,v 1.6 2004/09/16 09:34:18 drbob Exp $
  */
 #ifndef __CKSMTPCONNECTION_H
 #define __CKSMTPCONNECTION_H
 
 //	System Headers
-#include <string>
 #ifdef GPP2
 #include <ostream.h>
 #else
@@ -29,6 +28,7 @@
 
 //	Other Headers
 #include "CKTCPConnection.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -75,7 +75,7 @@ class CKSMTPConnection :
 		 * host name and tries to establish a successful connection to the
 		 * SMTP service on that host before returning to the caller.
 		 */
-		CKSMTPConnection( const std::string & aHost );
+		CKSMTPConnection( const CKString & aHost );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -112,7 +112,7 @@ class CKSMTPConnection :
 		 * host and exchanges the initial messages that are necessary
 		 * in order to get the communication underway properly.
 		 */
-		bool connectToHost( const std::string & aHost );
+		bool connectToHost( const CKString & aHost );
 		/*
 		 * In SMTP language, this is the "bye, and send" message that
 		 * needs to be sent to the SMTP server in order to quit the
@@ -157,7 +157,7 @@ class CKSMTPConnection :
 		 * It simply calls the other SMTP methods, but makes
 		 * programming to the SMTP host "look" nicer.
 		 */
-		bool addToMessageBody( const std::string & aString );
+		bool addToMessageBody( const CKString & aString );
 		/*
 		 * This more descriptive method simply calls endData(), but
 		 * makes programming to the SMTP interface "look" nicer.
@@ -175,14 +175,14 @@ class CKSMTPConnection :
 		 * while rcptTo() can be called any number of times, this
 		 * method can only be called once without error.
 		 */
-		int mailFrom( const std::string & aFromAddress );
+		int mailFrom( const CKString & aFromAddress );
 		/*
 		 * This adds the given address to the list of recipients to
 		 * receive the upcoming SMTP mail message. This can be called
 		 * any number of times, but must be done consecutively. This
 		 * is a limitation of the SMTP protocol.
 		 */
-		int rcptTo( const std::string & aToAddress );
+		int rcptTo( const CKString & aToAddress );
 
 		/********************************************************
 		 *
@@ -196,14 +196,14 @@ class CKSMTPConnection :
 		 * called many times, this method can only be called once
 		 * without error.
 		 */
-		bool senderAddress( const std::string & anAddress );
+		bool senderAddress( const CKString & anAddress );
 		/*
 		 * This more descriptive method adds the given address to the
 		 * list of recipients to receive the upcoming SMTP mail message.
 		 * This can be called any number of times, but must be done
 		 * consecutively. This is a limitation of the SMTP protocol.
 		 */
-		bool recipientAddress( const std::string & anAddress );
+		bool recipientAddress( const CKString & anAddress );
 
 		/********************************************************
 		 *
@@ -230,9 +230,9 @@ class CKSMTPConnection :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -268,7 +268,7 @@ class CKSMTPConnection :
 		 * CKException so that most reporting of errors can
 		 * happen at this level.
 		 */
-		int sendCommand( const std::string & aCommand );
+		int sendCommand( const CKString & aCommand );
 		/*
 		 * This method gets the reply from the SMTP server through
 		 * the socket and then updates the state of the connection
@@ -292,7 +292,7 @@ class CKSMTPConnection :
 		 * This routine throws CKExceptions in the event that a
 		 * processing error occurs, and returns a -1.
 		 */
-		int grabSMTPReturnCodeOnData( const std::string & aData );
+		int grabSMTPReturnCodeOnData( const CKString & aData );
 		/*
 		 * There will be times that we need to "decode" the SMTP
 		 * return code that is an integer into a human-readable
@@ -302,13 +302,13 @@ class CKSMTPConnection :
 		 * descriptive error string is returned and a CKException
 		 * is thrown.
 		 */
-		std::string stringForSMTPReturnCode( int aCode );
+		CKString stringForSMTPReturnCode( int aCode );
 		/*
 		 * This method simply calls getStatus() to get the
 		 * last SMTP return value and then passes it to
 		 * stringForSMTPReturnCode() to convert that to a string.
 		 */
-		std::string stringForLastSMTPReturnCode();
+		CKString stringForLastSMTPReturnCode();
 
 	private:
 		/*

@@ -7,7 +7,7 @@
  *                     the CKTelnetConnection class which in turn is used
  *                     in other higher-level classes in CKit.
  *
- * $Id: CKTCPConnection.h,v 1.5 2004/09/11 21:07:49 drbob Exp $
+ * $Id: CKTCPConnection.h,v 1.6 2004/09/16 09:34:20 drbob Exp $
  */
 #ifndef __CKTCPCONNECTION_H
 #define __CKTCPCONNECTION_H
@@ -24,6 +24,7 @@
 
 //	Other Headers
 #include "CKBufferedSocket.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -57,7 +58,7 @@ class CKTCPConnection :
 		 * parameters and tries to make the connection to the host on
 		 * that port before returning to the caller.
 		 */
-		CKTCPConnection( const std::string & aHost, int aPort );
+		CKTCPConnection( const CKString & aHost, int aPort );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -139,9 +140,9 @@ class CKTCPConnection :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 };
 
 /*

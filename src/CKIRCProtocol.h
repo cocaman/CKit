@@ -3,16 +3,15 @@
  *                   simple conduit to a simple IRC server. The basics of
  *                   the IRC communication is handled by this class and you
  *                   can register for all incoming messages to be processed
- *                   and return a std::string as a reply. This is the core
+ *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.6 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.7 2004/09/16 09:34:16 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
 
 //	System Headers
-#include <string>
 #ifdef GPP2
 #include <ostream.h>
 #else
@@ -26,6 +25,7 @@
 //	Other Headers
 #include "CKTelnetConnection.h"
 #include "CKFWMutex.h"
+#include "CKString.h"
 
 //	Forward Declarations
 class CKIRCProtocolListener;
@@ -89,11 +89,11 @@ class CKIRCResponder;
  */
 typedef struct CKIRCIncomingMessageBlock {
 	// this is the user's nickname that the message is coming from
-	std::string			userNickname;
+	CKString			userNickname;
 	// ...and this is the message they have typed
-	std::string			message;
+	CKString			message;
 	// ...and the receiver should fill this with the message to send back
-	std::string			response;
+	CKString			response;
 } CKIRCIncomingMessage;
 
 //	Public Data Constants
@@ -126,15 +126,15 @@ class CKIRCProtocol
 		 * form of the constructor because it creates the protocol object
 		 * and connects to a specific IRC server.
 		 */
-		CKIRCProtocol( const std::string & aHost, int aPort );
+		CKIRCProtocol( const CKString & aHost, int aPort );
 		/*
 		 * This form of the constructor is nice in that it not only connects
 		 * to the IRC server, it sends the necessary commands to establish a
 		 * solid connection to the server, and in so doing, allows the user
 		 * to start sending messages right away.
 		 */
-		CKIRCProtocol( const std::string & aHost, int aPort,
-					   const std::string & aNick );
+		CKIRCProtocol( const CKString & aHost, int aPort,
+					   const CKString & aNick );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -168,7 +168,7 @@ class CKIRCProtocol
 		 * throw a CKException if a connection is already
 		 * established to a server.
 		 */
-		void setHostname( const std::string & aHost );
+		void setHostname( const CKString & aHost );
 		/*
 		 * This method is the setter for the port number that will
 		 * be used to establish a communication port with
@@ -181,27 +181,27 @@ class CKIRCProtocol
 		 * This method sets the password we'll be using in all communications
 		 * with the IRC server.
 		 */
-		void setPassword( const std::string & aPassword );
+		void setPassword( const CKString & aPassword );
 		/*
 		 * This method sets the nickname we'll be using in all
 		 * communications with the IRC server.
 		 */
-		void setNickname( const std::string & aNick );
+		void setNickname( const CKString & aNick );
 		/*
 		 * This method sets the USER host we'll be using in all
 		 * communications with the IRC server.
 		 */
-		void setUserHost( const std::string & aHost );
+		void setUserHost( const CKString & aHost );
 		/*
 		 * This method sets the USER server we'll be using in all
 		 * communications with the IRC server.
 		 */
-		void setUserServer( const std::string & aServer );
+		void setUserServer( const CKString & aServer );
 		/*
 		 * This method sets the real name we'll be using in all
 		 * communications with the IRC server.
 		 */
-		void setRealName( const std::string & aName );
+		void setRealName( const CKString & aName );
 
 		/*
 		 * Because the IRC Protocol is based on the CKTelnetConnection,
@@ -210,7 +210,7 @@ class CKIRCProtocol
 		 * standard getter accessor method for the host name that
 		 * will be used in all subsequent connections.
 		 */
-		const std::string getHostname() const;
+		const CKString getHostname() const;
 		/*
 		 * This method is the getter for the port number that will
 		 * be used to establish a communication port with
@@ -240,36 +240,36 @@ class CKIRCProtocol
 		 * This method returns the password we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const std::string getPassword() const;
+		const CKString getPassword() const;
 		/*
 		 * This method returns the nickname we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const std::string getNickname() const;
+		const CKString getNickname() const;
 		/*
 		 * This method returns the USER host we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const std::string getUserHost() const;
+		const CKString getUserHost() const;
 		/*
 		 * This method returns the USER server we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const std::string getUserServer() const;
+		const CKString getUserServer() const;
 		/*
 		 * This method returns the real name we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const std::string getRealName() const;
+		const CKString getRealName() const;
 		/*
-		 * This method returns a pointer to a std::list of std::strings that
+		 * This method returns a pointer to a std::list of CKStrings that
 		 * is the list of Channels that this IRC Connection has JOINed. Note
 		 * that this method will not return a NULL as it's a pointer to the
 		 * instance variable and therefore should also not be released, etc.
 		 * If you want to make a copy, do so, but otherwise, leave this guy
 		 * alone.
 		 */
-		const std::list<std::string>	*getChannelList() const;
+		const std::list<CKString>	*getChannelList() const;
 		/*
 		 * This method returns a pointer to the listener thread that is
 		 * going to be listening to the incoming data from the IRC server.
@@ -286,7 +286,7 @@ class CKIRCProtocol
 		 * once per connection to the IRC server, and to do mroe than
 		 * once is wasting bandwidth.
 		 */
-		bool isChannelInChannelList( const std::string & aChannel );
+		bool isChannelInChannelList( const CKString & aChannel );
 
 		/********************************************************
 		 *
@@ -307,14 +307,14 @@ class CKIRCProtocol
 		 * IRC protocol port and so the user really only needs to
 		 * specify the host and most connections will be made.
 		 */
-		bool connect( const std::string & aHost );
+		bool connect( const CKString & aHost );
 		/*
 		 * This method allows both the host name and port number to
 		 * be specified for making the connection. This is used by
 		 * the other connection mathods as it is the most general
 		 * form of the function.
 		 */
-		bool connect( const std::string & aHost, int aPort );
+		bool connect( const CKString & aHost, int aPort );
 		/*
 		 * This method simply returns the state of the IRC
 		 * communications port - in so far as it's establishment.
@@ -337,7 +337,7 @@ class CKIRCProtocol
 		 * This is a simple cover method for the sending of a message to the
 		 * IRC server. The 'aDest' can be a channel or a user.
 		 */
-		void sendMessage( const std::string & aDest, const std::string & aMsg );
+		void sendMessage( const CKString & aDest, const CKString & aMsg );
 
 		/*
 		 * This method is interesting - there will be times that chat
@@ -357,7 +357,7 @@ class CKIRCProtocol
 		 * will return true, otherwise, it hasn't been handled and
 		 * needs to be passed to all the responders for their input.
 		 */
-		virtual bool isReflexChat( std::string & aLine );
+		virtual bool isReflexChat( CKString & aLine );
 
 		/********************************************************
 		 *
@@ -417,9 +417,9 @@ class CKIRCProtocol
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -443,7 +443,7 @@ class CKIRCProtocol
 		 * as a copy and not as an assumption of the memory management of
 		 * the elements of the list.
 		 */
-		void setChannelList( const std::list<std::string> & aList );
+		void setChannelList( const std::list<CKString> & aList );
 		/*
 		 * This method sets the pointer to this instance's listener to the
 		 * passed-in value. The memory management of this listener will then
@@ -457,7 +457,7 @@ class CKIRCProtocol
 		 * JOINed channels for this instance. It is only added, of course,
 		 * if the channel does not already exist in the list.
 		 */
-		void addToChannelList( const std::string & aChannel );
+		void addToChannelList( const CKString & aChannel );
 		/*
 		 * This method clears out all the channels that are currently
 		 * JOINed to. This is necessary at times, such as the reconnection
@@ -481,8 +481,8 @@ class CKIRCProtocol
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		static std::vector<std::string> parseIntoChunks( const std::string & aString,
-														 const std::string & aDelim );
+		static std::vector<CKString> parseIntoChunks( const CKString & aString,
+													  const CKString & aDelim );
 
 		/********************************************************
 		 *
@@ -497,7 +497,7 @@ class CKIRCProtocol
 		 * and use it to determine when to recycle and check for
 		 * things needing to be done.
 		 */
-		std::string getReply();
+		CKString getReply();
 		/*
 		 * This method checks for the reply from the IRC server through
 		 * the socket. If there's not a valid reply on the socket, it
@@ -532,54 +532,54 @@ class CKIRCProtocol
 		 * IRC functions are all available and waiting without
 		 * circumventing the designed flow.
 		 */
-		void executeCommand( const std::string & aCmd );
+		void executeCommand( const CKString & aCmd );
 		/*
 		 * This executes the standard IRC 'PASS' command on the communication
 		 * channel to the remote host. This is meant to supply a password
 		 * to the IRC server to ensure at least some level of security.
 		 */
-		void doPASS( const std::string & aPassword );
+		void doPASS( const CKString & aPassword );
 		/*
 		 * This executes the standard IRC 'NICK' command on the communication
 		 * channel to the remote host. This is meant to supply the requested
 		 * nickname to the IRC server so that everyone knows who this is coming
 		 * from.
 		 */
-		void doNICK( const std::string & aNick );
+		void doNICK( const CKString & aNick );
 		/*
 		 * This executes the standard IRC 'USER' command on the communication
 		 * channel to the remote host. This is meant to supply real
 		 * information about the user to the IRC server.
 		 */
-		void doUSER( const std::string & aNick,
-					 const std::string & aHost,
-					 const std::string & aServer,
-					 const std::string & aRealName );
+		void doUSER( const CKString & aNick,
+					 const CKString & aHost,
+					 const CKString & aServer,
+					 const CKString & aRealName );
 		/*
 		 * This executes the standard IRC 'QUIT' command on the communication
 		 * channel to the remote host. This is meant to log off this
 		 * connection and leave a message on the way out.
 		 */
-		void doQUIT( const std::string & aMsg );
+		void doQUIT( const CKString & aMsg );
 		/*
 		 * This executes the standard IRC 'JOIN' command on the communication
 		 * channel to the remote host. This puts us in the channel on the
 		 * server so that we can send messages to it.
 		 */
-		void doJOIN( const std::string & aChannel );
+		void doJOIN( const CKString & aChannel );
 		/*
 		 * This executes the standard IRC 'PRIVMSG' command on the
 		 * communication channel to the remote host. This sends a private
 		 * message to the supplied user or channel and includes a return
 		 * code - the doNOTICE is different in that no return code is sent.
 		 */
-		void doPRIVMSG( const std::string & aDest, const std::string & aMsg );
+		void doPRIVMSG( const CKString & aDest, const CKString & aMsg );
 		/*
 		 * This executes the standard IRC 'NOTICE' command on the
 		 * communication channel to the remote host. This is similar to
 		 * doPRIVMSG() but here we do NOT get a reply from the IRC server.
 		 */
-		void doNOTICE( const std::string & aDest, const std::string & aMsg );
+		void doNOTICE( const CKString & aDest, const CKString & aMsg );
 		/*
 		 * This execute the PONG command that is used in response to the PING
 		 * sent from the IRC Server. This lets the server know that I'm alive
@@ -592,7 +592,7 @@ class CKIRCProtocol
 		 * This is the hostname of the IRC (Chat) server that we'll be
 		 * using to send and receive messages.
 		 */
-		std::string					mHostname;
+		CKString					mHostname;
 		/*
 		 * This is the port number on the host 'mHostname' that we'll be
 		 * talking to to send and receive messages. This defaults to 6667,
@@ -618,11 +618,11 @@ class CKIRCProtocol
 		 * user's host machine, user's server, and real-life name of the
 		 * person.
 		 */
-		std::string					mPassword;
-		std::string					mNickname;
-		std::string					mUserHost;
-		std::string					mUserServer;
-		std::string					mRealName;
+		CKString					mPassword;
+		CKString					mNickname;
+		CKString					mUserHost;
+		CKString					mUserServer;
+		CKString					mRealName;
 		/*
 		 * This is a vector of strings that are the channels that this
 		 * instance has JOINed in the course of the messages getting sent
@@ -631,7 +631,7 @@ class CKIRCProtocol
 		 * have already joined. Each new connection will need to reset this
 		 * list as it isn't persistent on the server.
 		 */
-		std::list<std::string>		mChannelList;
+		std::list<CKString>			mChannelList;
 		// ...and this is the mutex for it to control access
 		CKFWMutex					mChannelListMutex;
 		/*

@@ -14,7 +14,7 @@
  *                     no matter how the scope is exited - normally or by an
  *                     exception being thrown, the mutex will be unlocked.
  *
- * $Id: CKStackLocker.cpp,v 1.3 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKStackLocker.cpp,v 1.4 2004/09/16 09:34:18 drbob Exp $
  */
 
 //	System Headers

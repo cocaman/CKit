@@ -1,7 +1,7 @@
 /*
  * CKDataNode.cpp - this file implements a class that can be used to represent
  *                  a general tree of data where each node contains a map of
- *                  key/value pairs where the key is a std::string (name) and
+ *                  key/value pairs where the key is a CKString (name) and
  *                  the value is a CKVariant that can hold almost anything
  *                  you need to hold. In addition to the data, this node has
  *                  a list of children nodes (pointers to CKDataNodes) and a
@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.12 2004/09/11 21:07:42 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.13 2004/09/16 09:34:12 drbob Exp $
  */
 
 //	System Headers
@@ -79,7 +79,7 @@ CKDataNode::CKDataNode( CKDataNode *aParent ) :
  * populated later. The parent node is not controlled by the
  * instance because no parent nodes are controlled by the nodes.
  */
-CKDataNode::CKDataNode( CKDataNode *aParent, const std::string & aName ) :
+CKDataNode::CKDataNode( CKDataNode *aParent, const CKString & aName ) :
 	mParent(NULL),
 	mName(),
 	mVars(),
@@ -107,8 +107,8 @@ CKDataNode::CKDataNode( CKDataNode *aParent, const std::string & aName ) :
  * and the value could be a variant time-series of the price
  * data. This would make creating a tree of nodes very easy.
  */
-CKDataNode::CKDataNode( CKDataNode *aParent, const std::string & aName,
-						const std::string & aKey, const CKVariant & aValue ) :
+CKDataNode::CKDataNode( CKDataNode *aParent, const CKString & aName,
+						const CKString & aKey, const CKVariant & aValue ) :
 	mParent(NULL),
 	mName(),
 	mVars(),
@@ -259,7 +259,7 @@ void CKDataNode::setParent( CKDataNode *aNode )
  * is useful because most data sets (trees) have an identifying
  * name for each data point.
  */
-void CKDataNode::setName( const std::string & aName )
+void CKDataNode::setName( const CKString & aName )
 {
 	mName = aName;
 }
@@ -282,7 +282,7 @@ CKDataNode *CKDataNode::getParent() const
  * data structures it makes sense to name the nodes and this is
  * the way to see what this node's name is.
  */
-std::string CKDataNode::getName() const
+CKString CKDataNode::getName() const
 {
 	return mName;
 }
@@ -290,12 +290,12 @@ std::string CKDataNode::getName() const
 
 /*
  * Each node can have many variables (attributes) stored in a map
- * as a std::string name and CKVariant value. This method returns a
+ * as a CKString name and CKVariant value. This method returns a
  * pointer to the actual named value so if you want to do something
  * with it, make a copy. If there is no variable with this name the
  * method will return a NULL.
  */
-CKVariant *CKDataNode::getVar( const std::string & aName )
+CKVariant *CKDataNode::getVar( const CKString & aName )
 {
 	CKVariant		*retval = NULL;
 
@@ -303,7 +303,7 @@ CKVariant *CKDataNode::getVar( const std::string & aName )
 	mVarsMutex.lock();
 	// now look for the entry
 	if (!mVars.empty()) {
-		std::map<std::string, CKVariant>::iterator	i = mVars.find(aName);
+		std::map<CKString, CKVariant>::iterator	i = mVars.find(aName);
 		if (i != mVars.end()) {
 			retval = &((*i).second);
 		}
@@ -317,10 +317,10 @@ CKVariant *CKDataNode::getVar( const std::string & aName )
 
 /*
  * Each node can have many variables (attributes) stored in a map
- * as a std::string name and CKVariant value. This method places a
+ * as a CKString name and CKVariant value. This method places a
  * value into that map for this instance at the name provided.
  */
-void CKDataNode::putVar( const std::string & aName, const CKVariant & aValue )
+void CKDataNode::putVar( const CKString & aName, const CKVariant & aValue )
 {
 	// make sure we do this in a thread-safe manner
 	mVarsMutex.lock();
@@ -336,13 +336,13 @@ void CKDataNode::putVar( const std::string & aName, const CKVariant & aValue )
  * sometimes necessary to clean out the old ones. This method
  * removes the named variable from this node if it exists.
  */
-void CKDataNode::removeVar( const std::string & aName )
+void CKDataNode::removeVar( const CKString & aName )
 {
 	// make sure we do this in a thread-safe manner
 	mVarsMutex.lock();
 	// ...erase all entries with this name (only one possible)
 	if (!mVars.empty()) {
-		std::map<std::string, CKVariant>::iterator	i = mVars.find(aName);
+		std::map<CKString, CKVariant>::iterator	i = mVars.find(aName);
 		if (i != mVars.end()) {
 			mVars.erase(i);
 		}
@@ -477,9 +477,9 @@ void CKDataNode::removeChild( const CKDataNode *aNode )
  * iterate over the children assuming they all have distinct names
  * as would be the case in most data sets.
  */
-std::vector<std::string> CKDataNode::getChildNames()
+std::vector<CKString> CKDataNode::getChildNames()
 {
-	std::vector<std::string>	retval;
+	std::vector<CKString>	retval;
 
 	// lock up the list to be safe
 	mKidsMutex.lock();
@@ -506,7 +506,7 @@ std::vector<std::string> CKDataNode::getChildNames()
  * pointer, so if you want to do anything with it, you need to
  * make a copy.
  */
-CKDataNode *CKDataNode::findChild( const std::string & aName )
+CKDataNode *CKDataNode::findChild( const CKString & aName )
 {
 	CKDataNode		*retval = NULL;
 
@@ -600,7 +600,7 @@ bool CKDataNode::isLeaf()
  * part of. So, even if this node is *not* in the path, the value
  * will be returned if it's in the tree.
  */
-CKVariant *CKDataNode::getVarAtPath( const std::string & aPath )
+CKVariant *CKDataNode::getVarAtPath( const CKString & aPath )
 {
 	bool		error = false;
 	CKVariant	*retval = NULL;
@@ -617,15 +617,15 @@ CKVariant *CKDataNode::getVarAtPath( const std::string & aPath )
 	}
 
 	// next, turn the path into a vector of strings
-	std::vector<std::string>	steps;
-	int							stepCnt = 0;
+	std::vector<CKString>	steps;
+	int						stepCnt = 0;
 	if (!error) {
 		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::getVarAtPath(const std::string &) - the path "
+			msg << "CKDataNode::getVarAtPath(const CKString &) - the path "
 				"had insufficient steps to create a valid path. Please make sure "
 				"that a valid path is passed to this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -646,7 +646,7 @@ CKVariant *CKDataNode::getVarAtPath( const std::string & aPath )
  * you don't really want to make a single string just to store
  * the value.
  */
-CKVariant *CKDataNode::getVarAtPath( const std::vector<std::string> & aSteps )
+CKVariant *CKDataNode::getVarAtPath( const std::vector<CKString> & aSteps )
 {
 	bool		error = false;
 	CKVariant	*retval = NULL;
@@ -661,7 +661,7 @@ CKVariant *CKDataNode::getVarAtPath( const std::vector<std::string> & aSteps )
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::getVarAtPath(const std::vector<std::string> &) "
+			msg << "CKDataNode::getVarAtPath(const std::vector<CKString> &) "
 				"- the path had insufficient steps to create a valid path. Please "
 				"make sure that a valid path is passed to this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -718,7 +718,7 @@ CKVariant *CKDataNode::getVarAtPath( const std::vector<std::string> & aSteps )
  * any value in any node in that same tree without having to assume
  * a currently defined structure.
  */
-void CKDataNode::putVarAtPath( const std::string & aPath, const CKVariant & aValue )
+void CKDataNode::putVarAtPath( const CKString & aPath, const CKVariant & aValue )
 {
 	bool		error = false;
 
@@ -734,15 +734,15 @@ void CKDataNode::putVarAtPath( const std::string & aPath, const CKVariant & aVal
 	}
 
 	// next, turn the path into a vector of strings
-	std::vector<std::string>	steps;
-	int							stepCnt = 0;
+	std::vector<CKString>	steps;
+	int						stepCnt = 0;
 	if (!error) {
 		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::putVarAtPath(const std::string &, const "
+			msg << "CKDataNode::putVarAtPath(const CKString &, const "
 				"CKVariant &) - the path had insufficient steps to create a "
 				"valid path. Please make sure that a valid path is passed to "
 				"this method.";
@@ -762,7 +762,7 @@ void CKDataNode::putVarAtPath( const std::string & aPath, const CKVariant & aVal
  * like a vector and you don't want to put it all together only
  * to have this method break it up.
  */
-void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
+void CKDataNode::putVarAtPath( const std::vector<CKString> & aSteps,
 							   const CKVariant & aValue )
 {
 	bool		error = false;
@@ -777,7 +777,7 @@ void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::putVarAtPath(const std::vector<std::string> &, "
+			msg << "CKDataNode::putVarAtPath(const std::vector<CKString> &, "
 				"const CKVariant &) - the path had insufficient steps to create "
 				"a valid path. Please make sure that a valid path is passed to "
 				"this method.";
@@ -797,7 +797,7 @@ void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
 						error = true;
 						std::ostringstream	msg;
 						msg << "CKDataNode::putVarAtPath(const "
-							"std::vector<std::string> &, const CKVariant &) - "
+							"std::vector<CKString> &, const CKVariant &) - "
 							"while trying to extend the tree to include "
 							"the step '" << aSteps[step] << "' an error occurred "
 							"and that step could not be created. Please check the "
@@ -830,9 +830,9 @@ void CKDataNode::putVarAtPath( const std::vector<std::string> & aSteps,
  * 'up' the tree to the root, building accumulating the steps
  * along the way.
  */
-std::vector<std::string> CKDataNode::getSteps() const
+std::vector<CKString> CKDataNode::getSteps() const
 {
-	std::vector<std::string>	retval;
+	std::vector<CKString>	retval;
 
 	// malk up the tree inserting names at the front
 	retval.push_back(mName);
@@ -860,12 +860,12 @@ std::vector<std::string> CKDataNode::getSteps() const
  * very similar way to the getSteps() method. The path lets the
  * caller know where in this tree this particular node lies.
  */
-std::string CKDataNode::getPath() const
+CKString CKDataNode::getPath() const
 {
-	std::string		retval;
+	CKString		retval;
 
 	// first, get the step in the path
-	std::vector<std::string>	steps = getSteps();
+	std::vector<CKString>	steps = getSteps();
 	if (steps.size() > 0) {
 		// now convert it to a path with proper escaping
 		retval = stepsToPath(steps);
@@ -883,14 +883,14 @@ std::string CKDataNode::getPath() const
  * path escaped by double-quotes will be kept intact. This is the
  * way for a component of the path to include a '/' character.
  */
-std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
+std::vector<CKString> CKDataNode::pathToSteps( const CKString & aPath )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
-	bool						done = false;
+	bool					error = false;
+	std::vector<CKString>	retval;
+	bool					done = false;
 
 	// first, strip any leading or trailing '/' characters
-	std::string		cleanPath = aPath;
+	CKString		cleanPath = aPath;
 	if (!error && !done) {
 		// see if there's a leading '/'
 		if (cleanPath[0] == '/') {
@@ -904,7 +904,7 @@ std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
 	}
 
 	// next, convert the path into a series of raw steps
-	std::vector<std::string>	raw;
+	std::vector<CKString>	raw;
 	int							rawCnt = 0;
 	if (!error && !done) {
 		raw = parseIntoChunks(cleanPath, "/");
@@ -923,7 +923,7 @@ std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
 				 * '/' and piece them all together.
 				 */
 				// get the start of the escaped path step
-				std::string		comp = raw[i];
+				CKString		comp = raw[i];
 				// trim off the leading '"'
 				comp.erase(0,1);
 				// now loop on the raw steps until we find a matching bookend
@@ -956,12 +956,12 @@ std::vector<std::string> CKDataNode::pathToSteps( const std::string & aPath )
  * that is properly escaped for the presence of '/' characters in
  * any one of the steps.
  */
-std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
+CKString CKDataNode::stepsToPath( const std::vector<CKString> & aPath )
 {
-	std::string		retval;
+	CKString		retval;
 
 	// loop over all the elements adding each as necessary
-	std::vector<std::string>::const_iterator	i;
+	std::vector<CKString>::const_iterator	i;
 	for (i = aPath.begin(); i != aPath.end(); ++i) {
 		// see if we need a delimiter between this and the next step
 		if (i != aPath.begin()) {
@@ -969,7 +969,7 @@ std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
 		}
 
 		// now see if the step needs to be escaped due to a slash
-		if (i->find('/') != std::string::npos) {
+		if (i->find('/') != -1) {
 			// escape this guy as it's got a '/' in it
 			retval.append(1, '"');
 			retval.append(*i);
@@ -991,10 +991,10 @@ std::string CKDataNode::stepsToPath( const std::vector<std::string> & aPath )
  * method does a great job of getting a unique vector of names
  * of all the leaf nodes under it, and all it's children.
  */
-std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
+std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1005,7 +1005,7 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNames();
+				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNames();
 				if (part.size() < 1) {
 					// unlock the list of kids
 					mKidsMutex.unlock();
@@ -1054,11 +1054,11 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNames()
  * it allows us to ask the question: Who needs 'price'? and have
  * a list of node names that is returned.
  */
-std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
-												const std::string & aVarName )
+std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
+												const CKString & aVarName )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1069,7 +1069,7 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
+				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
@@ -1109,11 +1109,11 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
  * it allows us to ask the question: Who has 'price'? and have
  * a list of node names that is returned.
  */
-std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithVar(
-												const std::string & aVarName )
+std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithVar(
+												const CKString & aVarName )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1124,7 +1124,7 @@ std::vector<std::string>	CKDataNode::getUniqueLeafNodeNamesWithVar(
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<std::string>	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
+				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
@@ -1457,16 +1457,16 @@ bool CKDataNode::operator!=( const CKDataNode & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  *
  * If the default 'false' is used then the only information that's
  * returned is with regards to the node itself and not a complete
  * dump of the tree rooted at this node. Pass in a 'true' if you
  * want to see the entire tree at this node.
  */
-std::string CKDataNode::toString( bool aDeepFlag ) const
+CKString CKDataNode::toString( bool aDeepFlag ) const
 {
-	std::string		retval = "(";
+	CKString		retval = "(";
 
 	// slap the name of the node out
 	retval.append("Name=");
@@ -1484,7 +1484,7 @@ std::string CKDataNode::toString( bool aDeepFlag ) const
 
 	// put in each of the variables on this node
 	retval.append("Values:\n");
-	std::map<std::string, CKVariant>::const_iterator	i;
+	std::map<CKString, CKVariant>::const_iterator	i;
 	for (i = mVars.begin(); i != mVars.end(); ++i) {
 		retval.append("   ");
 		retval.append((*i).first);
@@ -1529,7 +1529,7 @@ CKFWMutex *CKDataNode::getVarsMutex()
  * something with the variables that I didn't originally think
  * of.
  */
-std::map<std::string, CKVariant> *CKDataNode::getVars()
+std::map<CKString, CKVariant> *CKDataNode::getVars()
 {
 	return & mVars;
 }
@@ -1568,19 +1568,19 @@ std::list<CKDataNode*> *CKDataNode::getKids()
  * the return value is created on the stack, the user needs to
  * save it if they want it to stay around.
  */
-std::vector<std::string> CKDataNode::parseIntoChunks( const std::string & aString,
-													  const std::string & aDelim )
+std::vector<CKString> CKDataNode::parseIntoChunks( const CKString & aString,
+												   const CKString & aDelim )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// first, see if we have anything to do
 	if (!error) {
 		if (aString.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the source string is 0 and "
+			msg << "CKDataNode::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the source string is 0 and "
 				"that means that there's nothing for me to do. Please make sure "
 				"that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1592,8 +1592,8 @@ std::vector<std::string> CKDataNode::parseIntoChunks( const std::string & aStrin
 		if (delimLength <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the delimiter string is 0 "
+			msg << "CKDataNode::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the delimiter string is 0 "
 				"and that means that there's nothing for me to do. Please make "
 				"sure that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1601,7 +1601,7 @@ std::vector<std::string> CKDataNode::parseIntoChunks( const std::string & aStrin
 	}
 
 	// now, copy the source to a buffer so I can consume it in the process
-	std::string		buff;
+	CKString		buff;
 	if (!error) {
 		buff = aString;
 	}
@@ -1617,13 +1617,13 @@ std::vector<std::string> CKDataNode::parseIntoChunks( const std::string & aStrin
 	 */
 	while (!error) {
 		// find out wherre, if anyplace, the delimiter sits
-		unsigned int	pos = buff.find(aDelim);
-		if (pos == std::string::npos) {
+		int		pos = buff.find(aDelim);
+		if (pos == -1) {
 			// nothing left to parse out, bail out
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back(std::string(""));
+			retval.push_back(CKString(""));
 		} else {
 			// pick off the substring up to the delimiter
 			retval.push_back(buff.substr(0, pos));

@@ -6,7 +6,7 @@
  *                 and is also very close to the base exception class
  *                 for the MarketMash Server.
  * 
- * $Id: CKException.h,v 1.5 2004/09/11 21:07:43 drbob Exp $
+ * $Id: CKException.h,v 1.6 2004/09/16 09:34:13 drbob Exp $
  */
 #ifndef __CKEXCEPTION_H
 #define __CKEXCEPTION_H
@@ -22,6 +22,7 @@
 //	Third-Party Headers
 
 //	Other Headers
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -57,7 +58,7 @@ class CKException
 		 * as long as this exception is around. For most uses, a programmer-
 		 * defined constant it what's used here.
 		 */
-		CKException( const std::string & aMessage );
+		CKException( const CKString & aMessage );
 		/*
 		 * This form of the constructor takes the constant filename and
 		 * line number where the exception is assumed to have been thrown.
@@ -72,7 +73,7 @@ class CKException
 		 * a constant string message that will all have the proper scope
 		 * and lifetime for this exception.
 		 */
-		CKException( const char *aFileName, int aLineNumber, const std::string & aMessage );
+		CKException( const char *aFileName, int aLineNumber, const CKString & aMessage );
 		/*
 		 * This constructor takes another exception as it's source of
 		 * data and simply duplicates it.
@@ -101,7 +102,7 @@ class CKException
 		 * In order to get the message out of this exception, let's
 		 * make a method very similar to the Java exceptions.
 		 */
-		std::string getMessage() const;
+		CKString getMessage() const;
 
 		/********************************************************
 		 *
@@ -128,7 +129,7 @@ class CKException
 		 * need to be able to set all our instance variables without having
 		 * to dig into them.
 		 */
-		CKException( const char *aExceptionName, const char *aFileName, int aLineNumber, const std::string & aMessage );
+		CKException( const char *aExceptionName, const char *aFileName, int aLineNumber, const CKString & aMessage );
  
 	private:  
 		/*
@@ -155,7 +156,7 @@ class CKException
 		 * for the exception. It's a good idea to provide one of these to each
 		 * exception.
 		 */
-		std::string		mMessage;
+		CKString		mMessage;
 };
 
 /*

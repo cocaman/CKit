@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.7 2004/09/11 21:07:43 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.8 2004/09/16 09:34:13 drbob Exp $
  */
 
 //	System Headers
@@ -69,7 +69,7 @@ CKFTPConnection::CKFTPConnection() :
  * the at least the login and password before we can make a
  * successful connection.
  */
-CKFTPConnection::CKFTPConnection( const std::string & aHost ) :
+CKFTPConnection::CKFTPConnection( const CKString & aHost ) :
 	mHostname(),
 	mUsername(),
 	mPassword(),
@@ -82,7 +82,7 @@ CKFTPConnection::CKFTPConnection( const std::string & aHost ) :
 	// try to establish a control connection to the host
 	if (!connectToHost(aHost)) {
 		std::ostringstream	msg;
-		msg << "CKFTPConnection::CKFTPConnection(const std::string &) - while "
+		msg << "CKFTPConnection::CKFTPConnection(const CKString &) - while "
 			"trying to connect to the FTP server on '" << aHost << "' we were "
 			"unable to talk to the control port. This is a serious problem that "
 			"needs to be looked into.";
@@ -97,9 +97,9 @@ CKFTPConnection::CKFTPConnection( const std::string & aHost ) :
  * a reasonable value, so you shouldn't have to set it unless
  * you know that there's a serious problem with the FTP server.
  */
-CKFTPConnection::CKFTPConnection( const std::string & aHost,
-                                  const std::string & aUser,
-                                  const std::string & aPassword,
+CKFTPConnection::CKFTPConnection( const CKString & aHost,
+                                  const CKString & aUser,
+                                  const CKString & aPassword,
                                   int anIncomingDataTimeout ) :
 	mHostname(),
 	mUsername(),
@@ -113,8 +113,8 @@ CKFTPConnection::CKFTPConnection( const std::string & aHost,
 	// try to establish a control connection to the host
 	if (!connectToHost(aHost)) {
 		std::ostringstream	msg;
-		msg << "CKFTPConnection::CKFTPConnection(const std::string &, const "
-			"std::string &, const std::string &, int) - while trying to connect "
+		msg << "CKFTPConnection::CKFTPConnection(const CKString &, const "
+			"CKString &, const CKString &, int) - while trying to connect "
 			"to the FTP server on '" << aHost << "' we were unable to talk to "
 			"the control port. This is a serious problem that needs to be "
 			"looked into.";
@@ -123,8 +123,8 @@ CKFTPConnection::CKFTPConnection( const std::string & aHost,
 		// try to log into the FTP server
 		if (!loginToHost(aUser, aPassword)) {
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::CKFTPConnection(const std::string &, const "
-				"std::string &, const std::string &, int) - while trying to login "
+			msg << "CKFTPConnection::CKFTPConnection(const CKString &, const "
+				"CKString &, const CKString &, int) - while trying to login "
 				"to the FTP server on '" << aHost << "' we were not allowed "
 				"access. Please make sure that you have provided a valid username "
 				"and password for this FTP server. This is a serious problem that "
@@ -200,7 +200,7 @@ CKFTPConnection & CKFTPConnection::operator=( const CKFTPConnection & anOther )
  * host is made, the host name is "locked" and cannot be
  * changed so long as that connection is established.
  */
-void CKFTPConnection::setHostname( const std::string & aName )
+void CKFTPConnection::setHostname( const CKString & aName )
 {
 	mHostname = aName;
 }
@@ -213,7 +213,7 @@ void CKFTPConnection::setHostname( const std::string & aName )
  * the remote host, the user name is "locked" and cannot be
  * changed so long as that user is logged in.
  */
-void CKFTPConnection::setUsername( const std::string & aName )
+void CKFTPConnection::setUsername( const CKString & aName )
 {
 	mUsername = aName;
 }
@@ -226,7 +226,7 @@ void CKFTPConnection::setUsername( const std::string & aName )
  * on the remote host, the user's password is "locked" and
  * cannot be changed so long as that user is logged in.
  */
-void CKFTPConnection::setPassword( const std::string & aPassword )
+void CKFTPConnection::setPassword( const CKString & aPassword )
 {
 	mPassword = aPassword;
 }
@@ -264,7 +264,7 @@ void CKFTPConnection::setIncomingDataTimeout( int aTimeoutInSecs )
  * a connection is made the hostname is "locked" and cannot be
  * changed so long as a connection exists.
  */
-std::string CKFTPConnection::getHostname() const
+CKString CKFTPConnection::getHostname() const
 {
 	return mHostname;
 }
@@ -277,7 +277,7 @@ std::string CKFTPConnection::getHostname() const
  * user name is "locked" and cannot be changed so long as that
  * user is logged in.
  */
-std::string CKFTPConnection::getUsername() const
+CKString CKFTPConnection::getUsername() const
 {
 	return mUsername;
 }
@@ -332,7 +332,7 @@ int CKFTPConnection::getIncomingDataTimeout() const
  * as evidenced by a return value of false; then another username and
  * password combination can be attempted to this same host.
  */
-bool CKFTPConnection::connectToHost( const std::string & aHost )
+bool CKFTPConnection::connectToHost( const CKString & aHost )
 {
 	bool	error = false;
 
@@ -348,7 +348,7 @@ bool CKFTPConnection::connectToHost( const std::string & aHost )
 			setHostname("");
 			// ...and throw the exception
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::connectToHost(const std::string &) - we "
+			msg << "CKFTPConnection::connectToHost(const CKString &) - we "
 				"were unable to establish a socket-level connection to the  host " <<
 				aHost << ":" << DEFAULT_FTP_PORT << " for the FTP control port. "
 				"This is a serious problem as we have to have this port established "
@@ -383,7 +383,7 @@ bool CKFTPConnection::connectToHost( const std::string & aHost )
             // record the error and raise the exception
             error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::connectToHost(const std::string &) - the "
+			msg << "CKFTPConnection::connectToHost(const CKString &) - the "
 				"FTP server on the  host " << aHost << " did not indicate that "
 				"it was ready for users. This could mean that the server is "
 				"overloaded, or it's not functioning properly. Please check these "
@@ -416,8 +416,8 @@ bool CKFTPConnection::loginToHost()
  * login information, these changes will only be accepted if there
  * isn't already a user logged into the remote host.
  */
-bool CKFTPConnection::loginToHost( const std::string & aUser,
-								   const std::string & aPassword )
+bool CKFTPConnection::loginToHost( const CKString & aUser,
+								   const CKString & aPassword )
 {
 	bool	error = false;
 
@@ -426,8 +426,8 @@ bool CKFTPConnection::loginToHost( const std::string & aUser,
 		if (!mControlPort.isConnected()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::loginToHost(const std::string &, "
-				"const std::string &) - there is no established connection to an "
+			msg << "CKFTPConnection::loginToHost(const CKString &, "
+				"const CKString &) - there is no established connection to an "
 				"FTP server so we can't possibly login to one. Please make sure to "
 				"connect to a server with connectToHost() first, and then call "
 				"this method.";
@@ -440,8 +440,8 @@ bool CKFTPConnection::loginToHost( const std::string & aUser,
 		if (ftpLoginUsername(aUser, aPassword) != CKFTPUserSuccessfullyLoggedIn) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::loginToHost(const std::string &, "
-				"const std::string &) - the FTP server on " << getHostname() <<
+			msg << "CKFTPConnection::loginToHost(const CKString &, "
+				"const CKString &) - the FTP server on " << getHostname() <<
 				" did not successfully authenticate the user " << aUser << ". "
 				"Please make sure that the FTP server and username match and that "
 				"the password is correct.";
@@ -494,7 +494,7 @@ void CKFTPConnection::disconnect()
  * If the change cannot be made, this method returns false. Otherwise
  * it returns true after making the change at the remote host.
  */
-bool CKFTPConnection::changeCurrentDirectoryPath( const std::string & aPath )
+bool CKFTPConnection::changeCurrentDirectoryPath( const CKString & aPath )
 {
 	bool	error = false;
 
@@ -503,7 +503,7 @@ bool CKFTPConnection::changeCurrentDirectoryPath( const std::string & aPath )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::changeCurrentDirectoryPath(const std::string &) - "
+			msg << "CKFTPConnection::changeCurrentDirectoryPath(const CKString &) - "
 				"this instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to loginToHost() "
 				"before calling this method.";
@@ -516,7 +516,7 @@ bool CKFTPConnection::changeCurrentDirectoryPath( const std::string & aPath )
         if (!isPositiveCompletionReply(doCWD(aPath))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::changeCurrentDirectoryPath(const std::string &) - "
+			msg << "CKFTPConnection::changeCurrentDirectoryPath(const CKString &) - "
 				"the FTP server at " << getHostname() << " did not reply with a "
 				"successful return code. This could mean that you didn't have the "
 				"necessary permissions to change to that directory, or it wasn't "
@@ -538,7 +538,7 @@ bool CKFTPConnection::changeCurrentDirectoryPath( const std::string & aPath )
  * Otherwise it returns true after creating the directory on the
  * remote host.
  */
-bool CKFTPConnection::createDirectoryAtPath( const std::string & aPath )
+bool CKFTPConnection::createDirectoryAtPath( const CKString & aPath )
 {
 	bool	error = false;
 
@@ -547,7 +547,7 @@ bool CKFTPConnection::createDirectoryAtPath( const std::string & aPath )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::createDirectoryAtPath(const std::string &) - "
+			msg << "CKFTPConnection::createDirectoryAtPath(const CKString &) - "
 				"this instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to loginToHost() "
 				"before calling this method.";
@@ -560,7 +560,7 @@ bool CKFTPConnection::createDirectoryAtPath( const std::string & aPath )
         if (!isPositiveCompletionReply(doMKD(aPath))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::createDirectoryAtPath(const std::string &) - "
+			msg << "CKFTPConnection::createDirectoryAtPath(const CKString &) - "
 				"the FTP server at " << getHostname() << " did not reply with a "
 				"successful return code. This could mean that you didn't have the "
 				"necessary permissions to create that directory. Please check "
@@ -576,14 +576,14 @@ bool CKFTPConnection::createDirectoryAtPath( const std::string & aPath )
 /*
  * This method simply returns the current path on the remote
  * host, just like the OPENSTEP NSFileManager does for the local
- * machine. It is returned in an std::string. If there is no
+ * machine. It is returned in an CKString. If there is no
  * current path, or there is no established connection, this
  * method returns the empty string.
  */
-std::string CKFTPConnection::currentDirectoryPath()
+CKString CKFTPConnection::currentDirectoryPath()
 {
 	bool			error = false;
-	std::string		retval;
+	CKString		retval;
 
 	// see if we are logged into the host
 	if (!error) {
@@ -616,11 +616,9 @@ std::string CKFTPConnection::currentDirectoryPath()
 	 * quotes in the first line of the reply.
 	 */
 	if (!error) {
-		unsigned int	beg = mServerReplyLines[0].find("\"", 0);
-		unsigned int	end = mServerReplyLines[0].find("\"", (beg+1));
-		if ((beg == std::string::npos) ||
-			(end == std::string::npos) ||
-			(end <= beg)) {
+		int		beg = mServerReplyLines[0].find("\"", 0);
+		int		end = mServerReplyLines[0].find("\"", (beg+1));
+		if ((beg == -1) || (end == -1) || (end <= beg)) {
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKFTPConnection::currentDirectoryPath() - the directory "
@@ -655,8 +653,8 @@ std::string CKFTPConnection::currentDirectoryPath()
  * Otherwise it returns true after copying the file to the
  * remote host.
  */
-bool CKFTPConnection::copyLocalToHost( const std::string & aLocalFile,
-                                       const std::string & aRemoteFile )
+bool CKFTPConnection::copyLocalToHost( const CKString & aLocalFile,
+                                       const CKString & aRemoteFile )
 {
 	bool		error = false;
 
@@ -665,8 +663,8 @@ bool CKFTPConnection::copyLocalToHost( const std::string & aLocalFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::copyLocalToHost(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::copyLocalToHost(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -675,8 +673,8 @@ bool CKFTPConnection::copyLocalToHost( const std::string & aLocalFile,
 	}
 
 	if (!error) {
-		// read the local file into a std::string
-		std::string data = getLocalContents(aLocalFile);
+		// read the local file into a CKString
+		CKString data = getLocalContents(aLocalFile);
 		// Now simply call the main data mover to the host
 		error = !createFile(aRemoteFile, data);
 	}
@@ -696,8 +694,8 @@ bool CKFTPConnection::copyLocalToHost( const std::string & aLocalFile,
  * Otherwise it returns true after copying the file from the
  * remote host.
  */
-bool CKFTPConnection::copyHostToLocal( const std::string & aRemoteFile,
-                                       const std::string & aLocalFile )
+bool CKFTPConnection::copyHostToLocal( const CKString & aRemoteFile,
+                                       const CKString & aLocalFile )
 {
 	bool		error = false;
 
@@ -706,8 +704,8 @@ bool CKFTPConnection::copyHostToLocal( const std::string & aRemoteFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::copyHostToLocal(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::copyHostToLocal(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -716,8 +714,8 @@ bool CKFTPConnection::copyHostToLocal( const std::string & aRemoteFile,
 	}
 
 	if (!error) {
-		// read the remote file into a std::string
-		std::string data = getContents(aRemoteFile);
+		// read the remote file into a CKString
+		CKString data = getContents(aRemoteFile);
 		// now simply write it out to the local filesystem
 		setLocalContents(aLocalFile, data);
 	}
@@ -727,7 +725,7 @@ bool CKFTPConnection::copyHostToLocal( const std::string & aRemoteFile,
 
 
 /*
- * This method takes a std::string and creates a file on the remote
+ * This method takes a CKString and creates a file on the remote
  * host at the location specified filled with the contents of
  * the string. This is a simplified way to create what is needed
  * in memory, and transfer it from memory without having to go
@@ -737,8 +735,8 @@ bool CKFTPConnection::copyHostToLocal( const std::string & aRemoteFile,
  * Otherwise it returns true after creating the file at the
  * remote host.
  */
-bool CKFTPConnection::createFile( const std::string & aFilename,
-                                  const std::string & aData )
+bool CKFTPConnection::createFile( const CKString & aFilename,
+                                  const CKString & aData )
 {
 	bool		error = false;
 
@@ -747,8 +745,8 @@ bool CKFTPConnection::createFile( const std::string & aFilename,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::createFile(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::createFile(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -758,16 +756,16 @@ bool CKFTPConnection::createFile( const std::string & aFilename,
 
 	// now let's do the FTP work to get the data stored remotely
 	if (!error) {
-		std::string		type = "I";
-		std::string		cmd = CKFTPCommandStringSTOR;
+		CKString		type = "I";
+		CKString		cmd = CKFTPCommandStringSTOR;
 		cmd += aFilename;
 		try {
 			transferData(type, cmd, aData);
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::createFile(const std::string &, "
-				"const std::string &) - while trying to transfer the data to "
+			msg << "CKFTPConnection::createFile(const CKString &, "
+				"const CKString &) - while trying to transfer the data to "
 				"FTP server a CKException was thrown: " << e.getMessage();
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
@@ -790,8 +788,8 @@ bool CKFTPConnection::createFile( const std::string & aFilename,
  * fail. If this is a significant concern, check for the existance of
  * the file at the remote host with fileExists().
  */
-bool CKFTPConnection::moveLocalToHost( const std::string & aLocalFile,
-                                       const std::string & aRemoteFile )
+bool CKFTPConnection::moveLocalToHost( const CKString & aLocalFile,
+                                       const CKString & aRemoteFile )
 {
 	bool		error = false;
 
@@ -800,8 +798,8 @@ bool CKFTPConnection::moveLocalToHost( const std::string & aLocalFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveLocalToHost(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::moveLocalToHost(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -814,8 +812,8 @@ bool CKFTPConnection::moveLocalToHost( const std::string & aLocalFile,
 		if (!copyLocalToHost(aLocalFile, aRemoteFile)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveLocalToHost(const std::string &, "
-				"const std::string &) - we were unable to copy the local file '" <<
+			msg << "CKFTPConnection::moveLocalToHost(const CKString &, "
+				"const CKString &) - we were unable to copy the local file '" <<
 				aLocalFile << "' to the remote host as '" << aRemoteFile << "'. "
 				"Please make sure that the local file exists and that you have "
 				"permissions to put the file on the remote host.";
@@ -828,8 +826,8 @@ bool CKFTPConnection::moveLocalToHost( const std::string & aLocalFile,
 		if (unlink(aLocalFile.c_str()) == -1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveLocalToHost(const std::string &, "
-				"const std::string &) - the copy to the remote system worked, "
+			msg << "CKFTPConnection::moveLocalToHost(const CKString &, "
+				"const CKString &) - the copy to the remote system worked, "
 				"but the removal of '" << aLocalFile << "' on the local filesystem "
 				"failed with the errno=" << errno << " (" << strerror(errno) <<
 				"). Please check on this file and manually delete it.";
@@ -854,8 +852,8 @@ bool CKFTPConnection::moveLocalToHost( const std::string & aLocalFile,
  * will fail. If this is a significant concern, check for the
  * existance of the file on the local host.
  */
-bool CKFTPConnection::moveHostToLocal( const std::string & aRemoteFile,
-                                       const std::string & aLocalFile )
+bool CKFTPConnection::moveHostToLocal( const CKString & aRemoteFile,
+                                       const CKString & aLocalFile )
 {
 	bool		error = false;
 
@@ -864,8 +862,8 @@ bool CKFTPConnection::moveHostToLocal( const std::string & aRemoteFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveHostToLocal(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::moveHostToLocal(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -878,8 +876,8 @@ bool CKFTPConnection::moveHostToLocal( const std::string & aRemoteFile,
 		if (!copyHostToLocal(aRemoteFile, aLocalFile)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveHostToLocal(const std::string &, "
-				"const std::string &) - we were unable to copy the remote file '" <<
+			msg << "CKFTPConnection::moveHostToLocal(const CKString &, "
+				"const CKString &) - we were unable to copy the remote file '" <<
 				aRemoteFile << "' to the local host as '" << aLocalFile << "'. "
 				"Please make sure that the remote file exists and that you have "
 				"permissions to put the file on the local filesystem.";
@@ -892,8 +890,8 @@ bool CKFTPConnection::moveHostToLocal( const std::string & aRemoteFile,
 		if (removeFile(aRemoteFile)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::moveLocalToHost(const std::string &, "
-				"const std::string &) - the copy to the local system worked, "
+			msg << "CKFTPConnection::moveLocalToHost(const CKString &, "
+				"const CKString &) - the copy to the local system worked, "
 				"but the removal of '" << aRemoteFile << "' on the remote host "
 				"failed. Please check on this file and manually delete it.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -914,7 +912,7 @@ bool CKFTPConnection::moveHostToLocal( const std::string & aRemoteFile,
  * Otherwise it returns true after removing the file at the
  * remote host.
  */
-bool CKFTPConnection::removeFile( const std::string & aRemoteFile )
+bool CKFTPConnection::removeFile( const CKString & aRemoteFile )
 {
 	bool		error = false;
 
@@ -923,7 +921,7 @@ bool CKFTPConnection::removeFile( const std::string & aRemoteFile )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::removeFile(const std::string &) - this "
+			msg << "CKFTPConnection::removeFile(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -936,7 +934,7 @@ bool CKFTPConnection::removeFile( const std::string & aRemoteFile )
 		if (!isPositiveCompletionReply(doDELE(aRemoteFile))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::removeFile(const std::string &) - while "
+			msg << "CKFTPConnection::removeFile(const CKString &) - while "
 				"trying to remove the remote file '" << aRemoteFile << "' from "
 				"the host: " << getHostname() << " the FTP command failed and "
 				"the file could not be deleted. This could be for any number of "
@@ -957,22 +955,22 @@ bool CKFTPConnection::removeFile( const std::string & aRemoteFile )
  ********************************************************/
 /*
  * This method loads the file from the remote host at the path
- * specified into an std::string and then returns that
+ * specified into an CKString and then returns that
  * object. This is the simplified method of reading in a file
  * on a remote system rather than copying it over to the local
  * host, and then reading it in.
  */
-std::string CKFTPConnection::getContents( const std::string & aFilename )
+CKString CKFTPConnection::getContents( const CKString & aFilename )
 {
 	bool			error = false;
-	std::string		retval;
+	CKString		retval;
 
 	// see if we are logged into the host
 	if (!error) {
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getContents(const std::string &) - this "
+			msg << "CKFTPConnection::getContents(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -982,15 +980,15 @@ std::string CKFTPConnection::getContents( const std::string & aFilename )
 
 	// now let's do the FTP work to get the data loaded into a string
 	if (!error) {
-		std::string		type = "I";
-		std::string		cmd = CKFTPCommandStringRETR;
+		CKString		type = "I";
+		CKString		cmd = CKFTPCommandStringRETR;
 		cmd += aFilename;
 		try {
-			retval = transferData(type, cmd, std::string(""));
+			retval = transferData(type, cmd, CKString(""));
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getContents(const std::string &) - while "
+			msg << "CKFTPConnection::getContents(const CKString &) - while "
 				"trying to transfer the data from the FTP server a CKException "
 				"was thrown: " << e.getMessage();
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1008,8 +1006,8 @@ std::string CKFTPConnection::getContents( const std::string & aFilename )
  * both of the files doesn't exist, then a standard
  * CKException is raised, and false will be returned.
  */
-bool CKFTPConnection::areContentsEqual( const std::string & aLocalFile,
-										const std::string & aRemoteFile )
+bool CKFTPConnection::areContentsEqual( const CKString & aLocalFile,
+										const CKString & aRemoteFile )
 {
 	bool		error = false;
 	bool		equal = false;
@@ -1019,8 +1017,8 @@ bool CKFTPConnection::areContentsEqual( const std::string & aLocalFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::areContentsEqual(const std::string &, "
-				"const std::string &) - this instance is not logged into a valid "
+			msg << "CKFTPConnection::areContentsEqual(const CKString &, "
+				"const CKString &) - this instance is not logged into a valid "
 				"FTP server and so nothing can be done. Please login to the "
 				"server with a call to loginToHost() before calling this "
 				"method.";
@@ -1029,15 +1027,15 @@ bool CKFTPConnection::areContentsEqual( const std::string & aLocalFile,
 	}
 
 	// first, get the contents of the remote file
-	std::string		remote;
+	CKString		remote;
 	if (!error) {
 		try {
 			remote = getContents(aRemoteFile);
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::areContentsEqual(const std::string &, "
-				"const std::string &) - while trying to get the file '" <<
+			msg << "CKFTPConnection::areContentsEqual(const CKString &, "
+				"const CKString &) - while trying to get the file '" <<
 				aRemoteFile << "' from the remote host " << getHostname() <<
 				"a CKException was thrown: " << e.getMessage();
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1045,15 +1043,15 @@ bool CKFTPConnection::areContentsEqual( const std::string & aLocalFile,
 	}
 
 	// next, try to get the local contents too
-	std::string		local;
+	CKString		local;
 	if (!error) {
 		try {
 			local = getLocalContents(aLocalFile);
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::areContentsEqual(const std::string &, "
-				"const std::string &) - while trying to get the file '" <<
+			msg << "CKFTPConnection::areContentsEqual(const CKString &, "
+				"const CKString &) - while trying to get the file '" <<
 				aLocalFile << "' from the local host a CKException was "
 				"thrown: " << e.getMessage();
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1084,7 +1082,7 @@ bool CKFTPConnection::areContentsEqual( const std::string & aLocalFile,
  * return codes from a  copy telling you the file didn't exist in
  * the first place - check before calling the copy.
  */
-bool CKFTPConnection::fileExists( const std::string & aRemoteFile )
+bool CKFTPConnection::fileExists( const CKString & aRemoteFile )
 {
 	bool		error = false;
 	bool		exists = false;
@@ -1094,7 +1092,7 @@ bool CKFTPConnection::fileExists( const std::string & aRemoteFile )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::fileExists(const std::string &) - this "
+			msg << "CKFTPConnection::fileExists(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -1112,7 +1110,7 @@ bool CKFTPConnection::fileExists( const std::string & aRemoteFile )
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::fileExists(const std::string &) - while "
+			msg << "CKFTPConnection::fileExists(const CKString &) - while "
 				"trying to get the details on the remote file '" << aRemoteFile <<
 				"' from the FTP server a CKException was thrown: " <<
 				e.getMessage();
@@ -1129,7 +1127,7 @@ bool CKFTPConnection::fileExists( const std::string & aRemoteFile )
  * on the remote host has the 'read' permission set so that
  * subsequent calls like getContents() are successful.
  */
-bool CKFTPConnection::isFileReadable( const std::string & aRemoteFile )
+bool CKFTPConnection::isFileReadable( const CKString & aRemoteFile )
 {
 	bool		error = false;
 	bool		readable = false;
@@ -1139,7 +1137,7 @@ bool CKFTPConnection::isFileReadable( const std::string & aRemoteFile )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileReadable(const std::string &) - this "
+			msg << "CKFTPConnection::isFileReadable(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -1157,7 +1155,7 @@ bool CKFTPConnection::isFileReadable( const std::string & aRemoteFile )
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileReadable(const std::string &) - while "
+			msg << "CKFTPConnection::isFileReadable(const CKString &) - while "
 				"trying to get the details on the remote file '" << aRemoteFile <<
 				"' from the FTP server a CKException was thrown: " <<
 				e.getMessage();
@@ -1175,7 +1173,7 @@ bool CKFTPConnection::isFileReadable( const std::string & aRemoteFile )
  * permission set for this user. It is a good test to check this
  * before a call to createFile() is made.
  */
-bool CKFTPConnection::isFileWritable( const std::string & aRemoteFile )
+bool CKFTPConnection::isFileWritable( const CKString & aRemoteFile )
 {
 	bool		error = false;
 	bool		writable = false;
@@ -1185,7 +1183,7 @@ bool CKFTPConnection::isFileWritable( const std::string & aRemoteFile )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileWritable(const std::string &) - this "
+			msg << "CKFTPConnection::isFileWritable(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -1203,7 +1201,7 @@ bool CKFTPConnection::isFileWritable( const std::string & aRemoteFile )
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileWritable(const std::string &) - while "
+			msg << "CKFTPConnection::isFileWritable(const CKString &) - while "
 				"trying to get the details on the remote file '" << aRemoteFile <<
 				"' from the FTP server a CKException was thrown: " <<
 				e.getMessage();
@@ -1220,7 +1218,7 @@ bool CKFTPConnection::isFileWritable( const std::string & aRemoteFile )
  * the remote host can be deleted by the user. It's probably
  * a good idea to check this before calling removeFile().
  */
-bool CKFTPConnection::isFileDeletable( const std::string & aRemoteFile )
+bool CKFTPConnection::isFileDeletable( const CKString & aRemoteFile )
 {
 	bool		error = false;
 	bool		deletable = false;
@@ -1230,7 +1228,7 @@ bool CKFTPConnection::isFileDeletable( const std::string & aRemoteFile )
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileDeletable(const std::string &) - this "
+			msg << "CKFTPConnection::isFileDeletable(const CKString &) - this "
 				"instance is not logged into a valid FTP server and so nothing "
 				"can be done. Please login to the server with a call to "
 				"loginToHost() before calling this method.";
@@ -1248,7 +1246,7 @@ bool CKFTPConnection::isFileDeletable( const std::string & aRemoteFile )
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isFileDeletable(const std::string &) - while "
+			msg << "CKFTPConnection::isFileDeletable(const CKString &) - while "
 				"trying to get the details on the remote file '" << aRemoteFile <<
 				"' from the FTP server a CKException was thrown: " <<
 				e.getMessage();
@@ -1276,7 +1274,7 @@ bool CKFTPConnection::isFileDeletable( const std::string & aRemoteFile )
  * If everything goes well, this method returns true. If there are
  * any problems in processing it returns false.
  */
-bool CKFTPConnection::setFileAttributes( const std::string & aFile,
+bool CKFTPConnection::setFileAttributes( const CKString & aFile,
                                          const CKFilePermissions & aSet )
 {
 	bool				error = false;
@@ -1286,7 +1284,7 @@ bool CKFTPConnection::setFileAttributes( const std::string & aFile,
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::setFileAttributes(const std::string &, "
+			msg << "CKFTPConnection::setFileAttributes(const CKString &, "
 				"const CKFileAttributes &) - this instance is not logged into "
 				"a valid FTP server and so nothing can be done. Please login to "
 				"the server with a call to loginToHost() before calling this "
@@ -1300,7 +1298,7 @@ bool CKFTPConnection::setFileAttributes( const std::string & aFile,
 	 * it off to the remote host
 	 */
 	if (!error) {
-		std::string	cmd = "CHMOD ";
+		CKString	cmd = "CHMOD ";
 		cmd += permissionsToNumber(aSet);
 		cmd += " ";
 		cmd += aFile;
@@ -1309,12 +1307,12 @@ bool CKFTPConnection::setFileAttributes( const std::string & aFile,
 			std::ostringstream	msg;
 			if (isPermanentNegativeReply(getState()) &&
 				isSyntaxReply(getState())) {
-				msg << "CKFTPConnection::getContents(const std::string &) - the "
+				msg << "CKFTPConnection::getContents(const CKString &) - the "
 					"remote host " << getHostname() << " does not seem to support "
 					"the SITE command in it's FTP server. That means that we cannot "
 					"change the file permissions on this server.";
 			} else {
-				msg << "CKFTPConnection::getContents(const std::string &) - while "
+				msg << "CKFTPConnection::getContents(const CKString &) - while "
 					"trying to change the file permissions on the file '" <<
 					aFile << "' on the server " << getHostname() << " an "
 					"error occurred and the change could not be done. Please "
@@ -1337,7 +1335,7 @@ bool CKFTPConnection::setFileAttributes( const std::string & aFile,
  * If there is any error in the processing, or the file
  * 'aFile' is not located on the host, a CKException is returned.
  */
-CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile )
+CKFilePermissions CKFTPConnection::getFileAttributes( const CKString & aFile )
 {
 	bool				error = false;
 	CKFilePermissions	retval;
@@ -1347,7 +1345,7 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getFileAttributes(const std::string &) - "
+			msg << "CKFTPConnection::getFileAttributes(const CKString &) - "
 				"this instance is not logged into a valid FTP server and so "
 				"nothing can be done. Please login to the server with a call "
 				"to loginToHost() before calling this method.";
@@ -1356,17 +1354,17 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
 	}
 
 	// get the raw data from the remote host for this file
-	std::string		rawDirList;
+	CKString		rawDirList;
 	if (!error) {
-		std::string		type = "A";
-		std::string		cmd = CKFTPCommandStringLIST;
+		CKString		type = "A";
+		CKString		cmd = CKFTPCommandStringLIST;
 		cmd += aFile;
 		try {
-			rawDirList = transferData(type, cmd, std::string(""));
+			rawDirList = transferData(type, cmd, CKString(""));
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getFileAttributes(const std::string &) - "
+			msg << "CKFTPConnection::getFileAttributes(const CKString &) - "
 				"while trying to get the file listing from the FTP server for "
 				"the file '" << aFile << "' a CKException was thrown: " <<
 				e.getMessage();
@@ -1380,11 +1378,11 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
 	 * for the type of FTP server that sent the data, and then we need to
 	 * use this line ending to chop up the response into lines.
 	 */
-	std::vector<std::string>	dirList;
+	std::vector<CKString>	dirList;
 	if (!error) {
 		// assume that the FTP server sent CRLF line endings
-		std::string		eol = "\r\n";
-		if (rawDirList.find(eol) == std::string::npos) {
+		CKString		eol = "\r\n";
+		if (rawDirList.find(eol) == -1) {
 			// nope... then it's going to be just the NEWLINE character
 			eol = "\n";
 		}
@@ -1397,8 +1395,8 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
 		 * that are empty lines. Chances are that there will be at least one
 		 * of them.
 		 */
-		std::string								blank("");
-		std::vector<std::string>::iterator		i;
+		CKString							blank("");
+		std::vector<CKString>::iterator		i;
 		while (!error) {
 			// try to find a blank line
 			i = find(dirList.begin(), dirList.end(), blank);
@@ -1457,7 +1455,7 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
 			(!((othersExecuteChar == '-') || (othersExecuteChar == 'x') || (othersExecuteChar == 's'))) ) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getFileAttributes(const std::string &) - "
+			msg << "CKFTPConnection::getFileAttributes(const CKString &) - "
 				"while trying to parse the file permissions from the returned "
 				"data: '" << dirList[0] << "' we ran into problems because it's "
 				"not a format that we understand. Please inform the developers.";
@@ -1499,17 +1497,17 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const std::string & aFile 
  * If there is any problem in creating the directory list, an empty
  * list is returned, and if necessary, a CKException is thrown.
  */
-std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::string & aDir )
+std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aDir )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// see if we are logged into the host
 	if (!error) {
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getDirectoryContents(const std::string &) - "
+			msg << "CKFTPConnection::getDirectoryContents(const CKString &) - "
 				"this instance is not logged into a valid FTP server and so "
 				"nothing can be done. Please login to the server with a call "
 				"to loginToHost() before calling this method.";
@@ -1518,17 +1516,17 @@ std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::strin
 	}
 
 	// get the raw data from the remote host for this file
-	std::string		rawDirList;
+	CKString		rawDirList;
 	if (!error) {
-		std::string		type = "A";
-		std::string		cmd = CKFTPCommandStringNLST;
+		CKString		type = "A";
+		CKString		cmd = CKFTPCommandStringNLST;
 		cmd += aDir;
 		try {
-			rawDirList = transferData(type, cmd, std::string(""));
+			rawDirList = transferData(type, cmd, CKString(""));
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getDirectoryContents(const std::string &) - "
+			msg << "CKFTPConnection::getDirectoryContents(const CKString &) - "
 				"while trying to get the directory listing from the FTP server for "
 				"the directory '" << aDir << "' a CKException was thrown: " <<
 				e.getMessage();
@@ -1542,11 +1540,11 @@ std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::strin
 	 * for the type of FTP server that sent the data, and then we need to
 	 * use this line ending to chop up the response into lines.
 	 */
-	std::vector<std::string>	dirList;
+	std::vector<CKString>	dirList;
 	if (!error) {
 		// assume that the FTP server sent CRLF line endings
-		std::string		eol = "\r\n";
-		if (rawDirList.find(eol) == std::string::npos) {
+		CKString		eol = "\r\n";
+		if (rawDirList.find(eol) == -1) {
 			// nope... then it's going to be just the NEWLINE character
 			eol = "\n";
 		}
@@ -1559,8 +1557,8 @@ std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::strin
 		 * that are empty lines. Chances are that there will be at least one
 		 * of them.
 		 */
-		std::string								blank("");
-		std::vector<std::string>::iterator		i;
+		CKString							blank("");
+		std::vector<CKString>::iterator		i;
 		while (!error) {
 			// try to find a blank line
 			i = find(dirList.begin(), dirList.end(), blank);
@@ -1581,8 +1579,8 @@ std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::strin
 	 * the names, not the fully qualified path names.
 	 */
 	if (!error && (dirList.size() > 0)) {
-		unsigned int							dirSize = aDir.size();
-		std::vector<std::string>::iterator		i;
+		int			dirSize = aDir.size();
+		std::vector<CKString>::iterator		i;
 		for (i = dirList.begin(); i != dirList.end(); ++i) {
 			if (i->size() >= dirSize) {
 				if (i->substr(0, dirSize) == aDir) {
@@ -1606,17 +1604,17 @@ std::vector<std::string> CKFTPConnection::getDirectoryContents( const std::strin
  * If there is any problem in creating the directory list, an empty
  * list is returned, otherwise, a std::vector is returned.
  */
-std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string & aDir )
+std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// see if we are logged into the host
 	if (!error) {
 		if (!isLoggedIn()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getSubpathsAtPath(const std::string &) - "
+			msg << "CKFTPConnection::getSubpathsAtPath(const CKString &) - "
 				"this instance is not logged into a valid FTP server and so "
 				"nothing can be done. Please login to the server with a call "
 				"to loginToHost() before calling this method.";
@@ -1625,14 +1623,14 @@ std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string &
 	}
 
 	// get the current directory so that we can return here when done
-	std::string		startingDir;
+	CKString		startingDir;
 	if (!error) {
 		try {
 			startingDir = currentDirectoryPath();
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getSubpathsAtPath(const std::string &) - "
+			msg << "CKFTPConnection::getSubpathsAtPath(const CKString &) - "
 				"while trying to get the current directory from the FTP server "
 				"a CKException was thrown: " << e.getMessage();
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -1640,14 +1638,14 @@ std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string &
 	}
 
 	// get the root data from the remote host for this file
-	std::vector<std::string>		rootDirList;
+	std::vector<CKString>		rootDirList;
 	if (!error) {
 		try {
 			rootDirList = getDirectoryContents(aDir);
 		} catch (CKException & e) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getSubpathsAtPath(const std::string &) - "
+			msg << "CKFTPConnection::getSubpathsAtPath(const CKString &) - "
 				"while trying to get the directory listing from the FTP server for "
 				"the directory '" << aDir << "' a CKException was thrown: " <<
 				e.getMessage();
@@ -1663,10 +1661,10 @@ std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string &
 	 * if a littls slow at times.
 	 */
 	if (!error && (rootDirList.size() > 0)) {
-		std::vector<std::string>::iterator		i;
+		std::vector<CKString>::iterator		i;
 		for (i = rootDirList.begin(); i != rootDirList.end(); ++i) {
 			// create the complete path for this directory entry
-			std::string		completePath = aDir;
+			CKString		completePath = aDir;
 			completePath += "/";
 			completePath += (*i);
 
@@ -1675,18 +1673,20 @@ std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string &
 				if (isPositiveCompletionReply(doCWD(completePath))) {
 					// looks like a directory, get the contents
 					try {
-						std::vector<std::string>	sub = getSubpathsAtPath(completePath);
-						std::vector<std::string>::iterator		j;
+						std::vector<CKString>	sub = getSubpathsAtPath(completePath);
+						std::vector<CKString>::iterator		j;
 						for (j = sub.begin(); j != sub.end(); ++j) {
 							// create the new directory entry
-							std::string		newbie = completePath.append("/").append(*j);
+							CKString	newbie = completePath;
+							newbie += "/";
+							newbie += (*j);
 							// ...and add it to the return vector
 							retval.push_back(newbie);
 						}
 					} catch (CKException & e2) {
 						error = true;
 						std::ostringstream	msg;
-						msg << "CKFTPConnection::getSubpathsAtPath(const std::string &)"
+						msg << "CKFTPConnection::getSubpathsAtPath(const CKString &)"
 							" - while trying to get the sub-directory listing from the "
 							"FTP server for the directory '" << completePath <<
 							"' a CKException was thrown: " << e2.getMessage();
@@ -1699,7 +1699,7 @@ std::vector<std::string> CKFTPConnection::getSubpathsAtPath( const std::string &
 			} catch (CKException & e1) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKFTPConnection::getSubpathsAtPath(const std::string &)"
+				msg << "CKFTPConnection::getSubpathsAtPath(const CKString &)"
 					" - while trying to change directory to the sub-directory "
 					"'" << completePath << "' a CKException was thrown: "
 					<< e1.getMessage();
@@ -1767,22 +1767,33 @@ bool CKFTPConnection::operator!=( const CKFTPConnection & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKFTPConnection::toString() const
+CKString CKFTPConnection::toString() const
 {
-	std::ostringstream	buff;
+	CKString		retval = "< Host=";
+	retval += getHostname();
+	retval += ", ";
+	retval += " Username=";
+	retval += getUsername();
+	retval += ", ";
+	retval += " Password=";
+	retval += "<hidden>";
+	retval += ", ";
+	retval += " State=";
+	retval += getState();
+	retval += ", ";
+	retval += " ControlPort=";
+	retval += getControlPort().toString();
+	retval += ", ";
+	retval += " IncomingDataTimeout=";
+	retval += getIncomingDataTimeout();
+	retval += ", ";
+	retval += " Logged in:";
+	retval += (isLoggedIn() ? "Yes" : "No");
+	retval += ">\n";
 
-	buff << "< Host=" << getHostname() << ", " <<
-		" Username=" << getUsername() << ", " <<
-		" Password=" << "<hidden>" << ", " <<
-		" State=" << getState() << ", " <<
-		" ControlPort=" << getControlPort() << ", " <<
-		" IncomingDataTimeout=" << getIncomingDataTimeout() << ", " <<
-		" Logged in:" << (isLoggedIn() ? "Yes" : "No") <<
-		">" << std::endl;
-
-	return buff.str();
+	return retval;
 }
 
 
@@ -1792,7 +1803,7 @@ std::string CKFTPConnection::toString() const
  * list. A copy is made so you don't have to worry about who
  * owns the argument - the caller does.
  */
-void CKFTPConnection::setServerReplyLines( const std::vector<std::string> & aList )
+void CKFTPConnection::setServerReplyLines( const std::vector<CKString> & aList )
 {
 	// first, clear out the existing list
 	mServerReplyLines.clear();
@@ -1823,7 +1834,7 @@ void CKFTPConnection::setIsLoggedIn( bool aFlag )
  * completed, the username and password are locked so that they
  * cannot be changed during a connection.
  */
-std::string CKFTPConnection::getPassword() const
+CKString CKFTPConnection::getPassword() const
 {
 	return mPassword;
 }
@@ -1835,7 +1846,7 @@ std::string CKFTPConnection::getPassword() const
  * port command. This is useful as there's a lot of useful data in
  * the responses and many times we need to mine it.
  */
-std::vector<std::string> CKFTPConnection::getServerReplyLines() const
+std::vector<CKString> CKFTPConnection::getServerReplyLines() const
 {
 	return mServerReplyLines;
 }
@@ -1858,7 +1869,7 @@ void CKFTPConnection::clearServerReplyLines()
  * because the user doesn't have to deal with the ivar, just the
  * method.
  */
-void CKFTPConnection::addToServerReplyLines( const std::string & aLine )
+void CKFTPConnection::addToServerReplyLines( const CKString & aLine )
 {
 	mServerReplyLines.push_back(aLine);
 }
@@ -1996,7 +2007,7 @@ bool CKFTPConnection::isFileSystemReply( int aCode )
  * FTP functions are all available and waiting without
  * circumventing the designed flow.
  */
-int CKFTPConnection::executeCommand( const std::string & aCmd )
+int CKFTPConnection::executeCommand( const CKString & aCmd )
 {
 	bool		error = false;
 	int			retval = CKFTPUnimplementedFunction;
@@ -2006,7 +2017,7 @@ int CKFTPConnection::executeCommand( const std::string & aCmd )
 		if (!mControlPort.isConnected()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::executeCommand(const std::string &) - "
+			msg << "CKFTPConnection::executeCommand(const CKString &) - "
 				"this instance's control port is not connected to a valid FTP "
 				"server and so nothing can be done. Please connect to the server "
 				"and then login with a call to loginToHost() before calling "
@@ -2017,12 +2028,12 @@ int CKFTPConnection::executeCommand( const std::string & aCmd )
 
 	// send the command out the control port
 	if (!error) {
-		std::string		cmd = aCmd;
+		CKString		cmd = aCmd;
 		cmd += "\r\n";
 		if (!mControlPort.send(cmd)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::executeCommand(const std::string &) - "
+			msg << "CKFTPConnection::executeCommand(const CKString &) - "
 				"the command '" << aCmd << "' could not successfully be sent to "
 				"the FTP server at " << getHostname() << ". This is a serious "
 				"problem and could indicate that the server is down.";
@@ -2036,7 +2047,7 @@ int CKFTPConnection::executeCommand( const std::string & aCmd )
 		if (retval <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::executeCommand(const std::string &) - "
+			msg << "CKFTPConnection::executeCommand(const CKString &) - "
 				"the reply code for the command '" << aCmd << "' was " <<
 				retval << " and that's an illegal value for the return code. "
 				"Please check into this as soon as possible.";
@@ -2076,9 +2087,9 @@ int CKFTPConnection::doABOR()
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doAPPE( const std::string & arg )
+int CKFTPConnection::doAPPE( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringAPPE;
+	CKString		cmd = CKFTPCommandStringAPPE;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2107,9 +2118,9 @@ int CKFTPConnection::doCDUP()
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doCWD( const std::string & arg )
+int CKFTPConnection::doCWD( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringCWD;
+	CKString		cmd = CKFTPCommandStringCWD;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2125,9 +2136,9 @@ int CKFTPConnection::doCWD( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doDELE( const std::string & arg )
+int CKFTPConnection::doDELE( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringDELE;
+	CKString		cmd = CKFTPCommandStringDELE;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2156,9 +2167,9 @@ int CKFTPConnection::doDELE( const std::string & arg )
  *
  *	It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doLIST( const std::string & arg )
+int CKFTPConnection::doLIST( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringLIST;
+	CKString		cmd = CKFTPCommandStringLIST;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2175,9 +2186,9 @@ int CKFTPConnection::doLIST( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doMKD( const std::string & arg )
+int CKFTPConnection::doMKD( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringMKD;
+	CKString		cmd = CKFTPCommandStringMKD;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2198,9 +2209,9 @@ int CKFTPConnection::doMKD( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doMODE( const std::string & arg )
+int CKFTPConnection::doMODE( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringMODE;
+	CKString		cmd = CKFTPCommandStringMODE;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2216,9 +2227,9 @@ int CKFTPConnection::doMODE( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doNLST( const std::string & arg )
+int CKFTPConnection::doNLST( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringNLST;
+	CKString		cmd = CKFTPCommandStringNLST;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2249,9 +2260,9 @@ int CKFTPConnection::doNOOP()
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doPASS( const std::string & arg )
+int CKFTPConnection::doPASS( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringPASS;
+	CKString		cmd = CKFTPCommandStringPASS;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2268,9 +2279,9 @@ int CKFTPConnection::doPASS( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doPORT( const std::string & arg )
+int CKFTPConnection::doPORT( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringPORT;
+	CKString		cmd = CKFTPCommandStringPORT;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2317,9 +2328,9 @@ int CKFTPConnection::doQUIT()
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doRETR( const std::string & arg )
+int CKFTPConnection::doRETR( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringRETR;
+	CKString		cmd = CKFTPCommandStringRETR;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2339,9 +2350,9 @@ int CKFTPConnection::doRETR( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doRMD( const std::string & arg )
+int CKFTPConnection::doRMD( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringRMD;
+	CKString		cmd = CKFTPCommandStringRMD;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2360,9 +2371,9 @@ int CKFTPConnection::doRMD( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doRNFR( const std::string & arg )
+int CKFTPConnection::doRNFR( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringRNFR;
+	CKString		cmd = CKFTPCommandStringRNFR;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2381,9 +2392,9 @@ int CKFTPConnection::doRNFR( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doRNTO( const std::string & arg )
+int CKFTPConnection::doRNTO( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringRNTO;
+	CKString		cmd = CKFTPCommandStringRNTO;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2402,9 +2413,9 @@ int CKFTPConnection::doRNTO( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doSITE( const std::string & arg )
+int CKFTPConnection::doSITE( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringSITE;
+	CKString		cmd = CKFTPCommandStringSITE;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2423,9 +2434,9 @@ int CKFTPConnection::doSITE( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doSTAT( const std::string & arg )
+int CKFTPConnection::doSTAT( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringSTAT;
+	CKString		cmd = CKFTPCommandStringSTAT;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2445,9 +2456,9 @@ int CKFTPConnection::doSTAT( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doSTOR( const std::string & arg )
+int CKFTPConnection::doSTOR( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringSTOR;
+	CKString		cmd = CKFTPCommandStringSTOR;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2482,9 +2493,9 @@ int CKFTPConnection::doSTOU()
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doSTRU( const std::string & arg )
+int CKFTPConnection::doSTRU( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringSTRU;
+	CKString		cmd = CKFTPCommandStringSTRU;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2513,9 +2524,9 @@ int CKFTPConnection::doSTRU( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doTYPE( const std::string & arg )
+int CKFTPConnection::doTYPE( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringTYPE;
+	CKString		cmd = CKFTPCommandStringTYPE;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2534,9 +2545,9 @@ int CKFTPConnection::doTYPE( const std::string & arg )
  *
  * It returns the FTP return code for the execution.
  */
-int CKFTPConnection::doUSER( const std::string & arg )
+int CKFTPConnection::doUSER( const CKString & arg )
 {
-	std::string		cmd = CKFTPCommandStringUSER;
+	CKString		cmd = CKFTPCommandStringUSER;
 	cmd += arg;
 	return executeCommand(cmd);
 }
@@ -2557,8 +2568,8 @@ int CKFTPConnection::doUSER( const std::string & arg )
  * If the return code from doUSER() is 331, then the method
  * doPASS() is called, and it's return code it returned.
  */
-int CKFTPConnection::ftpLoginUsername( const std::string & aUser,
-					  const std::string & aPassword )
+int CKFTPConnection::ftpLoginUsername( const CKString & aUser,
+									   const CKString & aPassword )
 {
 	bool	error = false;
 	int		returnCode;
@@ -2569,8 +2580,8 @@ int CKFTPConnection::ftpLoginUsername( const std::string & aUser,
 		if (returnCode != CKFTPUserOKNeedPassword) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::ftpLoginUsername(const std::string &, "
-				"const std::string &) - the username '" << aUser << "' was rejected "
+			msg << "CKFTPConnection::ftpLoginUsername(const CKString &, "
+				"const CKString &) - the username '" << aUser << "' was rejected "
 				"by the FTP server on " << getHostname() << ". This could be a wrong "
 				"user or the server could be in trouble. Please check into this as "
 				"soon as possible.";
@@ -2598,8 +2609,8 @@ int CKFTPConnection::ftpLoginUsername( const std::string & aUser,
  * If the return code from doRNFR() is 350, then the method
  * doRNTO() is called, and it's return code it returned.
  */
-int CKFTPConnection::ftpRename( const std::string & aFromFile,
-			   const std::string & aToFile )
+int CKFTPConnection::ftpRename( const CKString & aFromFile,
+								const CKString & aToFile )
 {
 	bool	error = false;
 	int		returnCode;
@@ -2610,8 +2621,8 @@ int CKFTPConnection::ftpRename( const std::string & aFromFile,
 		if (returnCode != CKFTPFileActionPendingFurtherInfo) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::ftpRename(const std::string &, "
-				"const std::string &) - the existing file '" << aFromFile <<
+			msg << "CKFTPConnection::ftpRename(const CKString &, "
+				"const CKString &) - the existing file '" << aFromFile <<
 				"' seems to be invalid with the FTP server on " << getHostname() <<
 				". This could be a missing file or the server could be in trouble. "
 				"Please check into this as soon as possible.";
@@ -2646,23 +2657,23 @@ int CKFTPConnection::ftpRename( const std::string & aFromFile,
  * and the other interfaces to data trasnfer in this class used.
  *
  * On a transfer to the remote host, if the transfer is successful,
- * the method returns an std::string with nothing in it. If it isn't
+ * the method returns an CKString with nothing in it. If it isn't
  * successful, it throws a CKException.
  */
-std::string CKFTPConnection::transferData( const std::string & aType,
-							const std::string & aCmd,
-							const std::string & aData )
+CKString CKFTPConnection::transferData( const CKString & aType,
+										const CKString & aCmd,
+										const CKString & aData )
 {
 	bool			error = false;
-	std::string		retval;
+	CKString		retval;
 
 	// First, let's make sure the transfer mode is right for this
 	if (!error) {
 		if (!isPositiveCompletionReply(doTYPE(aType))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - the transfer mode "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - the transfer mode "
 				"could not be set to '" << aType << "' for the upcoming transfer. "
 				"This is probably a problem with the connection to the server. "
 				"Error code:" << getState() << " " << stringForLastFTPReturnCode();
@@ -2677,8 +2688,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 		if (!listenerSocket.isActivelyListening()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - a listener socket "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - a listener socket "
 				"- necessary for the transfer from the host, could not be created. "
 				"This is a serious resource issue.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -2701,8 +2712,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 		if (gethostname(hostname, MAXHOSTNAMELEN) < 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - the hostname of the "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - the hostname of the "
 				"current machine could not be obtained. This likely indicates "
 				"trouble at the operating system level.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -2726,8 +2737,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 				error = true;
 				hostAddr.s_addr = 0x0;
 				std::ostringstream	msg;
-				msg << "CKFTPConnection::transferData(const std::string &, "
-					"const std::string &, const std::string &) - the IP address "
+				msg << "CKFTPConnection::transferData(const CKString &, "
+					"const CKString &, const CKString &) - the IP address "
 					"for the host: '" << hostname << "' could not be located. "
 					"Please check the DNS entries for proper host name.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -2771,18 +2782,18 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 					listenerSocketPort[0], listenerSocketPort[1]) < 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - the formatted "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - the formatted "
 				"argument to the PORT FTP command could not successfully be "
 				"generated. Please alert the developers of this problem.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		} else {
 			// ...now send it out to the remote host
-			if (!isPositiveCompletionReply(doPORT(std::string(buff)))) {
+			if (!isPositiveCompletionReply(doPORT(CKString(buff)))) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKFTPConnection::transferData(const std::string &, "
-					"const std::string &, const std::string &) - the reply port:" <<
+				msg << "CKFTPConnection::transferData(const CKString &, "
+					"const CKString &, const CKString &) - the reply port:" <<
 					listenerSocket.getPort() << " could not be set with the remote "
 					"host through the PORT command. This is a serious problem.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -2805,8 +2816,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 		if (!isPositivePreliminaryReply(executeCommand(aCmd))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - the command:'" <<
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - the command:'" <<
 				aCmd << "' was not successfully processed on the remote host. "
 				"This is a serious problem.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -2822,10 +2833,10 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 			 */
 			if (aData.size() == 0) {
 				// try to find the bracketing '()' and get what's between them
-				unsigned int	end = mServerReplyLines[0].rfind(')');
-				if (end != std::string::npos) {
-					unsigned int	beg = mServerReplyLines[0].rfind('(', end);
-					if (beg != std::string::npos) {
+				int		end = mServerReplyLines[0].findLast(')');
+				if (end != -1) {
+					int		beg = mServerReplyLines[0].findLast('(', end);
+					if (beg != -1) {
 						expectedReceivedBytes = atol(mServerReplyLines[0].
 								substr((beg+1), (end - beg - 1)).c_str());
 					}
@@ -2844,8 +2855,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 		if (dataSocket == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - no connection was "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - no connection was "
 				"established between a remote host requesting connection and the "
 				"local machine. This could mean that the remote machine is not "
 				"yet ready to send data.";
@@ -2863,7 +2874,7 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 			/*
 			 * We're reading something from the dataSocket
 			 */
-			std::string		newBlock;
+			CKString		newBlock;
 			bool			gotSocketClose = false;
 			bool			gotTimeout = false;
 			bool			gotEverythingComing = false;
@@ -2905,8 +2916,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 					gotTimeout = true;
 					if (expectedReceivedBytes >= 0) {
 						std::ostringstream	msg;
-						msg << "CKFTPConnection::transferData(const std::string &, "
-							"const std::string &, const std::string &) - after "
+						msg << "CKFTPConnection::transferData(const CKString &, "
+							"const CKString &, const CKString &) - after "
 							"receiving " << retval.size() << " bytes (out of an "
 							"expected " << expectedReceivedBytes << " bytes) a read "
 							"timeout was encountered. This might be because the "
@@ -2935,8 +2946,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 			if (!dataSocket->send(aData)) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKFTPConnection::transferData(const std::string &, "
-					"const std::string &, const std::string &) - the data could "
+				msg << "CKFTPConnection::transferData(const CKString &, "
+					"const CKString &, const CKString &) - the data could "
 					"not be sent to the remote host. This could mean that the "
 					"remote machine is not yet ready to receive data, or is unable "
 					"to do so.";
@@ -2961,8 +2972,8 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 		if (getReply() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::transferData(const std::string &, "
-				"const std::string &, const std::string &) - the reply from the "
+			msg << "CKFTPConnection::transferData(const CKString &, "
+				"const CKString &, const CKString &) - the reply from the "
 				"remote FTP server process was not properly formatted - no "
 				"valid return code was present. This may be a timeout, but most "
 				"likely signifies a serious problem with the remote host.";
@@ -2984,22 +2995,22 @@ std::string CKFTPConnection::transferData( const std::string & aType,
  ********************************************************/
 /*
  * This class method takes a file name and attempts to load
- * the file into a single std::string and then return that
- * to the caller. This will certainly make large std::string
+ * the file into a single CKString and then return that
+ * to the caller. This will certainly make large CKString
  * values, but that's OK as it's the purpose of this thing
  * in the first place.
  */
-std::string CKFTPConnection::getLocalContents( const std::string & aFilename )
+CKString CKFTPConnection::getLocalContents( const CKString & aFilename )
 {
 	bool			error = false;
-	std::string		retval;
+	CKString		retval;
 
 	// first, make sure we have something to do
 	if (!error) {
 		if (aFilename.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::getLocalContents(const std::string &) - "
+			msg << "CKFTPConnection::getLocalContents(const CKString &) - "
 				"the supplied file name was empty and that means that there's "
 				"nothing for me to do. Please pass in a valid file name.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3011,7 +3022,7 @@ std::string CKFTPConnection::getLocalContents( const std::string & aFilename )
 	if (!src) {
 		error = true;
 		std::ostringstream	msg;
-		msg << "CKFTPConnection::getLocalContents(const std::string &) - "
+		msg << "CKFTPConnection::getLocalContents(const CKString &) - "
 			"an input stream could not be created for the file '" << aFilename <<
 			"' and that means that there's no way for me to read it's contents. "
 			"Please make sure the local file exists.";
@@ -3035,14 +3046,14 @@ std::string CKFTPConnection::getLocalContents( const std::string & aFilename )
 
 /*
  * This method takes a filename of a local file as well as a
- * (quite possibly large) std::string and creates a file
+ * (quite possibly large) CKString and creates a file
  * on the local filesystem with that name and that string as
  * it's contents. This is the opposite of the getLocalContents()
  * method and is used in the methods for this class to write
  * out files.
  */
-void CKFTPConnection::setLocalContents( const std::string & aFilename,
-										const std::string & aData )
+void CKFTPConnection::setLocalContents( const CKString & aFilename,
+										const CKString & aData )
 {
 	bool			error = false;
 
@@ -3051,8 +3062,8 @@ void CKFTPConnection::setLocalContents( const std::string & aFilename,
 		if (aFilename.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::setLocalContents(const std::string &, "
-				"const std::string &) - the supplied destination file name was "
+			msg << "CKFTPConnection::setLocalContents(const CKString &, "
+				"const CKString &) - the supplied destination file name was "
 				"empty and that means that there's nothing for me to do. Please "
 				"pass in a valid file name.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3062,8 +3073,8 @@ void CKFTPConnection::setLocalContents( const std::string & aFilename,
 		if (aData.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::setLocalContents(const std::string &, "
-				"const std::string &) - the supplied data set for the file was "
+			msg << "CKFTPConnection::setLocalContents(const CKString &, "
+				"const CKString &) - the supplied data set for the file was "
 				"empty and that means that there's nothing for me to do. Please "
 				"pass in some real data to write to the file.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3075,8 +3086,8 @@ void CKFTPConnection::setLocalContents( const std::string & aFilename,
 	if (!dest) {
 		error = true;
 		std::ostringstream	msg;
-		msg << "CKFTPConnection::setLocalContents(const std::string &, "
-			"const std::string &) - an output stream could not be created for "
+		msg << "CKFTPConnection::setLocalContents(const CKString &, "
+			"const CKString &) - an output stream could not be created for "
 			"the file '" << aFilename << "' and that means that there's no way "
 			"for me to write out it's contents. Please make sure you have "
 			"permissions write the local file.";
@@ -3085,13 +3096,13 @@ void CKFTPConnection::setLocalContents( const std::string & aFilename,
 
 	// write it out a character at a time
 	if (!error) {
-		for (unsigned int i = 0; i < aData.length(); i++) {
+		for (int i = 0; i < aData.length(); i++) {
 			dest.put(aData[i]);
 			if (dest.bad()) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKFTPConnection::setLocalContents(const std::string &, "
-					"const std::string &) - while trying to write out the data "
+				msg << "CKFTPConnection::setLocalContents(const CKString &, "
+					"const CKString &) - while trying to write out the data "
 					"to the file '" << aFilename << "' something bad happened. "
 					"I don't have a lot of details, but it's possible that you're "
 					"out of disk space.";
@@ -3126,9 +3137,9 @@ char CKFTPConnection::bitsToDigit( bool aMSB, bool aBit, bool aLSB )
  * three digit number for inclusion in the command to change
  * permissions.
  */
-std::string CKFTPConnection::permissionsToNumber( const CKFilePermissions & aSet )
+CKString CKFTPConnection::permissionsToNumber( const CKFilePermissions & aSet )
 {
-	std::string		retval;
+	CKString		retval;
 
 	// build up the three numbers
 	retval += bitsToDigit(aSet.userReadable, aSet.userWritable, aSet.userExecutable);
@@ -3148,20 +3159,20 @@ std::string CKFTPConnection::permissionsToNumber( const CKFilePermissions & aSet
  * the return value is created on the stack, the user needs to
  * save it if they want it to stay around.
  */
-std::vector<std::string> CKFTPConnection::parseIntoChunks(
-												const std::string & aString,
-												const std::string & aDelim )
+std::vector<CKString> CKFTPConnection::parseIntoChunks(
+												const CKString & aString,
+												const CKString & aDelim )
 {
-	bool						error = false;
-	std::vector<std::string>	retval;
+	bool					error = false;
+	std::vector<CKString>	retval;
 
 	// first, see if we have anything to do
 	if (!error) {
 		if (aString.length() <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the source string is 0 and "
+			msg << "CKFTPConnection::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the source string is 0 and "
 				"that means that there's nothing for me to do. Please make sure "
 				"that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3173,8 +3184,8 @@ std::vector<std::string> CKFTPConnection::parseIntoChunks(
 		if (delimLength <= 0) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::parseIntoChunks(const std::string &, "
-				"const std::string &) - the length of the delimiter string is 0 "
+			msg << "CKFTPConnection::parseIntoChunks(const CKString &, "
+				"const CKString &) - the length of the delimiter string is 0 "
 				"and that means that there's nothing for me to do. Please make "
 				"sure that the arguments make sense before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3182,7 +3193,7 @@ std::vector<std::string> CKFTPConnection::parseIntoChunks(
 	}
 
 	// now, copy the source to a buffer so I can consume it in the process
-	std::string		buff;
+	CKString		buff;
 	if (!error) {
 		buff = aString;
 	}
@@ -3198,13 +3209,13 @@ std::vector<std::string> CKFTPConnection::parseIntoChunks(
 	 */
 	while (!error) {
 		// find out wherre, if anyplace, the delimiter sits
-		unsigned int	pos = buff.find(aDelim);
-		if (pos == std::string::npos) {
+		int		pos = buff.find(aDelim);
+		if (pos == -1) {
 			// nothing left to parse out, bail out
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back(std::string(""));
+			retval.push_back(CKString(""));
 		} else {
 			// pick off the substring up to the delimiter
 			retval.push_back(buff.substr(0, pos));
@@ -3306,7 +3317,7 @@ int CKFTPConnection::getReply()
 	 * We need to read a returned line from the FTP server.
 	 * Thankfully, all responses end in a NEWLINE
 	 */
-	std::string	response;
+	CKString	response;
 	if (!error) {
 		try {
 			response = mControlPort.readUpToCRLF();
@@ -3358,7 +3369,7 @@ int CKFTPConnection::getReply()
 		 * Now read each line, check it for a return code, and save what
 		 * is in between until we do get the same return code on the line
 		 */
-		std::string	line;
+		CKString	line;
 		while (!error) {
 			try {
 				// get a line from the server's reply
@@ -3398,7 +3409,7 @@ int CKFTPConnection::getReply()
  * This routine throws CKExceptions in the event that a
  * processing error occurs, and returns a -1.
  */
-int CKFTPConnection::grabFTPReturnCodeOnData( const std::string & aData )
+int CKFTPConnection::grabFTPReturnCodeOnData( const CKString & aData )
 {
 	bool	error = false;
 	int		retval = -1;
@@ -3410,7 +3421,7 @@ int CKFTPConnection::grabFTPReturnCodeOnData( const std::string & aData )
 			(!isdigit(aData[0]) || !isdigit(aData[1]) || !isdigit(aData[2]))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::grabFTPReturnCodeOnData(const std::string &) - "
+			msg << "CKFTPConnection::grabFTPReturnCodeOnData(const CKString &) - "
 				"the passed in data: '" << aData << "' does not contain a complete "
 				"return code (3 digits).";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3425,7 +3436,7 @@ int CKFTPConnection::grabFTPReturnCodeOnData( const std::string & aData )
 		if ((retval < 100) || (retval > 559)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::grabFTPReturnCodeOnData(const std::string &) - "
+			msg << "CKFTPConnection::grabFTPReturnCodeOnData(const CKString &) - "
 				"the passed in data: '" << aData << "' does not contain a valid FTP "
 				"return code (between 100 and 559).";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3443,7 +3454,7 @@ int CKFTPConnection::grabFTPReturnCodeOnData( const std::string & aData )
  * at the format of the reply. If there are three digits followed
  * by a '-', then it is the start of a multi-line reply.
  */
-bool CKFTPConnection::isStartOfMultilineReply( const std::string & aData )
+bool CKFTPConnection::isStartOfMultilineReply( const CKString & aData )
 {
 	bool	error = false;
 	bool	isContinued = false;
@@ -3454,7 +3465,7 @@ bool CKFTPConnection::isStartOfMultilineReply( const std::string & aData )
 		if (aData.length() < 6) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKFTPConnection::isStartOfMultilineReply(const std::string &) - "
+			msg << "CKFTPConnection::isStartOfMultilineReply(const CKString &) - "
 				"the passed in data: '" << aData << "' does not contain a complete "
 				"return code (3 digits).";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3479,134 +3490,134 @@ bool CKFTPConnection::isStartOfMultilineReply( const std::string & aData )
 /*
  * There will be times that we need to "decode" the FTP return
  * code that is an integer into a human-readable string. This
- * method does just that. It returns a std::string
+ * method does just that. It returns a CKString
  * that corresponds to the FTP error code passed in. If the
  * argument does not correcepond to any FTP error code, a
  * descriptive error string is returned and an CKException
  * is thrown.
  */
-std::string CKFTPConnection::stringForFTPReturnCode( int aCode )
+CKString CKFTPConnection::stringForFTPReturnCode( int aCode )
 {
-	std::string	retval;
+	CKString	retval;
 
 	switch (aCode) {
 		case 110 :
-			retval = std::string("Restart marker reply.");
+			retval = "Restart marker reply.";
 			break;
 		case 120 :
-			retval = std::string("Service ready in nnn minutes");
+			retval = "Service ready in nnn minutes";
 			break;
 		case 125 :
-			retval = std::string("Data connection already open, transfer starting.");
+			retval = "Data connection already open, transfer starting.";
 			break;
 		case 200 :
-			retval = std::string("Command OK.");
+			retval = "Command OK.";
 			break;
 		case 202 :
-			retval = std::string("Command not implemented, superfluous at this site.");
+			retval = "Command not implemented, superfluous at this site.";
 			break;
 		case 211 :
-			retval = std::string("System status, or system help reply");
+			retval = "System status, or system help reply";
 			break;
 		case 212 :
-			retval = std::string("Directory status.");
+			retval = "Directory status.";
 			break;
 		case 213 :
-			retval = std::string("File status.");
+			retval = "File status.";
 			break;
 		case 214 :
-			retval = std::string("Help message.");
+			retval = "Help message.";
 			break;
 		case 215 :
-			retval = std::string("NAME system type.");
+			retval = "NAME system type.";
 			break;
 		case 220 :
-			retval = std::string("Service ready for new user.");
+			retval = "Service ready for new user.";
 			break;
 		case 221 :
-			retval = std::string("Service closing control connection.");
+			retval = "Service closing control connection.";
 			break;
 		case 225 :
-			retval = std::string("Data connection open; no transfer in progress.");
+			retval = "Data connection open; no transfer in progress.";
 			break;
 		case 226 :
-			retval = std::string("Closing data connection. Requested file action "
-				"successful.");
+			retval = "Closing data connection. Requested file action "
+				"successful.";
 			break;
 		case 227 :
-			retval = std::string("Entering Passive Mode (h1,h2,h3,h4,p1,p2).");
+			retval = "Entering Passive Mode (h1,h2,h3,h4,p1,p2).";
 			break;
 		case 230 :
-			retval = std::string("User logged in, proceed.");
+			retval = "User logged in, proceed.";
 			break;
 		case 250 :
-			retval = std::string("Requested file action OK, completed");
+			retval = "Requested file action OK, completed";
 			break;
 		case 257 :
-			retval = std::string("'PATHNAME' created.");
+			retval = "'PATHNAME' created.";
 			break;
 		case 331 :
-			retval = std::string("User name OK, need password.");
+			retval = "User name OK, need password.";
 			break;
 		case 332 :
-			retval = std::string("Need account for login.");
+			retval = "Need account for login.";
 			break;
 		case 350 :
-			retval = std::string("Requested file action pending further information.");
+			retval = "Requested file action pending further information.";
 			break;
 		case 421 :
-			retval = std::string("Service not available, closing control connection.");
+			retval = "Service not available, closing control connection.";
 			break;
 		case 425 :
-			retval = std::string("Can't open data connection.");
+			retval = "Can't open data connection.";
 			break;
 		case 426 :
-			retval = std::string("Connection closed; transfer aborted.");
+			retval = "Connection closed; transfer aborted.";
 			break;
 		case 450 :
-			retval = std::string("Requested file action not taken. File unavailable.");
+			retval = "Requested file action not taken. File unavailable.";
 			break;
 		case 451 :
-			retval = std::string("Requested action aborted: local error in processing.");
+			retval = "Requested action aborted: local error in processing.";
 			break;
 		case 452 :
-			retval = std::string("Requested action not taken. Insuffiient storage space "
-				"in system.");
+			retval = "Requested action not taken. Insuffiient storage space "
+				"in system.";
 			break;
 		case 500 :
-			retval = std::string("Syntax error, command unrecognized. This may "
-				"include errors such as command line too long.");
+			retval = "Syntax error, command unrecognized. This may "
+				"include errors such as command line too long.";
 			break;
 		case 501 :
-			retval = std::string("Syntax error in parameters or arguments.");
+			retval = "Syntax error in parameters or arguments.";
 			break;
 		case 502 :
-			retval = std::string("Command not implemented.");
+			retval = "Command not implemented.";
 			break;
 		case 503 :
-			retval = std::string("Bad sequence of commands.");
+			retval = "Bad sequence of commands.";
 			break;
 		case 504 :
-			retval = std::string("Command not implemented for that parameter.");
+			retval = "Command not implemented for that parameter.";
 			break;
 		case 530 :
-			retval = std::string("Not logged in.");
+			retval = "Not logged in.";
 			break;
 		case 532 :
-			retval = std::string("Need account for storing files.");
+			retval = "Need account for storing files.";
 			break;
 		case 550 :
-			retval = std::string("Requested action not taken. File unavailable.");
+			retval = "Requested action not taken. File unavailable.";
 			break;
 		case 551 :
-			retval = std::string("Requested action aborted: page type unknown.");
+			retval = "Requested action aborted: page type unknown.";
 			break;
 		case 552 :
-			retval = std::string("Requested file action aborted. Exceeded storage "
-				"allocation (for current directory or dataset).");
+			retval = "Requested file action aborted. Exceeded storage "
+				"allocation (for current directory or dataset).";
 			break;
 		case 553 :
-			retval = std::string("Requested action not taken. File name not allowed.");
+			retval = "Requested action not taken. File name not allowed.";
 			break;
 
 		default :
@@ -3624,17 +3635,17 @@ std::string CKFTPConnection::stringForFTPReturnCode( int aCode )
 /*
  * This method simply calls setStatus() to get the last FTP
  * return value and then passes it to stringForFTPReturnCode()
- * to convert that to a std::string.
+ * to convert that to a CKString.
  */
-std::string CKFTPConnection::stringForLastFTPReturnCode()
+CKString CKFTPConnection::stringForLastFTPReturnCode()
 {
-	std::string		retval;
+	CKString		retval;
 
 	if (getState() > 0) {
 		retval = stringForFTPReturnCode(getState());
 	} else {
-		retval = std::string("The FTP connection is in an indeterminate state, "
-			"and does not have a valid return code.");
+		retval = "The FTP connection is in an indeterminate state, "
+			"and does not have a valid return code.";
 	}
 
 	return retval;

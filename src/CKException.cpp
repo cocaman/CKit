@@ -5,7 +5,7 @@
  *                   version of the base exception class used in the MarketMash
  *                   Server.
  * 
- * $Id: CKException.cpp,v 1.5 2004/09/11 21:07:43 drbob Exp $
+ * $Id: CKException.cpp,v 1.6 2004/09/16 09:34:13 drbob Exp $
  */
 
 //	System Headers
@@ -58,7 +58,7 @@ CKException::CKException( ) :
  * as long as this exception is around. For most uses, a programmer-
  * defined constant it what's used here.
  */
-CKException::CKException( const std::string & aMessage ) :
+CKException::CKException( const CKString & aMessage ) :
 	mExceptionName( (char*)"CKException" ),
 	mFileName( NULL ),
 	mLineNumber( -1 ),
@@ -91,7 +91,7 @@ CKException::CKException( const char *aFileName, int aLineNumber ) :
  * a constant string message that will all have the proper scope
  * and lifetime for this exception.
  */
-CKException::CKException( const char *aFileName, int aLineNumber, const std::string & aMessage ) :
+CKException::CKException( const char *aFileName, int aLineNumber, const CKString & aMessage ) :
 	mExceptionName( (char*)"CKException" ),
 	mFileName( (char*)aFileName ),
 	mLineNumber( aLineNumber ),
@@ -151,7 +151,7 @@ const CKException & CKException::operator=( const CKException & anException )
  * In order to get the message out of this exception, let's
  * make a method very similar to the Java exceptions.
  */
-std::string CKException::getMessage() const
+CKString CKException::getMessage() const
 {
 	return mMessage;
 }
@@ -197,7 +197,7 @@ void CKException::init( )
  * need to be able to set all our instance variables without having
  * to dig into them.
  */
-CKException::CKException( const char *anExceptionName, const char *aFileName, int aLineNumber, const std::string & aMessage ) :
+CKException::CKException( const char *anExceptionName, const char *aFileName, int aLineNumber, const CKString & aMessage ) :
 	mExceptionName( (char*)anExceptionName ),
 	mFileName( (char*)aFileName ),
 	mLineNumber( aLineNumber ),

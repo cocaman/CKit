@@ -9,12 +9,13 @@
  *              possibility of including a hashed class name so that the UUID
  *              can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.cpp,v 1.5 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKUUID.cpp,v 1.6 2004/09/16 09:34:21 drbob Exp $
  */
 
 //	System Headers
 #include <sstream>
 #include <netdb.h>
+#include <strings.h>
 
 //	Third-Party Headers
 
@@ -138,7 +139,7 @@ CKUUID CKUUID::newUUID()
  * that the ID includes the type of object that it's referring
  * to.
  */
-CKUUID CKUUID::newUUIDForClass( const std::string & aClassName )
+CKUUID CKUUID::newUUIDForClass( const CKString & aClassName )
 {
 	CKUUID		retval;
 	retval.setUUID(CKUUID::generateNewRawUUIDStruct());
@@ -156,7 +157,7 @@ CKUUID CKUUID::newUUIDForClass( const std::string & aClassName )
  * scheme and then needs to be returned to it's object state
  * after being pulled back from persistence.
  */
-CKUUID CKUUID::uuidWithString( const std::string & aString )
+CKUUID CKUUID::uuidWithString( const CKString & aString )
 {
 	CKUUID		retval;
 	retval.setUUID(CKUUID::generateRawUUIDStructFromString(aString));
@@ -173,7 +174,7 @@ CKUUID CKUUID::uuidWithString( const std::string & aString )
  * getStringValueInDCEFormat() and can be used when you aren't
  * taking advantage of the class name hashcode.
  */
-CKUUID CKUUID::uuidWithDCEString( const std::string & aString )
+CKUUID CKUUID::uuidWithDCEString( const CKString & aString )
 {
 	CKUUID		retval;
 	retval.setUUID(CKUUID::generateRawUUIDStructFromDCEString(aString));
@@ -187,7 +188,7 @@ CKUUID CKUUID::uuidWithDCEString( const std::string & aString )
  * included hashcode for class name and create the correct
  * CKUUID based on that data.
  */
-CKUUID CKUUID::uuidWithDCEStringIncludingHashedClassName( const std::string & aString )
+CKUUID CKUUID::uuidWithDCEStringIncludingHashedClassName( const CKString & aString )
 {
 	CKUUID		retval;
 	retval.setUUID(CKUUID::generateRawUUIDStructFromDCEString(aString));
@@ -197,7 +198,7 @@ CKUUID CKUUID::uuidWithDCEStringIncludingHashedClassName( const std::string & aS
 }
 
 
-CKUUID CKUUID::uuidWithDCEStringIncludingHashedClassName( const std::string & aString, unsigned int aHashcode )
+CKUUID CKUUID::uuidWithDCEStringIncludingHashedClassName( const CKString & aString, unsigned int aHashcode )
 {
 	CKUUID		retval;
 	retval.setUUID(CKUUID::generateRawUUIDStructFromDCEString(aString));
@@ -229,9 +230,9 @@ unsigned int CKUUID::getHashedClassName() const
  * in a format that's easily transported and then used to
  * re-create the CKUUID with the generator methods.
  */
-std::string CKUUID::getStringValue() const
+CKString CKUUID::getStringValue() const
 {
-	std::string		retval;
+	CKString		retval;
 
 	// see if we have anything to do
 	if (!isGenerated()) {
@@ -241,8 +242,9 @@ std::string CKUUID::getStringValue() const
 			"one of the class (static) generators for best success.");
 	} else {
 		// generate the string representation appropriately
-		char buff[256];
-		snprintf(buff, 255, "%08x%08x%08x%08x%08x", mUUID.words[0],
+		char buff[64];
+		bzero(buff, 64);
+		snprintf(buff, 63, "%08x%08x%08x%08x%08x", mUUID.words[0],
 					mUUID.words[1], mUUID.words[2], mUUID.words[3],
 					getHashedClassName());
 		retval = buff;
@@ -257,9 +259,9 @@ std::string CKUUID::getStringValue() const
  * of the CKUUID in a format that's easily transported and then
  * used to re-create the CKUUID with the generator methods.
  */
-std::string CKUUID::getStringValueInDCEFormat() const
+CKString CKUUID::getStringValueInDCEFormat() const
 {
-	std::string		retval;
+	CKString		retval;
 
 	// see if we have anything to do
 	if (!isGenerated()) {
@@ -269,8 +271,9 @@ std::string CKUUID::getStringValueInDCEFormat() const
 			"with one of the class (static) generators for best success.");
 	} else {
 		// generate the string representation appropriately
-		char buff[256];
-		snprintf(buff, 255, "%08x %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		char buff[128];
+		bzero(buff, 128);
+		snprintf(buff, 127, "%08x %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
 					getHash(),
 					mUUID.dce.time_low,
 					mUUID.dce.time_mid,
@@ -296,9 +299,9 @@ std::string CKUUID::getStringValueInDCEFormat() const
  * that's easily transported and then used to re-create the CKUUID
  * with the generator methods.
  */
-std::string CKUUID::getStringValueInDCEFormatWithClassHash() const
+CKString CKUUID::getStringValueInDCEFormatWithClassHash() const
 {
-	std::string		retval;
+	CKString		retval;
 
 	// see if we have anything to do
 	if (!isGenerated()) {
@@ -308,8 +311,9 @@ std::string CKUUID::getStringValueInDCEFormatWithClassHash() const
 			"with one of the class (static) generators for best success.");
 	} else {
 		// generate the string representation appropriately
-		char buff[256];
-		snprintf(buff, 255, "%08x %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x %08x",
+		char buff[128];
+		bzero(buff, 128);
+		snprintf(buff, 127, "%08x %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x %08x",
 					getHash(),
 					mUUID.dce.time_low,
 					mUUID.dce.time_mid,
@@ -463,9 +467,9 @@ bool CKUUID::operator!=( const CKUUID & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKUUID::toString() const
+CKString CKUUID::toString() const
 {
 	return getStringValue();
 }
@@ -652,7 +656,7 @@ CKUUID_struct CKUUID::generateNewRawUUIDStruct()
  * characters of this string represents. There may be more data in
  * the string but this method ignores all the rest.
  */
-CKUUID_struct CKUUID::generateRawUUIDStructFromString( const std::string & aString )
+CKUUID_struct CKUUID::generateRawUUIDStructFromString( const CKString & aString )
 {
 	CKUUID_struct	retval;
 
@@ -667,7 +671,7 @@ CKUUID_struct CKUUID::generateRawUUIDStructFromString( const std::string & aStri
 		}
 		// ...and toss an exception
 		std::ostringstream	msg;
-		msg << "CKUUID::generateRawUUIDStructFromString(const std::string &) - "
+		msg << "CKUUID::generateRawUUIDStructFromString(const CKString &) - "
 			"the string '" << aString << "' did not contain the requisite "
 			"number of hex characters to fully regenerate a UUID. This is a "
 			"serious problem.";
@@ -685,7 +689,7 @@ CKUUID_struct CKUUID::generateRawUUIDStructFromString( const std::string & aStri
  * into a numerical value. In the context of this class, this
  * number represents the hashed class name of this CKUUID.
  */
-unsigned int CKUUID::generateHashedClassNameFromString( const std::string & aString )
+unsigned int CKUUID::generateHashedClassNameFromString( const CKString & aString )
 {
 	unsigned int	retval;
 
@@ -699,7 +703,7 @@ unsigned int CKUUID::generateHashedClassNameFromString( const std::string & aStr
 		retval = 0x0;
 		// ...and toss an exception
 		std::ostringstream	msg;
-		msg << "CKUUID::generateHashedClassNameFromString(const std::string &) - "
+		msg << "CKUUID::generateHashedClassNameFromString(const CKString &) - "
 			"the string '" << aString << "' did not contain the requisite "
 			"number of hex characters to fully regenerate a hashed class name. "
 			"This is a serious problem.";
@@ -715,7 +719,7 @@ unsigned int CKUUID::generateHashedClassNameFromString( const std::string & aStr
  * the parser of the DCE UUID string that this class can use for
  * it's ivar data.
  */
-CKUUID_struct CKUUID::generateRawUUIDStructFromDCEString( const std::string & aString )
+CKUUID_struct CKUUID::generateRawUUIDStructFromDCEString( const CKString & aString )
 {
 	CKUUID_struct		retval;
 
@@ -741,7 +745,7 @@ CKUUID_struct CKUUID::generateRawUUIDStructFromDCEString( const std::string & aS
 		}
 		// ...and toss an exception
 		std::ostringstream	msg;
-		msg << "CKUUID::generateRawUUIDStructFromDCEString(const std::string &) - "
+		msg << "CKUUID::generateRawUUIDStructFromDCEString(const CKString &) - "
 			"the string '" << aString << "' did not contain the requisite "
 			"number of hex characters to fully regenerate a DCE-formatted "
 			"UUID. This is a serious problem.";
@@ -772,7 +776,7 @@ CKUUID_struct CKUUID::generateRawUUIDStructFromDCEString( const std::string & aS
  * be called only from those routines that need to initialize the
  * CKUUID with a hashed class name.
  */
-unsigned int CKUUID::hashString( const std::string & aString )
+unsigned int CKUUID::hashString( const CKString & aString )
 {
 	register unsigned int hashedValue = 0;
 	const char* cStr = aString.c_str();

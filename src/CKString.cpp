@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.2 2004/09/14 19:45:40 drbob Exp $
+ * $Id: CKString.cpp,v 1.3 2004/09/16 09:34:19 drbob Exp $
  */
 
 //	System Headers
@@ -455,19 +455,19 @@ CKString & CKString::operator=( char aChar )
  * or 'false' if not. There are quite a few to be as generally
  * useful as possible.
  */
-bool CKString::append( CKString & aString )
+CKString & CKString::append( CKString & aString )
 {
 	return append((char *)aString.mString);
 }
 
 
-bool CKString::append( const CKString & aString )
+CKString & CKString::append( const CKString & aString )
 {
 	return append((char *)aString.mString);
 }
 
 
-bool CKString::append( char *aCString )
+CKString & CKString::append( char *aCString )
 {
 	bool		error = false;
 
@@ -533,23 +533,23 @@ bool CKString::append( char *aCString )
 		mSize += newChars;
 	}
 
-	return !error;
+	return *this;
 }
 
 
-bool CKString::append( const char *aCString )
+CKString & CKString::append( const char *aCString )
 {
 	return append((char *)aCString);
 }
 
 
-bool CKString::append( std::string & aSTLString )
+CKString & CKString::append( std::string & aSTLString )
 {
 	return append((char *)aSTLString.c_str());
 }
 
 
-bool CKString::append( const std::string & aSTLString )
+CKString & CKString::append( const std::string & aSTLString )
 {
 	return append((char *)aSTLString.c_str());
 }
@@ -561,7 +561,7 @@ bool CKString::append( const std::string & aSTLString )
  * and return 'true' if successful, or 'false' if not. There are
  * quite a few to be as generally useful as possible.
  */
-bool CKString::append( char aChar )
+CKString & CKString::append( char aChar )
 {
 	// make a simple buffer to add this guy in
 	char	c[2];
@@ -571,7 +571,7 @@ bool CKString::append( char aChar )
 }
 
 
-bool CKString::append( int anInteger, int aNumOfDigits )
+CKString & CKString::append( int anInteger, int aNumOfDigits )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
@@ -585,7 +585,7 @@ bool CKString::append( int anInteger, int aNumOfDigits )
 }
 
 
-bool CKString::append( long aLong, int aNumOfDigits )
+CKString & CKString::append( long aLong, int aNumOfDigits )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
@@ -599,7 +599,7 @@ bool CKString::append( long aLong, int aNumOfDigits )
 }
 
 
-bool CKString::append( double aDouble )
+CKString & CKString::append( double aDouble )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
@@ -615,19 +615,19 @@ bool CKString::append( double aDouble )
  * or 'false' if not. There are quite a few to be as generally
  * useful as possible.
  */
-bool CKString::prepend( CKString & aString )
+CKString & CKString::prepend( CKString & aString )
 {
 	return prepend(aString.mString);
 }
 
 
-bool CKString::prepend( const CKString & aString )
+CKString & CKString::prepend( const CKString & aString )
 {
 	return prepend((char *)aString.mString);
 }
 
 
-bool CKString::prepend( char *aCString )
+CKString & CKString::prepend( char *aCString )
 {
 	bool		error = false;
 
@@ -696,23 +696,23 @@ bool CKString::prepend( char *aCString )
 		mSize += newChars;
 	}
 
-	return !error;
+	return *this;
 }
 
 
-bool CKString::prepend( const char *aCString )
+CKString & CKString::prepend( const char *aCString )
 {
 	return prepend((char *)aCString);
 }
 
 
-bool CKString::prepend( std::string & aSTLString )
+CKString & CKString::prepend( std::string & aSTLString )
 {
 	return prepend((char *)aSTLString.c_str());
 }
 
 
-bool CKString::prepend( const std::string & aSTLString )
+CKString & CKString::prepend( const std::string & aSTLString )
 {
 	return prepend((char *)aSTLString.c_str());
 }
@@ -724,7 +724,7 @@ bool CKString::prepend( const std::string & aSTLString )
  * and return 'true' if successful, or 'false' if not. There are
  * quite a few to be as generally useful as possible.
  */
-bool CKString::prepend( char aChar )
+CKString & CKString::prepend( char aChar )
 {
 	// make a simple buffer to add this guy in
 	char	c[2];
@@ -734,7 +734,7 @@ bool CKString::prepend( char aChar )
 }
 
 
-bool CKString::prepend( int anInteger, int aNumOfDigits )
+CKString & CKString::prepend( int anInteger, int aNumOfDigits )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
@@ -748,7 +748,7 @@ bool CKString::prepend( int anInteger, int aNumOfDigits )
 }
 
 
-bool CKString::prepend( long aLong, int aNumOfDigits )
+CKString & CKString::prepend( long aLong, int aNumOfDigits )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
@@ -762,13 +762,92 @@ bool CKString::prepend( long aLong, int aNumOfDigits )
 }
 
 
-bool CKString::prepend( double aDouble )
+CKString & CKString::prepend( double aDouble )
 {
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
 	snprintf(c, 79, "%f", aDouble);
 	return prepend(c);
+}
+
+
+/*
+ * When you need to remove (erase) a section of the string, this
+ * method is the one to call. You give it a starting index and
+ * optionally a number of characters to delete and they will be
+ * removed from the string. If the length is not supplied, then
+ * the characters from 'aStartingIndex' to the end of the string
+ * will be removed.
+ */
+bool CKString::erase( int aStartingIndex,  int aLength )
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::erase(int, int) - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// make sure what's being asked of us is possible
+	if (!error) {
+		if (aStartingIndex < 0) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::erase(int, int) - the provided starting index is: " <<
+				aStartingIndex << " and that makes no sense. Please make sure that "
+				"the index falls within the string's length.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+	if (!error) {
+		if ((aLength > 0) && ((aStartingIndex + aLength) > mSize)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::erase(int, int) - the provided starting index is: " <<
+				aStartingIndex << " and the length is: " << aLength << " that "
+				"combine to make a string longer than this string is. Please make "
+				"Please make sure that the erased string exists in the current "
+				"string's length.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	/*
+	 * Now we need to handle the erasure in one of two ways.... if it's
+	 * in the middle of the string then it's a left shift, but it it's
+	 * 'to the end', then it's a simply bzero() call. Both end up changing
+	 * the size, so don't forget that.
+	 */
+	if (!error) {
+		if (aLength < 0) {
+			// it's a 'to the end' call
+			bzero(&(mString[aStartingIndex]), (mSize - aLength));
+			mSize = aStartingIndex;
+		} else {
+			// it's within the string, so it's a left shift
+			memmove(&(mString[aStartingIndex]),
+					&(mString[(aStartingIndex + aLength)]),
+					(mSize - aStartingIndex - aLength));
+			bzero(&(mString[(mSize - aLength)]), aLength);
+			mSize -= aLength;
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKString::erase( int aStartingIndex,  int aLength ) const
+{
+	return ((CKString *)this)->erase(aStartingIndex, aLength);
 }
 
 
@@ -987,6 +1066,43 @@ char CKString::operator[]( int aPosition )
 char CKString::operator[]( int aPosition ) const
 {
 	return ((CKString *)this)->operator[](aPosition);
+}
+
+
+/*
+ * This method allows the user to clear out the buffer explicitly.
+ * It's handy from time to time if you're going to be re-using the
+ * same string again and again.
+ */
+bool CKString::clear()
+{
+	bool		error = false;
+
+	// make sure the buffer isn't corrupted
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::clear() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// now clear it out and reset the size
+	if (!error) {
+		bzero(mString, mSize);
+		mSize = 0;
+	}
+
+	return !error;
+}
+
+
+bool CKString::clear() const
+{
+	return ((CKString *)this)->clear();
 }
 
 
@@ -2203,26 +2319,27 @@ int CKString::replace( char anOld, char aNew ) const
 
 /*
  * These methods all search for the FIRST occurrence of the
- * argument in the current string and return the starting
- * position of the match if one is found, or a -1 if there
- * is nothing in the current string that matches the  argument.
+ * argument in the current string *ON OR AFTER* the supplied
+ * index and return the starting position of the match if one
+ * is found, or a -1 if there is nothing in the current string
+ * that matches the  argument.
  */
-int CKString::find( char aChar )
+int CKString::find( char aChar, int aStartingIndex )
 {
 	char	c[2];
 	c[0] = aChar;
 	c[1] = '\0';
-	return find(c);
+	return find(c, aStartingIndex);
 }
 
 
-int CKString::find( char aChar ) const
+int CKString::find( char aChar, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find(aChar);
+	return ((CKString *)this)->find(aChar, aStartingIndex);
 }
 
 
-int CKString::find( char *aCString )
+int CKString::find( char *aCString, int aStartingIndex )
 {
 	bool		error = false;
 	int			retval = -1;
@@ -2233,7 +2350,7 @@ int CKString::find( char *aCString )
 		if (aCString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::find(char *) - the passed-in C-String is NULL and "
+			msg << "CKString::find(char *, int) - the passed-in C-String is NULL and "
 				"that means that there's nothing I can do. Please make sure that "
 				"the argument is not NULL before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -2243,7 +2360,7 @@ int CKString::find( char *aCString )
 			if (matchLen == 0) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKString::find(char *) - the passed-in C-String is empty "
+				msg << "CKString::find(char *, int) - the passed-in C-String is empty "
 					"and that means that there's nothing I can do. Please make "
 					"sure that the argument is not empty before calling this "
 					"method.";
@@ -2257,9 +2374,21 @@ int CKString::find( char *aCString )
 		if (mString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::find(char *) - the CKString's storage is NULL and "
+			msg << "CKString::find(char *, int) - the CKString's storage is NULL and "
 				"that means that there's been a terrible data corruption problem. "
 				"Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// make sure the starting position isn't out of range
+	if (!error) {
+		if (aStartingIndex >= mSize) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::find(char *, int) - the provided starting index: " <<
+				aStartingIndex << " lies outside the length of the string. Please "
+				"make sure that it is within the string next time.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
@@ -2272,7 +2401,8 @@ int CKString::find( char *aCString )
 	 */
 	if (!error) {
 		bool		match = false;
-		for (int i = 0; i < mSize; i++) {
+		int			startPos = (aStartingIndex < 0 ? 0 : aStartingIndex);
+		for (int i = startPos; i < mSize; i++) {
 			// see if the next char matches the first in  the target
 			if (mString[i] == aCString[0]) {
 				// OK, we have a tentative match, check the others
@@ -2297,69 +2427,69 @@ int CKString::find( char *aCString )
 }
 
 
-int CKString::find( char *aCString ) const
+int CKString::find( char *aCString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find(aCString);
+	return ((CKString *)this)->find(aCString, aStartingIndex);
 }
 
 
-int CKString::find( const char *aCString )
+int CKString::find( const char *aCString, int aStartingIndex )
 {
-	return find((char *)aCString);
+	return find((char *)aCString, aStartingIndex);
 }
 
 
-int CKString::find( const char *aCString ) const
+int CKString::find( const char *aCString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find((char *)aCString);
+	return ((CKString *)this)->find((char *)aCString, aStartingIndex);
 }
 
 
-int CKString::find( CKString & aString )
+int CKString::find( CKString & aString, int aStartingIndex )
 {
-	return find(aString.mString);
+	return find(aString.mString, aStartingIndex);
 }
 
 
-int CKString::find( const CKString & aString )
+int CKString::find( const CKString & aString, int aStartingIndex )
 {
-	return find((char *)aString.mString);
+	return find((char *)aString.mString, aStartingIndex);
 }
 
 
-int CKString::find( CKString & aString ) const
+int CKString::find( CKString & aString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find(aString.mString);
+	return ((CKString *)this)->find(aString.mString, aStartingIndex);
 }
 
 
-int CKString::find( const CKString & aString ) const
+int CKString::find( const CKString & aString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find((char *)aString.mString);
+	return ((CKString *)this)->find((char *)aString.mString, aStartingIndex);
 }
 
 
-int CKString::find( std::string & anSTLString )
+int CKString::find( std::string & anSTLString, int aStartingIndex )
 {
-	return find(anSTLString.c_str());
+	return find(anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::find( const std::string & anSTLString )
+int CKString::find( const std::string & anSTLString, int aStartingIndex )
 {
-	return find((char *)anSTLString.c_str());
+	return find((char *)anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::find( std::string & anSTLString ) const
+int CKString::find( std::string & anSTLString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find(anSTLString.c_str());
+	return ((CKString *)this)->find(anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::find( const std::string & anSTLString ) const
+int CKString::find( const std::string & anSTLString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->find((char *)anSTLString.c_str());
+	return ((CKString *)this)->find((char *)anSTLString.c_str(), aStartingIndex);
 }
 
 
@@ -2369,22 +2499,22 @@ int CKString::find( const std::string & anSTLString ) const
  * position of the match if one is found, or a -1 if there
  * is nothing in the current string that matches the  argument.
  */
-int CKString::findLast( char aChar )
+int CKString::findLast( char aChar, int aStartingIndex )
 {
 	char	c[2];
 	c[0] = aChar;
 	c[1] = '\0';
-	return findLast(c);
+	return findLast(c, aStartingIndex);
 }
 
 
-int CKString::findLast( char aChar ) const
+int CKString::findLast( char aChar, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast(aChar);
+	return ((CKString *)this)->findLast(aChar, aStartingIndex);
 }
 
 
-int CKString::findLast( char *aCString )
+int CKString::findLast( char *aCString, int aStartingIndex )
 {
 	bool		error = false;
 	int			retval = -1;
@@ -2395,7 +2525,7 @@ int CKString::findLast( char *aCString )
 		if (aCString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::findLast(char *) - the passed-in C-String is NULL "
+			msg << "CKString::findLast(char *, int) - the passed-in C-String is NULL "
 				"and that means that there's nothing I can do. Please make sure "
 				"that the argument is not NULL before calling this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -2419,9 +2549,21 @@ int CKString::findLast( char *aCString )
 		if (mString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::findLast(char *) - the CKString's storage is NULL "
+			msg << "CKString::findLast(char *, int) - the CKString's storage is NULL "
 				"and that means that there's been a terrible data corruption "
 				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	// make sure the starting position isn't a lod of hooey
+	if (!error) {
+		if (aStartingIndex >= mSize) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::findLast(char *, int) - the provided starting index: " <<
+				aStartingIndex << " lies outside the length of the string. Please "
+				"make sure that it is within the string next time.";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
@@ -2433,9 +2575,10 @@ int CKString::findLast( char *aCString )
 	 * careful.
 	 */
 	if (!error) {
-		bool		match = false;
-		int			last = matchLen - 1;
-		for (int i = (mSize - 1); i >= 0; i--) {
+		bool	match = false;
+		int		last = matchLen - 1;
+		int		startPos = (aStartingIndex >= 0 ? aStartingIndex : (mSize - 1));
+		for (int i = startPos; i >= 0; i--) {
 			// see if the next char matches the first in  the target
 			if (mString[i] == aCString[last]) {
 				// OK, we have a tentative match, check the others
@@ -2460,69 +2603,69 @@ int CKString::findLast( char *aCString )
 }
 
 
-int CKString::findLast( char *aCString ) const
+int CKString::findLast( char *aCString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast(aCString);
+	return ((CKString *)this)->findLast(aCString, aStartingIndex);
 }
 
 
-int CKString::findLast( const char *aCString )
+int CKString::findLast( const char *aCString, int aStartingIndex )
 {
-	return findLast((char *)aCString);
+	return findLast((char *)aCString, aStartingIndex);
 }
 
 
-int CKString::findLast( const char *aCString ) const
+int CKString::findLast( const char *aCString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast((char *)aCString);
+	return ((CKString *)this)->findLast((char *)aCString, aStartingIndex);
 }
 
 
-int CKString::findLast( CKString & aString )
+int CKString::findLast( CKString & aString, int aStartingIndex )
 {
-	return findLast(aString.mString);
+	return findLast(aString.mString, aStartingIndex);
 }
 
 
-int CKString::findLast( const CKString & aString )
+int CKString::findLast( const CKString & aString, int aStartingIndex )
 {
-	return findLast((char *)aString.mString);
+	return findLast((char *)aString.mString, aStartingIndex);
 }
 
 
-int CKString::findLast( CKString & aString ) const
+int CKString::findLast( CKString & aString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast(aString.mString);
+	return ((CKString *)this)->findLast(aString.mString, aStartingIndex);
 }
 
 
-int CKString::findLast( const CKString & aString ) const
+int CKString::findLast( const CKString & aString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast((char *)aString.mString);
+	return ((CKString *)this)->findLast((char *)aString.mString, aStartingIndex);
 }
 
 
-int CKString::findLast( std::string & anSTLString )
+int CKString::findLast( std::string & anSTLString, int aStartingIndex )
 {
-	return findLast(anSTLString.c_str());
+	return findLast(anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::findLast( const std::string & anSTLString )
+int CKString::findLast( const std::string & anSTLString, int aStartingIndex )
 {
-	return findLast((char *)anSTLString.c_str());
+	return findLast((char *)anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::findLast( std::string & anSTLString ) const
+int CKString::findLast( std::string & anSTLString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast(anSTLString.c_str());
+	return ((CKString *)this)->findLast(anSTLString.c_str(), aStartingIndex);
 }
 
 
-int CKString::findLast( const std::string & anSTLString ) const
+int CKString::findLast( const std::string & anSTLString, int aStartingIndex ) const
 {
-	return ((CKString *)this)->findLast((char *)anSTLString.c_str());
+	return ((CKString *)this)->findLast((char *)anSTLString.c_str(), aStartingIndex);
 }
 
 
@@ -2727,6 +2870,398 @@ bool CKString::operator!=( std::string & anSTLString ) const
 bool CKString::operator!=( const std::string & anSTLString ) const
 {
 	return !((CKString *)this)->operator==((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method checks to see if the argument CKString is greather
+ * than or equal to this string (thus this one being less than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<( CKString & anOther )
+{
+	return operator<(anOther.mString);
+}
+
+
+bool CKString::operator<( const CKString & anOther )
+{
+	return operator<((char *)anOther.mString);
+}
+
+
+bool CKString::operator<( CKString & anOther ) const
+{
+	return ((CKString *)this)->operator<(anOther.mString);
+}
+
+
+bool CKString::operator<( const CKString & anOther ) const
+{
+	return ((CKString *)this)->operator<((char *)anOther.mString);
+}
+
+
+/*
+ * This method checks to see if the argument string is greather
+ * than or equal to this string (thus this one being less than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<( char *aCString )
+{
+	bool		lessThan = false;
+
+	if ((aCString != NULL) && (mSize > 0)) {
+		if (strcmp(mString, aCString) < 0) {
+			lessThan = true;
+		}
+	}
+
+	return lessThan;
+}
+
+
+bool CKString::operator<( const char *aCString )
+{
+	return operator<((char *)aCString);
+}
+
+
+bool CKString::operator<( char *aCString ) const
+{
+	return ((CKString *)this)->operator<(aCString);
+}
+
+
+bool CKString::operator<( const char *aCString ) const
+{
+	return ((CKString *)this)->operator<((char *)aCString);
+}
+
+
+/*
+ * This method checks to see if the argument STL string is greather
+ * than or equal to this string (thus this one being less than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<( std::string & anSTLString )
+{
+	return operator<(anSTLString.c_str());
+}
+
+
+bool CKString::operator<( const std::string & anSTLString )
+{
+	return operator<((char *)anSTLString.c_str());
+}
+
+
+bool CKString::operator<( std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator<(anSTLString.c_str());
+}
+
+
+bool CKString::operator<( const std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator<((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method checks to see if the argument CKString is greather
+ * than this string (thus this one being less than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<=( CKString & anOther )
+{
+	return operator<=(anOther.mString);
+}
+
+
+bool CKString::operator<=( const CKString & anOther )
+{
+	return operator<=((char *)anOther.mString);
+}
+
+
+bool CKString::operator<=( CKString & anOther ) const
+{
+	return ((CKString *)this)->operator<=(anOther.mString);
+}
+
+
+bool CKString::operator<=( const CKString & anOther ) const
+{
+	return ((CKString *)this)->operator<=((char *)anOther.mString);
+}
+
+
+/*
+ * This method checks to see if the argument string is greather
+ * than this string (thus this one being less than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<=( char *aCString )
+{
+	bool		lessThanOrEqual = false;
+
+	if ((aCString != NULL) && (mSize > 0)) {
+		if (strcmp(mString, aCString) <= 0) {
+			lessThanOrEqual = true;
+		}
+	}
+
+	return lessThanOrEqual;
+}
+
+
+bool CKString::operator<=( const char *aCString )
+{
+	return operator<=((char *)aCString);
+}
+
+
+bool CKString::operator<=( char *aCString ) const
+{
+	return ((CKString *)this)->operator<=(aCString);
+}
+
+
+bool CKString::operator<=( const char *aCString ) const
+{
+	return ((CKString *)this)->operator<=((char *)aCString);
+}
+
+
+/*
+ * This method checks to see if the argument STL string is greather
+ * than this string (thus this one being less than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator<=( std::string & anSTLString )
+{
+	return operator<=(anSTLString.c_str());
+}
+
+
+bool CKString::operator<=( const std::string & anSTLString )
+{
+	return operator<=((char *)anSTLString.c_str());
+}
+
+
+bool CKString::operator<=( std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator<=(anSTLString.c_str());
+}
+
+
+bool CKString::operator<=( const std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator<=((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method checks to see if the argument CKString is less
+ * than or equal to this string (thus this one being greater than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>( CKString & anOther )
+{
+	return operator>(anOther.mString);
+}
+
+
+bool CKString::operator>( const CKString & anOther )
+{
+	return operator>((char *)anOther.mString);
+}
+
+
+bool CKString::operator>( CKString & anOther ) const
+{
+	return ((CKString *)this)->operator>(anOther.mString);
+}
+
+
+bool CKString::operator>( const CKString & anOther ) const
+{
+	return ((CKString *)this)->operator>((char *)anOther.mString);
+}
+
+
+/*
+ * This method checks to see if the argument string is less
+ * than or equal to this string (thus this one being greater than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>( char *aCString )
+{
+	bool		greaterThan = false;
+
+	if ((aCString != NULL) && (mSize > 0)) {
+		if (strcmp(mString, aCString) > 0) {
+			greaterThan = true;
+		}
+	}
+
+	return greaterThan;
+}
+
+
+bool CKString::operator>( const char *aCString )
+{
+	return operator>((char *)aCString);
+}
+
+
+bool CKString::operator>( char *aCString ) const
+{
+	return ((CKString *)this)->operator>(aCString);
+}
+
+
+bool CKString::operator>( const char *aCString ) const
+{
+	return ((CKString *)this)->operator>((char *)aCString);
+}
+
+
+/*
+ * This method checks to see if the argument STL string is less
+ * than or equal to this string (thus this one being greater than),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>( std::string & anSTLString )
+{
+	return operator>(anSTLString.c_str());
+}
+
+
+bool CKString::operator>( const std::string & anSTLString )
+{
+	return operator>((char *)anSTLString.c_str());
+}
+
+
+bool CKString::operator>( std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator>(anSTLString.c_str());
+}
+
+
+bool CKString::operator>( const std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator>((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method checks to see if the argument CKString is less
+ * than this string (thus this one being greater than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>=( CKString & anOther )
+{
+	return operator>=(anOther.mString);
+}
+
+
+bool CKString::operator>=( const CKString & anOther )
+{
+	return operator>=((char *)anOther.mString);
+}
+
+
+bool CKString::operator>=( CKString & anOther ) const
+{
+	return ((CKString *)this)->operator>=(anOther.mString);
+}
+
+
+bool CKString::operator>=( const CKString & anOther ) const
+{
+	return ((CKString *)this)->operator>=((char *)anOther.mString);
+}
+
+
+/*
+ * This method checks to see if the argument string is less
+ * than this string (thus this one being greater than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>=( char *aCString )
+{
+	bool		greaterThanOrEqual = false;
+
+	if ((aCString != NULL) && (mSize > 0)) {
+		if (strcmp(mString, aCString) >= 0) {
+			greaterThanOrEqual = true;
+		}
+	}
+
+	return greaterThanOrEqual;
+}
+
+
+bool CKString::operator>=( const char *aCString )
+{
+	return operator>=((char *)aCString);
+}
+
+
+bool CKString::operator>=( char *aCString ) const
+{
+	return ((CKString *)this)->operator>=(aCString);
+}
+
+
+bool CKString::operator>=( const char *aCString ) const
+{
+	return ((CKString *)this)->operator>=((char *)aCString);
+}
+
+
+/*
+ * This method checks to see if the argument STL string is less
+ * than this string (thus this one being greater than or equal),
+ * based on the values they represent and *not* on the actual
+ * pointers themselves.
+ */
+bool CKString::operator>=( std::string & anSTLString )
+{
+	return operator>=(anSTLString.c_str());
+}
+
+
+bool CKString::operator>=( const std::string & anSTLString )
+{
+	return operator>=((char *)anSTLString.c_str());
+}
+
+
+bool CKString::operator>=( std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator>=(anSTLString.c_str());
+}
+
+
+bool CKString::operator>=( const std::string & anSTLString ) const
+{
+	return ((CKString *)this)->operator>=((char *)anSTLString.c_str());
 }
 
 

@@ -9,7 +9,7 @@
  *            possibility of including a hashed class name so that the UUID
  *            can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.h,v 1.5 2004/09/11 21:07:50 drbob Exp $
+ * $Id: CKUUID.h,v 1.6 2004/09/16 09:34:21 drbob Exp $
  */
 #ifndef __CKUUID_H
 #define __CKUUID_H
@@ -21,7 +21,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #endif
-#include <string>
 #ifdef GPP2
 #include <ostream.h>
 #else
@@ -34,6 +33,7 @@
 //	Third-Party Headers
 
 //	Other Headers
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -158,7 +158,7 @@ class CKUUID
 		 * that the ID includes the type of object that it's referring
 		 * to.
 		 */
-		static CKUUID newUUIDForClass( const std::string & aClassName );
+		static CKUUID newUUIDForClass( const CKString & aClassName );
 		/*
 		 * This generator is the opposite of the getStringValue()
 		 * instance method - it takes that method's output and
@@ -167,7 +167,7 @@ class CKUUID
 		 * scheme and then needs to be returned to it's object state
 		 * after being pulled back from persistence.
 		 */
-		static CKUUID uuidWithString( const std::string & aString );
+		static CKUUID uuidWithString( const CKString & aString );
 		/*
 		 * This generator builds up a CKUUID based on the DCE string
 		 * provided which is the UUID except for the hashed class name.
@@ -175,14 +175,14 @@ class CKUUID
 		 * getStringValueInDCEFormat() and can be used when you aren't
 		 * taking advantage of the class name hashcode.
 		 */
-		static CKUUID uuidWithDCEString( const std::string & aString );
+		static CKUUID uuidWithDCEString( const CKString & aString );
 		/*
 		 * These generators take the DCE formatted string with the
 		 * included hashcode for class name and create the correct
 		 * CKUUID based on that data.
 		 */
-		static CKUUID uuidWithDCEStringIncludingHashedClassName( const std::string & aString );
-		static CKUUID uuidWithDCEStringIncludingHashedClassName( const std::string & aString, unsigned int aHashcode );
+		static CKUUID uuidWithDCEStringIncludingHashedClassName( const CKString & aString );
+		static CKUUID uuidWithDCEStringIncludingHashedClassName( const CKString & aString, unsigned int aHashcode );
 
 		/********************************************************
 		 *
@@ -201,20 +201,20 @@ class CKUUID
 		 * in a format that's easily transported and then used to
 		 * re-create the CKUUID with the generator methods.
 		 */
-		std::string getStringValue() const;
+		CKString getStringValue() const;
 		/*
 		 * This method returns the DCE formatted encoded string value
 		 * of the CKUUID in a format that's easily transported and then
 		 * used to re-create the CKUUID with the generator methods.
 		 */
-		std::string getStringValueInDCEFormat() const;
+		CKString getStringValueInDCEFormat() const;
 		/*
 		 * This method returns the DCE formatted encoded string value
 		 * along with the hashed class name of the CKUUID in a format
 		 * that's easily transported and then used to re-create the CKUUID
 		 * with the generator methods.
 		 */
-		std::string getStringValueInDCEFormatWithClassHash() const;
+		CKString getStringValueInDCEFormatWithClassHash() const;
 		/*
 		 * This method returns the date of the CKUUID's creation in
 		 * the format YYYYMMDD.HHMMSS so that it's easily
@@ -254,9 +254,9 @@ class CKUUID
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -296,7 +296,7 @@ class CKUUID
 		 * characters of this string represents. There may be more data in
 		 * the string but this method ignores all the rest.
 		 */
-		static CKUUID_struct generateRawUUIDStructFromString( const std::string & aString );
+		static CKUUID_struct generateRawUUIDStructFromString( const CKString & aString );
 		/*
 		 * This method returns the numerical value of the last 8 hex
 		 * characters in this string. It is assumed that the last 8
@@ -304,13 +304,13 @@ class CKUUID
 		 * into a numerical value. In the context of this class, this
 		 * number represents the hashed class name of this CKUUID.
 		 */
-		static unsigned int generateHashedClassNameFromString( const std::string & aString );
+		static unsigned int generateHashedClassNameFromString( const CKString & aString );
 		/*
 		 * This function should not be used by any non-CKUUID method. It is
 		 * the parser of the DCE UUID string that this class can use for
 		 * it's ivar data.
 		 */
-		static CKUUID_struct generateRawUUIDStructFromDCEString( const std::string & aString );
+		static CKUUID_struct generateRawUUIDStructFromDCEString( const CKString & aString );
 		/*
 		 * As part of the CKUUID, there will be the possibility for a user
 		 * to include a hashed version of the class name that this
@@ -322,7 +322,7 @@ class CKUUID
 		 * be called only from those routines that need to initialize the
 		 * CKUUID with a hashed class name.
 		 */
-		static unsigned int hashString( const std::string & aString );
+		static unsigned int hashString( const CKString & aString );
 
 	private:
 		/*

@@ -6,7 +6,7 @@
  *                           user the protocol is presenting are interpreted
  *                           and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.h,v 1.5 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCProtocolListener.h,v 1.6 2004/09/16 09:34:16 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOLLISTENER_H
 #define __CKIRCPROTOCOLLISTENER_H
@@ -162,9 +162,9 @@ class CKIRCProtocolListener :
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -179,7 +179,7 @@ class CKIRCProtocolListener :
 		 * argument. The value is copied, so there's no need to worry about
 		 * who owns the memory - the caller does.
 		 */
-		void setMsgTagline( const std::string & aTag );
+		void setMsgTagline( const CKString & aTag );
 
 		/*
 		 * This method returns a pointer to this instance's message tagline
@@ -188,7 +188,7 @@ class CKIRCProtocolListener :
 		 * by anyone other than this class. If you want to keep it around,
 		 * then make a copy.
 		 */
-		const std::string *getMsgTagline() const;
+		const CKString *getMsgTagline() const;
 
 	private:
 		/*

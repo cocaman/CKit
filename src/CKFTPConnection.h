@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.5 2004/09/11 21:07:43 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.6 2004/09/16 09:34:14 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H
@@ -175,16 +175,16 @@ class CKFTPConnection
 		 * the at least the login and password before we can make a
 		 * successful connection.
 		 */
-		CKFTPConnection( const std::string & aHost );
+		CKFTPConnection( const CKString & aHost );
 		/*
 		 * This constructor specifies everything that we need to get
 		 * the FTP connection up and running. The timeout defaults to
 		 * a reasonable value, so you shouldn't have to set it unless
 		 * you know that there's a serious problem with the FTP server.
 		 */
-		CKFTPConnection( const std::string & aHost,
-						 const std::string & aUser,
-						 const std::string & aPassword,
+		CKFTPConnection( const CKString & aHost,
+						 const CKString & aUser,
+						 const CKString & aPassword,
 						 int anIncomingDataTimeout = DEFAULT_INCOMING_DATA_TIMEOUT );
 		/*
 		 * This is the standard copy constructor and needs to be in every
@@ -218,7 +218,7 @@ class CKFTPConnection
 		 * host is made, the host name is "locked" and cannot be
 		 * changed so long as that connection is established.
 		 */
-		void setHostname( const std::string & aName );
+		void setHostname( const CKString & aName );
 		/*
 		 * This accessor method simply sets the user name for use by
 		 * subsequent FTP connection(s). This distinction needs to be
@@ -226,7 +226,7 @@ class CKFTPConnection
 		 * the remote host, the user name is "locked" and cannot be
 		 * changed so long as that user is logged in.
 		 */
-		void setUsername( const std::string & aName );
+		void setUsername( const CKString & aName );
 		/*
 		 * This accessor method simply sets the user's password for
 		 * use by subsequent FTP connection(s). This distinction needs
@@ -234,7 +234,7 @@ class CKFTPConnection
 		 * on the remote host, the user's password is "locked" and
 		 * cannot be changed so long as that user is logged in.
 		 */
-		void setPassword( const std::string & aPassword );
+		void setPassword( const CKString & aPassword );
 		/*
 		 * This method sets the tracing capabilities for the control
 		 * connection/port of the FTP session. This is useful as a
@@ -258,7 +258,7 @@ class CKFTPConnection
 		 * a connection is made the hostname is "locked" and cannot be
 		 * changed so long as a connection exists.
 		 */
-		std::string getHostname() const;
+		CKString getHostname() const;
 		/*
 		 * This accessor method simply returns the user name in use, or
 		 * ready for use by the connection. This distinction needs to be
@@ -266,7 +266,7 @@ class CKFTPConnection
 		 * user name is "locked" and cannot be changed so long as that
 		 * user is logged in.
 		 */
-		std::string getUsername() const;
+		CKString getUsername() const;
 		/*
 		 * This accessor method simply returns the state of the FTP control
 		 * connection to the remote host. If the user has logged in
@@ -302,7 +302,7 @@ class CKFTPConnection
 		 * as evidenced by a return value of false; then another username and
 		 * password combination can be attempted to this same host.
 		 */
-		bool connectToHost( const std::string & aHost );
+		bool connectToHost( const CKString & aHost );
 		/*
 		 * This method simply goes through the FTP server login procedure
 		 * using the username and password already set up, and the control
@@ -318,7 +318,7 @@ class CKFTPConnection
 		 * login information, these changes will only be accepted if there
 		 * isn't already a user logged into the remote host.
 		 */
-		bool loginToHost( const std::string & aUser, const std::string & aPassword );
+		bool loginToHost( const CKString & aUser, const CKString & aPassword );
 		/*
 		 * This is the call to log out of the FTP server on the remote
 		 * host and close the command connection to that remote host.
@@ -342,7 +342,7 @@ class CKFTPConnection
 		 * If the change cannot be made, this method returns false. Otherwise
 		 * it returns true after making the change at the remote host.
 		 */
-		bool changeCurrentDirectoryPath( const std::string & aPath );
+		bool changeCurrentDirectoryPath( const CKString & aPath );
 		/*
 		 * This method creates a directory on the remote host at the
 		 * path specified. It is similar to the OPENSTEP's NSFileManager
@@ -352,15 +352,15 @@ class CKFTPConnection
 		 * Otherwise it returns true after creating the directory on the
 		 * remote host.
 		 */
-		bool createDirectoryAtPath( const std::string & aPath );
+		bool createDirectoryAtPath( const CKString & aPath );
 		/*
 		 * This method simply returns the current path on the remote
 		 * host, just like the OPENSTEP NSFileManager does for the local
-		 * machine. It is returned in an std::string. If there is no
+		 * machine. It is returned in an CKString. If there is no
 		 * current path, or there is no established connection, this
 		 * method returns the empty string.
 		 */
-		std::string currentDirectoryPath();
+		CKString currentDirectoryPath();
 
 		/********************************************************
 		 *
@@ -378,8 +378,8 @@ class CKFTPConnection
 		 * Otherwise it returns true after copying the file to the
 		 * remote host.
 		 */
-		bool copyLocalToHost( const std::string & aLocalFile,
-		                      const std::string & aRemoteFile );
+		bool copyLocalToHost( const CKString & aLocalFile,
+		                      const CKString & aRemoteFile );
 		/*
 		 * This method implements the traditional FTP role of moving a
 		 * file from the remote host to the local host. In FTP terms,
@@ -391,10 +391,10 @@ class CKFTPConnection
 		 * Otherwise it returns true after copying the file from the
 		 * remote host.
 		 */
-		bool copyHostToLocal( const std::string & aRemoteFile,
-		                      const std::string & aLocalFile );
+		bool copyHostToLocal( const CKString & aRemoteFile,
+		                      const CKString & aLocalFile );
 		/*
-		 * This method takes a std::string and creates a file on the remote
+		 * This method takes a CKString and creates a file on the remote
 		 * host at the location specified filled with the contents of
 		 * the string. This is a simplified way to create what is needed
 		 * in memory, and transfer it from memory without having to go
@@ -404,8 +404,8 @@ class CKFTPConnection
 		 * Otherwise it returns true after creating the file at the
 		 * remote host.
 		 */
-		bool createFile( const std::string & aFilename,
-		                 const std::string & aData );
+		bool createFile( const CKString & aFilename,
+		                 const CKString & aData );
 		/*
 		 * This method is a copyLocalToHost() followed by a removal of the
 		 * local file. This is a convenient way to ensure that the copy is
@@ -419,8 +419,8 @@ class CKFTPConnection
 		 * fail. If this is a significant concern, check for the existance of
 		 * the file at the remote host with fileExists().
 		 */
-		bool moveLocalToHost( const std::string & aLocalFile,
-		                      const std::string & aRemoteFile );
+		bool moveLocalToHost( const CKString & aLocalFile,
+		                      const CKString & aRemoteFile );
 		/*
 		 * This method is a copyHostToLocal() followed by a removal of the
 		 * remote file via removeFile(). This is a convenient way to ensure
@@ -434,8 +434,8 @@ class CKFTPConnection
 		 * will fail. If this is a significant concern, check for the
 		 * existance of the file on the local host.
 		 */
-		bool moveHostToLocal( const std::string & aRemoteFile,
-		                      const std::string & aLocalFile );
+		bool moveHostToLocal( const CKString & aRemoteFile,
+		                      const CKString & aLocalFile );
 		/*
 		 * This method removes the file off the remote host. Since there's
 		 * no 'Recycler' or 'Recycle Bin' in general, this is a very
@@ -446,7 +446,7 @@ class CKFTPConnection
 		 * Otherwise it returns true after removing the file at the
 		 * remote host.
 		 */
-		bool removeFile( const std::string & aRemoteFile );
+		bool removeFile( const CKString & aRemoteFile );
 
 		/********************************************************
 		 *
@@ -455,12 +455,12 @@ class CKFTPConnection
 		 ********************************************************/
 		/*
 		 * This method loads the file from the remote host at the path
-		 * specified into an std::string and then returns that
+		 * specified into an CKString and then returns that
 		 * object. This is the simplified method of reading in a file
 		 * on a remote system rather than copying it over to the local
 		 * host, and then reading it in.
 		 */
-		std::string getContents( const std::string & aFilename );
+		CKString getContents( const CKString & aFilename );
 		/*
 		 * This method simply compares two files - one on the local
 		 * host, and another on the remote host. If they are the same,
@@ -468,8 +468,8 @@ class CKFTPConnection
 		 * both of the files doesn't exist, then a standard
 		 * CKException is raised, and false will be returned.
 		 */
-		bool areContentsEqual( const std::string & aLocalFile,
-							   const std::string & aRemoteFile );
+		bool areContentsEqual( const CKString & aLocalFile,
+							   const CKString & aRemoteFile );
 
 		/********************************************************
 		 *
@@ -484,26 +484,26 @@ class CKFTPConnection
 		 * return codes from a  copy telling you the file didn't exist in
 		 * the first place - check before calling the copy.
 		 */
-		bool fileExists( const std::string & aRemoteFile );
+		bool fileExists( const CKString & aRemoteFile );
 		/*
 		 * On a Unix remote host this method checks to see if the file
 		 * on the remote host has the 'read' permission set so that
 		 * subsequent calls like getContents() are successful.
 		 */
-		bool isFileReadable( const std::string & aRemoteFile );
+		bool isFileReadable( const CKString & aRemoteFile );
 		/*
 		 * On a Unix remote host this method checks to see if the
 		 * file or directory on the remote host has the 'write'
 		 * permission set for this user. It is a good test to check this
 		 * before a call to createFile() is made.
 		 */
-		bool isFileWritable( const std::string & aRemoteFile );
+		bool isFileWritable( const CKString & aRemoteFile );
 		/*
 		 * On a Unix remote host this checks to see if the file on
 		 * the remote host can be deleted by the user. It's probably
 		 * a good idea to check this before calling removeFile().
 		 */
-		bool isFileDeletable( const std::string & aRemoteFile );
+		bool isFileDeletable( const CKString & aRemoteFile );
 
 		/********************************************************
 		 *
@@ -521,7 +521,7 @@ class CKFTPConnection
 		 * If everything goes well, this method returns true. If there are
 		 * any problems in processing it returns false.
 		 */
-		bool setFileAttributes( const std::string & aFile,
+		bool setFileAttributes( const CKString & aFile,
 								const CKFilePermissions & aSet );
 		/*
 		 * On a Unix remote host this method returns a CKFilePermissions
@@ -531,7 +531,7 @@ class CKFTPConnection
 		 * If there is any error in the processing, or the file
 		 * 'aFile' is not located on the host, a CKException is thrown.
 		 */
-		CKFilePermissions getFileAttributes( const std::string & aFile );
+		CKFilePermissions getFileAttributes( const CKString & aFile );
 
 		/********************************************************
 		 *
@@ -548,7 +548,7 @@ class CKFTPConnection
 		 * If there is any problem in creating the directory list, an empty
 		 * list is returned, and if necessary, a CKException is thrown.
 		 */
-		std::vector<std::string> getDirectoryContents( const std::string & aDir );
+		std::vector<CKString> getDirectoryContents( const CKString & aDir );
 		/*
 		 * This method returns a std::vector of the entire
 		 * tree structure in the passed-in directory, and below.
@@ -559,7 +559,7 @@ class CKFTPConnection
 		 * If there is any problem in creating the directory list, an empty
 		 * list is returned, otherwise, a std::vector is returned.
 		 */
-		std::vector<std::string> getSubpathsAtPath( const std::string & aDir );
+		std::vector<CKString> getSubpathsAtPath( const CKString & aDir );
 
 		/********************************************************
 		 *
@@ -586,9 +586,9 @@ class CKFTPConnection
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -597,7 +597,7 @@ class CKFTPConnection
 		 * list. A copy is made so you don't have to worry about who
 		 * owns the argument - the caller does.
 		 */
-		void setServerReplyLines( const std::vector<std::string> & aList );
+		void setServerReplyLines( const std::vector<CKString> & aList );
 		/*
 		 * This method sets the flag when we get logged into the FTP server
 		 * on the remote host, and when we logoff. This is useful because
@@ -616,14 +616,14 @@ class CKFTPConnection
 		 * completed, the username and password are locked so that they
 		 * cannot be changed during a connection.
 		 */
-		std::string getPassword() const;
+		CKString getPassword() const;
 		/*
 		 * This method returns a copy of the vector of server reply lines
 		 * that have been returned from the server in response to a control
 		 * port command. This is useful as there's a lot of useful data in
 		 * the responses and many times we need to mine it.
 		 */
-		std::vector<std::string> getServerReplyLines() const;
+		std::vector<CKString> getServerReplyLines() const;
 
 		/*
 		 * This method clears out all the response lines from the FTP server
@@ -637,7 +637,7 @@ class CKFTPConnection
 		 * because the user doesn't have to deal with the ivar, just the
 		 * method.
 		 */
-		void addToServerReplyLines( const std::string & aLine );
+		void addToServerReplyLines( const CKString & aLine );
 
 		/********************************************************
 		 *
@@ -722,7 +722,7 @@ class CKFTPConnection
 		 * FTP functions are all available and waiting without
 		 * circumventing the designed flow.
 		 */
-		int executeCommand( const std::string & aCmd );
+		int executeCommand( const CKString & aCmd );
 		/*
 		 * This executes the standard FTP 'ABOR' command on the command
 		 * channel to the remote hosts. This will abort the transfer or
@@ -746,7 +746,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doAPPE( const std::string & arg );
+		int doAPPE( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'CDUP' command on the command
 		 * channel to the remote host. This changes the current directory
@@ -765,7 +765,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doCWD( const std::string & arg );
+		int doCWD( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'DELE' command on the command
 		 * channel to the remote host. This deletes the file on the
@@ -776,7 +776,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doDELE( const std::string & arg );
+		int doDELE( const CKString & arg );
 		/*
 		 *	This executes the standard FTP 'LIST' command on the command
 		 *	channel to the remote host. This is a general directory listing
@@ -800,7 +800,7 @@ class CKFTPConnection
 		 *
 		 *	It returns the FTP return code for the execution.
 		 */
-		int doLIST( const std::string & arg );
+		int doLIST( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'MKD' command on the command
 		 * channel to the remote host. This command attempts to create
@@ -812,7 +812,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doMKD( const std::string & arg );
+		int doMKD( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'MODE' command on the command
 		 * channel to the remote host. This command is directed at the
@@ -828,7 +828,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doMODE( const std::string & arg );
+		int doMODE( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'NLST' command on the command
 		 * channel to the remote host. This is the machine-readable
@@ -839,7 +839,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doNLST( const std::string & arg );
+		int doNLST( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'NOOP' command on the command
 		 * channel to the remote host. This is a simple "no operation"
@@ -860,7 +860,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doPASS( const std::string & arg );
+		int doPASS( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'PORT' command on the command
 		 * channel to the remote host. This command sets the socket-level
@@ -872,7 +872,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doPORT( const std::string & arg );
+		int doPORT( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'PWD' command on the command
 		 * channel to the remote host. This returns the current working
@@ -904,7 +904,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doRETR( const std::string & arg );
+		int doRETR( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'RMD' command on the command
 		 * channel to the remote host. This is a powerful command that
@@ -919,7 +919,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doRMD( const std::string & arg );
+		int doRMD( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'RNFR' command on the command
 		 * channel to the remote host. This command is the first part of
@@ -933,7 +933,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doRNFR( const std::string & arg );
+		int doRNFR( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'RNTO' command on the command
 		 * channel to the remote host. This command is the second part of
@@ -947,7 +947,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doRNTO( const std::string & arg );
+		int doRNTO( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'SITE' command on the command
 		 * channel to the remote host. This command allows for platform-
@@ -961,7 +961,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doSITE( const std::string & arg );
+		int doSITE( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'STAT' command on the command
 		 * channel to the remote host. During a transfer and with an empty
@@ -975,7 +975,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doSTAT( const std::string & arg );
+		int doSTAT( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'STOR' command on the command
 		 * channel to the remote host. This command takes the upcoming
@@ -990,7 +990,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doSTOR( const std::string & arg );
+		int doSTOR( const CKString & arg );
 		/*
 		 *	This executes the standard FTP 'STOU' command on the command
 		 *	channel to the remote host. This command is similar to
@@ -1015,7 +1015,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doSTRU( const std::string & arg );
+		int doSTRU( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'TYPE' command on the command
 		 * channel to the remote host. This command sets up the type of
@@ -1039,7 +1039,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doTYPE( const std::string & arg );
+		int doTYPE( const CKString & arg );
 		/*
 		 * This executes the standard FTP 'USER' command on the command
 		 * channel to the remote host. This is the first part of the
@@ -1053,7 +1053,7 @@ class CKFTPConnection
 		 *
 		 * It returns the FTP return code for the execution.
 		 */
-		int doUSER( const std::string & arg );
+		int doUSER( const CKString & arg );
 
 		/********************************************************
 		 *
@@ -1070,8 +1070,8 @@ class CKFTPConnection
 		 * If the return code from doUSER() is 331, then the method
 		 * doPASS() is called, and it's return code it returned.
 		 */
-		int ftpLoginUsername( const std::string & aUser,
-							  const std::string & aPassword );
+		int ftpLoginUsername( const CKString & aUser,
+							  const CKString & aPassword );
 		/*
 		 * This method executes the two FTP commands doRNFR() and
 		 * doRNTO() to attempt to rename the file on the remote
@@ -1082,8 +1082,8 @@ class CKFTPConnection
 		 * If the return code from doRNFR() is 350, then the method
 		 * doRNTO() is called, and it's return code it returned.
 		 */
-		int ftpRename( const std::string & aFromFile,
-					   const std::string & aToFile );
+		int ftpRename( const CKString & aFromFile,
+					   const CKString & aToFile );
 
 		/********************************************************
 		 *
@@ -1102,12 +1102,12 @@ class CKFTPConnection
 		 * and the other interfaces to data trasnfer in this class used.
 		 *
 		 * On a transfer to the remote host, if the transfer is successful,
-		 * the method returns an std::string with nothing in it. If it isn't
+		 * the method returns an CKString with nothing in it. If it isn't
 		 * successful, it throws a CKException.
 		 */
-		std::string transferData( const std::string & aType,
-									const std::string & aCmd,
-									const std::string & aData );
+		CKString transferData( const CKString & aType,
+							   const CKString & aCmd,
+							   const CKString & aData );
 
 		/********************************************************
 		 *
@@ -1116,22 +1116,22 @@ class CKFTPConnection
 		 ********************************************************/
 		/*
 		 * This class method takes a file name and attempts to load
-		 * the file into a single std::string and then return that
-		 * to the caller. This will certainly make large std::string
+		 * the file into a single CKString and then return that
+		 * to the caller. This will certainly make large CKString
 		 * values, but that's OK as it's the purpose of this thing
 		 * in the first place.
 		 */
-		static std::string getLocalContents( const std::string & aFilename );
+		static CKString getLocalContents( const CKString & aFilename );
 		/*
 		 * This method takes a filename of a local file as well as a
-		 * (quite possibly large) std::string and creates a file
+		 * (quite possibly large) CKString and creates a file
 		 * on the local filesystem with that name and that string as
 		 * it's contents. This is the opposite of the getLocalContents()
 		 * method and is used in the methods for this class to write
 		 * out files.
 		 */
-		static void setLocalContents( const std::string & aFilename,
-									  const std::string & aData );
+		static void setLocalContents( const CKString & aFilename,
+									  const CKString & aData );
 
 		/*
 		 * When dealing with permissions on the remote host, it's nice
@@ -1151,7 +1151,7 @@ class CKFTPConnection
 		 * three digit number for inclusion in the command to change
 		 * permissions.
 		 */
-		static std::string permissionsToNumber( const CKFilePermissions & aSet );
+		static CKString permissionsToNumber( const CKFilePermissions & aSet );
 
 		/*
 		 * This is the tokenizer/parser that wasn't in the STL string
@@ -1162,8 +1162,8 @@ class CKFTPConnection
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		static std::vector<std::string> parseIntoChunks( const std::string & aString,
-														 const std::string & aDelim );
+		static std::vector<CKString> parseIntoChunks( const CKString & aString,
+													  const CKString & aDelim );
 
 	private:
 		/*
@@ -1218,7 +1218,7 @@ class CKFTPConnection
 		 * This routine throws CKExceptions in the event that a
 		 * processing error occurs, and returns a -1.
 		 */
-		int grabFTPReturnCodeOnData( const std::string & aData );
+		int grabFTPReturnCodeOnData( const CKString & aData );
 		/*
 		 * This method looks at the returned data from the FTP server
 		 * and determins if this is the first line of a multi-line
@@ -1226,29 +1226,29 @@ class CKFTPConnection
 		 * at the format of the reply. If there are three digits followed
 		 * by a '-', then it is the start of a multi-line reply.
 		 */
-		bool isStartOfMultilineReply( const std::string & aData );
+		bool isStartOfMultilineReply( const CKString & aData );
 		/*
 		 * There will be times that we need to "decode" the FTP return
 		 * code that is an integer into a human-readable string. This
-		 * method does just that. It returns a std::string
+		 * method does just that. It returns a CKString
 		 * that corresponds to the FTP error code passed in. If the
 		 * argument does not correcepond to any FTP error code, a
 		 * descriptive error string is returned and an CKException
 		 * is thrown.
 		 */
-		static std::string stringForFTPReturnCode( int aCode );
+		static CKString stringForFTPReturnCode( int aCode );
 		/*
 		 * This method simply calls setStatus() to get the last FTP
 		 * return value and then passes it to stringForFTPReturnCode()
-		 * to convert that to a std::string.
+		 * to convert that to a CKString.
 		 */
-		std::string stringForLastFTPReturnCode();
+		CKString stringForLastFTPReturnCode();
 
 		/*
 		 * This is the host machine that we'll try to connect to using
 		 * the FTP protocol to act as the 'remote' host in this instance.
 		 */
-		std::string					mHostname;
+		CKString					mHostname;
 		/*
 		 * This is the username and password that will be used to log into
 		 * the FTP service on the remote box referenced by 'Hostname'. While
@@ -1258,8 +1258,8 @@ class CKFTPConnection
 		 * where general access accounts are used to pass around files in
 		 * just this manner.
 		 */
-		std::string					mUsername;
-		std::string					mPassword;
+		CKString					mUsername;
+		CKString					mPassword;
 		/*
 		 * This is the current state of the FTP connection and is maintained
 		 * by the class for interrogation by the user.
@@ -1277,7 +1277,7 @@ class CKFTPConnection
 		 * they they contain a lot of information about the transfer and we'd
 		 * like to have that to make sure things are done properly.
 		 */
-		std::vector<std::string>	mServerReplyLines;
+		std::vector<CKString>		mServerReplyLines;
 		/*
 		 * This is updated as we log into and out of the remote host's FTP
 		 * service.

@@ -10,7 +10,7 @@
  *                   This means that the list of split times it a "scan once"
  *                   scheme, but that's not a real limitation for this guy.
  * 
- * $Id: CKStopwatch.cpp,v 1.6 2004/09/11 21:07:48 drbob Exp $
+ * $Id: CKStopwatch.cpp,v 1.7 2004/09/16 09:34:19 drbob Exp $
  */
 
 //	System Headers
@@ -227,7 +227,7 @@ double CKStopwatch::getSysTimeInMillisec() const
  * user time, the second is the system time (both in seconds) and
  * the last is the real time in minutes and seconds.
  */
-std::string CKStopwatch::getFormattedTime() const
+CKString CKStopwatch::getFormattedTime() const
 {
 	// make a buffer in the C-style as it's easiest to control
 	char buff[128];
@@ -240,7 +240,7 @@ std::string CKStopwatch::getFormattedTime() const
 			getSysTimeInSec(),
 			mins, real);
 	// finally, return the string as a C++ string
-	return std::string(buff);
+	return CKString(buff);
 }
 
 
@@ -398,15 +398,13 @@ bool CKStopwatch::operator!=( const CKStopwatch & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKStopwatch::toString() const
+CKString CKStopwatch::toString() const
 {
-	std::ostringstream buff;
+	CKString	retval = "<this is not yet implemented>";
 
-	buff << "<this is not yet implemented>";
-
-	return buff.str();
+	return retval;
 }
 
 

@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  * 
- * $Id: CKIRCProtocolExec.cpp,v 1.4 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.5 2004/09/16 09:34:16 drbob Exp $
  */
 
 //	System Headers
@@ -241,11 +241,11 @@ bool CKIRCProtocolExec::operator!=( const CKIRCProtocolExec & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKIRCProtocolExec::toString()
+CKString CKIRCProtocolExec::toString()
 {
-	std::string		retval = "";
+	CKString		retval = "";
 
 	retval += "<CKIRCProtocolExec>";
 

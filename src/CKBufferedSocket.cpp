@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.11 2004/09/11 21:07:42 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.12 2004/09/16 09:34:12 drbob Exp $
  */
 
 //	System Headers
@@ -52,7 +52,7 @@ CKBufferedSocket::CKBufferedSocket() :
  * hostname and port that we wish to make a connection with and
  * attempts to make that connection before returning.
  */
-CKBufferedSocket::CKBufferedSocket( const std::string & aHost, int aPort ) :
+CKBufferedSocket::CKBufferedSocket( const CKString & aHost, int aPort ) :
 	CKSocket(aHost, aPort),
 	mReadTimeout(DEFAULT_READ_TIMEOUT),
 	mPendingData()
@@ -176,7 +176,7 @@ float CKBufferedSocket::getReadTimeout() const
  * other "peeking" methods in this class which will probably be
  * far more useful to the user.
  */
-std::string CKBufferedSocket::getPendingData() const
+CKString CKBufferedSocket::getPendingData() const
 {
 	return mPendingData;
 }
@@ -194,12 +194,12 @@ std::string CKBufferedSocket::getPendingData() const
  * complete form of the read that can be done and it clears out
  * everything.
  */
-std::string CKBufferedSocket::read()
+CKString CKBufferedSocket::read()
 {
 	// first, transfer all the data at the socket to the pending data buffer
 	transferWaitingDataAtSocketToPendingData();
 	// next, grab the buffer's contents
-	std::string	retval(mPendingData);
+	CKString	retval(mPendingData);
 	// ...and clear it out
 	mPendingData.clear();
 
@@ -217,16 +217,22 @@ std::string CKBufferedSocket::read()
  * if data continues to be available at the socket and the terminal
  * data has not arrived, reading will continue.
  */
-std::string CKBufferedSocket::readUpTo( const std::string & aStopData )
+CKString CKBufferedSocket::readUpTo( const CKString & aStopData )
 {
 	return readUpTo(aStopData.c_str());
 }
 
 
-std::string CKBufferedSocket::readUpTo( const char *aStopData )
+CKString CKBufferedSocket::readUpTo( const std::string & aStopData )
+{
+	return readUpTo(aStopData.c_str());
+}
+
+
+CKString CKBufferedSocket::readUpTo( const char *aStopData )
 {
 	bool			error = false;
-	std::string		retval("");
+	CKString		retval;
 	bool			done = false;
 
 	// first, make sure we have something interesting to do
@@ -266,8 +272,8 @@ std::string CKBufferedSocket::readUpTo( const char *aStopData )
 		 *          work on the buffer itself and not a copy which will
 		 *          be returned by the getPendingData() method.)
 		 */
-		unsigned int	pos = mPendingData.find(aStopData);
-		if (pos != std::string::npos) {
+		int		pos = mPendingData.find(aStopData);
+		if (pos != -1) {
 			// OK... it's there, so move past the terminal data itself
 			pos += strlen(aStopData);
 			// ...and then grab the substring up to that point
@@ -315,7 +321,7 @@ std::string CKBufferedSocket::readUpTo( const char *aStopData )
  * ending CRLF combo. This is a common line ending in TCP
  * communications and so it's a nice little tool to have.
  */
-std::string CKBufferedSocket::readUpToCRLF()
+CKString CKBufferedSocket::readUpToCRLF()
 {
 	return readUpTo((const char *)"\r\n");
 }
@@ -326,7 +332,7 @@ std::string CKBufferedSocket::readUpToCRLF()
  * ending NEWLINE. This is a common line ending in Unix-based TCP
  * communications and so it's a nice little tool to have.
  */
-std::string CKBufferedSocket::readUpToNEWLINE()
+CKString CKBufferedSocket::readUpToNEWLINE()
 {
 	return readUpTo((const char *)"\n");
 }
@@ -340,11 +346,11 @@ std::string CKBufferedSocket::readUpToNEWLINE()
  * "complete" data set is available at the socket, and if not,
  * then do nothing and try again later.
  */
-bool CKBufferedSocket::checkForDataUpTo( const std::string & aStopData )
+bool CKBufferedSocket::checkForDataUpTo( const CKString & aStopData )
 {
 	bool		found = false;
 
-	if (mPendingData.find(aStopData) != std::string::npos) {
+	if (mPendingData.find(aStopData) != -1) {
 		found = true;
 	}
 
@@ -356,7 +362,7 @@ bool CKBufferedSocket::checkForDataUpTo( const char *aStopData )
 {
 	bool		found = false;
 
-	if (mPendingData.find(aStopData) != std::string::npos) {
+	if (mPendingData.find(aStopData) != -1) {
 		found = true;
 	}
 
@@ -423,9 +429,9 @@ bool CKBufferedSocket::operator!=( const CKBufferedSocket & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKBufferedSocket::toString() const
+CKString CKBufferedSocket::toString() const
 {
 	return mPendingData;
 }
@@ -436,7 +442,7 @@ std::string CKBufferedSocket::toString() const
  * socket (data pending a read) and replaces it with the supplied
  * data. This is a drastic step, so please use this method with care.
  */
-void CKBufferedSocket::setPendingData( const std::string & aData )
+void CKBufferedSocket::setPendingData( const CKString & aData )
 {
 	mPendingData = aData;
 }
@@ -448,7 +454,7 @@ void CKBufferedSocket::setPendingData( const std::string & aData )
  * are used in the other methods of this class to update the buffer's
  * contents with that which is read from the socket as it's available.
  */
-void CKBufferedSocket::appendToPendingData( const std::string & aData )
+void CKBufferedSocket::appendToPendingData( const CKString & aData )
 {
 	mPendingData.append(aData);
 }
@@ -477,7 +483,7 @@ void CKBufferedSocket::emptyPendingData()
  * socket, so it's probably wise to see if the data you're
  * looking for is in the buffer before calling this method.
  */
-void CKBufferedSocket::emptyPendingDataUpToAndIncluding( const std::string & aData )
+void CKBufferedSocket::emptyPendingDataUpToAndIncluding( const CKString & aData )
 {
 	emptyPendingDataUpToAndIncluding(aData.c_str());
 }
@@ -485,8 +491,8 @@ void CKBufferedSocket::emptyPendingDataUpToAndIncluding( const std::string & aDa
 
 void CKBufferedSocket::emptyPendingDataUpToAndIncluding( const char *aData )
 {
-	unsigned int	pos = mPendingData.find(aData);
-	if (pos != std::string::npos) {
+	int		pos = mPendingData.find(aData);
+	if (pos != -1) {
 		// move past the terminal data itself
 		pos += strlen(aData);
 		// ...and erase all the data up to that point

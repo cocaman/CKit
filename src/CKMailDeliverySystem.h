@@ -12,13 +12,12 @@
  *                          set that as the default prior to sending any
  *                          messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.h,v 1.5 2004/09/11 21:07:47 drbob Exp $
+ * $Id: CKMailDeliverySystem.h,v 1.6 2004/09/16 09:34:17 drbob Exp $
  */
 #ifndef __CKMAILDELIVERYSYSTEM_H
 #define __CKMAILDELIVERYSYSTEM_H
 
 //	System Headers
-#include <string>
 #ifdef GPP2
 #include <ostream.h>
 #else
@@ -29,6 +28,7 @@
 
 //	Other Headers
 #include "CKMailDelivery.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -113,9 +113,9 @@ class CKMailDeliverySystem
 		 */
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt = false );
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-							const std::vector<std::string> & aPvtRecipients );
+							const std::vector<CKString> & aPvtRecipients );
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-							const std::vector<std::string> & aPvtRecipients,
+							const std::vector<CKString> & aPvtRecipients,
 							CKMailDelivery & aChannel );
 
 		/********************************************************
@@ -143,9 +143,9 @@ class CKMailDeliverySystem
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
-		 * a std::string.
+		 * a CKString.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 };
 
 /*

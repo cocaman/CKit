@@ -5,7 +5,7 @@
  *                      implemented and therefore sets the contract that needs
  *                      to be adhered to for all delivery channels.
  *
- * $Id: CKMailDelivery.cpp,v 1.5 2004/09/11 21:07:46 drbob Exp $
+ * $Id: CKMailDelivery.cpp,v 1.6 2004/09/16 09:34:17 drbob Exp $
  */
 
 //	System Headers
@@ -109,7 +109,7 @@ bool CKMailDelivery::readyToDeliverMessages()
  */
 bool CKMailDelivery::deliver( const CKMailMessage & aMsg,
 							  bool aReadReceipt,
-							  const std::vector<std::string> & aPvtRecipients )
+							  const std::vector<CKString> & aPvtRecipients )
 {
 	return false;
 }
@@ -150,9 +150,9 @@ bool CKMailDelivery::operator!=( const CKMailDelivery & anOther ) const
  * time this means that it's used for debugging, but it could be used
  * for just about anything. In these cases, it's nice not to have to
  * worry about the ownership of the representation, so this returns
- * a std::string.
+ * a CKString.
  */
-std::string CKMailDelivery::toString() const
+CKString CKMailDelivery::toString() const
 {
 	return "<this class has nothing to display>";
 }
