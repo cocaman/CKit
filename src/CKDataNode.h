@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.11 2004/09/20 16:19:22 drbob Exp $
+ * $Id: CKDataNode.h,v 1.12 2004/09/22 12:08:22 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -206,7 +206,7 @@ class CKDataNode
 		 * iterate over the children assuming they all have distinct names
 		 * as would be the case in most data sets.
 		 */
-		std::vector<CKString> getChildNames();
+		CKStringList getChildNames();
 		/*
 		 * This method returns the pointer to the actual node that is
 		 * both a child of this node and has the identifying name that
@@ -263,7 +263,7 @@ class CKDataNode
 		 * you don't really want to make a single string just to store
 		 * the value.
 		 */
-		CKVariant *getVarAtPath( const std::vector<CKString> & aSteps );
+		CKVariant *getVarAtPath( const CKStringList & aSteps );
 
 		/*
 		 * This method is part of the "pathing" capabilities of this class
@@ -301,7 +301,7 @@ class CKDataNode
 		 * like a vector and you don't want to put it all together only
 		 * to have this method break it up.
 		 */
-		void putVarAtPath( const std::vector<CKString> & aSteps,
+		void putVarAtPath( const CKStringList & aSteps,
 						   const CKVariant & aValue );
 
 		/*
@@ -310,7 +310,7 @@ class CKDataNode
 		 * 'up' the tree to the root, building accumulating the steps
 		 * along the way.
 		 */
-		std::vector<CKString> getSteps() const;
+		CKStringList getSteps() const;
 		/*
 		 * This method returns a string path to the current node in a
 		 * very similar way to the getSteps() method. The path lets the
@@ -326,14 +326,14 @@ class CKDataNode
 		 * path escaped by double-quotes will be kept intact. This is the
 		 * way for a component of the path to include a '/' character.
 		 */
-		static std::vector<CKString> pathToSteps( const CKString & aPath );
+		static CKStringList pathToSteps( const CKString & aPath );
 		/*
 		 * This method is useful in that it takes a vector of path steps,
 		 * or components, and then assembles them into a single string
 		 * that is properly escaped for the presence of '/' characters in
 		 * any one of the steps.
 		 */
-		static CKString stepsToPath( const std::vector<CKString> & aPath );
+		static CKString stepsToPath( const CKStringList & aPath );
 
 		/*
 		 * There are times that we want to know the identifying names of
@@ -343,7 +343,7 @@ class CKDataNode
 		 * method does a great job of getting a unique vector of names
 		 * of all the leaf nodes under it, and all it's children.
 		 */
-		std::vector<CKString>	getUniqueLeafNodeNames();
+		CKStringList	getUniqueLeafNodeNames();
 		/*
 		 * This method is interesting in that it will return the list of
 		 * unique leaf node names that are *missing* the provided variable
@@ -351,7 +351,7 @@ class CKDataNode
 		 * it allows us to ask the question: Who needs 'price'? and have
 		 * a list of node names that is returned.
 		 */
-		std::vector<CKString>	getUniqueLeafNodeNamesWithoutVar(
+		CKStringList	getUniqueLeafNodeNamesWithoutVar(
 											const CKString & aVarName );
 		/*
 		 * This method is interesting in that it will return the list of
@@ -360,7 +360,7 @@ class CKDataNode
 		 * it allows us to ask the question: Who has 'price'? and have
 		 * a list of node names that is returned.
 		 */
-		std::vector<CKString>	getUniqueLeafNodeNamesWithVar(
+		CKStringList	getUniqueLeafNodeNamesWithVar(
 											const CKString & aVarName );
 
 		/*
@@ -497,8 +497,8 @@ class CKDataNode
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		static std::vector<CKString> parseIntoChunks( const CKString & aString,
-													  const CKString & aDelim );
+		static CKStringList parseIntoChunks( const CKString & aString,
+											 const CKString & aDelim );
 
 	private:
 		/*
@@ -545,5 +545,381 @@ class CKDataNode
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, const CKDataNode & aNode );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize the data nodes. This is nice in that it's easy to use, easy
+ * to deal with, and the destructor takes care of cleaning up the data nodes
+ * itself.
+ *
+ * We base it off the data node so that it appears to be a normal nodein
+ * all regards - save the ability to exist in a doubly-linked list.
+ * ----------------------------------------------------------------------------
+ */
+class CKDataNodeListElem :
+	public CKDataNode
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKDataNodeListElem();
+		/*
+		 * This is a "promotion" constructor that takes a data point and
+		 * creates a new data point node based on the data in that point.
+		 * This is important because it'll be an easy way to add data
+		 * points to the list.
+		 */
+		CKDataNodeListElem( const CKDataNode & anOther,
+							CKDataNodeListElem *aPrev = NULL,
+							CKDataNodeListElem *aNext = NULL );
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKDataNodeListElem( const CKDataNodeListElem & anOther );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKDataNodeListElem();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKDataNodeListElem & operator=( const CKDataNodeListElem & anOther );
+		/*
+		 * At times it's also nice to be able to set a data point to this
+		 * node so that there's not a ton of casting in the code.
+		 */
+		CKDataNodeListElem & operator=( const CKDataNode & anOther );
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the simple setters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		void setPrev( CKDataNodeListElem *aNode );
+		void setNext( CKDataNodeListElem *aNode );
+
+		/*
+		 * These are the simple getters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		CKDataNodeListElem *getPrev();
+		CKDataNodeListElem *getNext();
+
+		/*
+		 * This method is used to 'unlink' the node from the list it's in.
+		 * This will NOT delete the node, merely take it out the the list
+		 * and now it becomes the responsibility of the caller to delete
+		 * this node, or add him to another list.
+		 */
+		void removeFromList();
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method checks to see if the two CKDataNodeListElems are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( const CKDataNodeListElem & anOther ) const;
+		/*
+		 * This method checks to see if the two CKDataNodeListElems are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( const CKDataNodeListElem & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString() const;
+
+	private:
+		friend class CKDataNodeList;
+
+		/*
+		 * Since we're a doubly-linked list, I'm just going to have a
+		 * prev and next pointers and that will take care of the linking.
+		 */
+		CKDataNodeListElem		*mPrev;
+		CKDataNodeListElem		*mNext;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKDataNodeListElem & aNode );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKDataNode objects. It
+ * is organized as a doubly-linked list of CKDataNodeListElems and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+class CKDataNodeList
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKDataNodeList();
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKDataNodeList( CKDataNodeList & anOther );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKDataNodeList();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKDataNodeList & operator=( CKDataNodeList & anOther );
+		CKDataNodeList & operator=( const CKDataNodeList & anOther );
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the easiest ways to get at the head and tail of this
+		 * list. After that, the CKDataNodeListElem's getPrev() and getNext()
+		 * do a good job of moving you around the list.
+		 */
+		CKDataNodeListElem *getHead();
+		CKDataNodeListElem *getHead() const;
+		CKDataNodeListElem *getTail();
+		CKDataNodeListElem *getTail() const;
+
+		/*
+		 * Because there may be times that the user wants to lock us up
+		 * for change, we're going to expose this here so it's easy for them
+		 * to iterate, for example.
+		 */
+		void lock();
+		void lock() const;
+		void unlock();
+		void unlock() const;
+
+		/*
+		 * This method is a simple indexing operator so that we can easily
+		 * get the individual strings in the list. If the argument
+		 * is -1, then the default is to get the *LAST* non-NULL
+		 * string in the list.
+		 */
+		CKDataNode & operator[]( int aPosition );
+		CKDataNode & operator[]( int aPosition ) const;
+
+		/********************************************************
+		 *
+		 *                List Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method gets the size of the list in a thread-safe
+		 * way. This means that it will block until it can get the
+		 * lock on the data, so be warned.
+		 */
+		int size();
+		int size() const;
+
+		/*
+		 * This is used to tell the caller if the list is empty. It's
+		 * faster than checking for a size() == 0.
+		 */
+		bool empty();
+		bool empty() const;
+
+		/*
+		 * This method clears out the entire list and deletes all it's
+		 * contents. After this, all node pointers to nodes in this list
+		 * will be pointing to nothing, so watch out.
+		 */
+		void clear();
+		void clear() const;
+
+		/*
+		 * When I want to add a point to the front or back of the list,
+		 * these are the simplest ways to do that. The passed-in data node
+		 * is left untouched, and a copy is made of it at the proper point
+		 * in the list.
+		 */
+		void addToFront( CKDataNode & aNode );
+		void addToFront( const CKDataNode & aNode );
+		void addToFront( CKDataNode & aNode ) const;
+		void addToFront( const CKDataNode & aNode ) const;
+
+		void addToEnd( CKDataNode & aNode );
+		void addToEnd( const CKDataNode & aNode );
+		void addToEnd( CKDataNode & aNode ) const;
+		void addToEnd( const CKDataNode & aNode ) const;
+
+		/*
+		 * These methods take control of the passed-in arguments and place
+		 * them in the proper place in the list. This is different in that
+		 * the control of the node is passed to the list, but that's why
+		 * we've created them... to make it easy to add in nodes by just
+		 * changing the links.
+		 */
+		void putOnFront( CKDataNodeListElem *aNode );
+		void putOnFront( const CKDataNodeListElem *aNode );
+		void putOnFront( CKDataNodeListElem *aNode ) const;
+		void putOnFront( const CKDataNodeListElem *aNode ) const;
+
+		void putOnEnd( CKDataNodeListElem *aNode );
+		void putOnEnd( const CKDataNodeListElem *aNode );
+		void putOnEnd( CKDataNodeListElem *aNode ) const;
+		void putOnEnd( const CKDataNodeListElem *aNode ) const;
+
+		/*
+		 * When you have a list that you want to add to this list, these
+		 * are the methods to use. It's important to note that the arguments
+		 * will NOT be altered - which is why this is called the 'copy' as
+		 * opposed to the 'splice'.
+		 */
+		void copyToFront( CKDataNodeList & aList );
+		void copyToFront( const CKDataNodeList & aList );
+		void copyToFront( CKDataNodeList & aList ) const;
+		void copyToFront( const CKDataNodeList & aList ) const;
+
+		void copyToEnd( CKDataNodeList & aList );
+		void copyToEnd( const CKDataNodeList & aList );
+		void copyToEnd( CKDataNodeList & aList ) const;
+		void copyToEnd( const CKDataNodeList & aList ) const;
+
+		/*
+		 * When you have a list that you want to merge into this list, these
+		 * are the methods to use. It's important to note that the argument
+		 * lists will be EMPTIED - which is why this is called the 'splice'
+		 * as opposed to the 'copy'.
+		 */
+		void spliceOnFront( CKDataNodeList & aList );
+		void spliceOnFront( const CKDataNodeList & aList );
+		void spliceOnFront( CKDataNodeList & aList ) const;
+		void spliceOnFront( const CKDataNodeList & aList ) const;
+
+		void spliceOnEnd( CKDataNodeList & aList );
+		void spliceOnEnd( const CKDataNodeList & aList );
+		void spliceOnEnd( CKDataNodeList & aList ) const;
+		void spliceOnEnd( const CKDataNodeList & aList ) const;
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method checks to see if the two CKDataNodeLists are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( CKDataNodeList & anOther );
+		bool operator==( const CKDataNodeList & anOther );
+		bool operator==( CKDataNodeList & anOther ) const;
+		bool operator==( const CKDataNodeList & anOther ) const;
+		/*
+		 * This method checks to see if the two CKDataNodeLists are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( CKDataNodeList & anOther );
+		bool operator!=( const CKDataNodeList & anOther );
+		bool operator!=( CKDataNodeList & anOther ) const;
+		bool operator!=( const CKDataNodeList & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString();
+
+	protected:
+		/*
+		 * Setting the head or the tail is a bit dicey and so we're not
+		 * going to let just anyone change these guys.
+		 */
+		void setHead( CKDataNodeListElem *aNode );
+		void setTail( CKDataNodeListElem *aNode );
+
+	private:
+		/*
+		 * A Doubly-linked list is pretty easy - there's a head and a
+		 * tail and that's about it.
+		 */
+		CKDataNodeListElem		*mHead;
+		CKDataNodeListElem		*mTail;
+		/*
+		 * This is the mutex that is going to protect all the dangerous
+		 * operations so that this list is thread-safe.
+		 */
+		CKFWMutex				mMutex;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKDataNodeList & aList );
 
 #endif	// __CKDATANODE_H

@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.15 2004/09/20 17:58:56 drbob Exp $
+ * $Id: CKTable.cpp,v 1.16 2004/09/22 12:08:40 drbob Exp $
  */
 
 //	System Headers
@@ -95,8 +95,8 @@ CKTable::CKTable( int aNumRows, int aNumColumns ) :
  * column headers. These lists not only define the structure of the
  * table, but also the row labels and column headers.
  */
-CKTable::CKTable( const std::vector<CKString> aRowLabels,
-				  const std::vector<CKString> aColumnHeaders ) :
+CKTable::CKTable( const CKStringList aRowLabels,
+				  const CKStringList aColumnHeaders ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
 	mRowLabels(NULL),
@@ -106,8 +106,8 @@ CKTable::CKTable( const std::vector<CKString> aRowLabels,
 	// see if the requestde size makes any sense
 	if (aRowLabels.empty() || aColumnHeaders.empty()) {
 		std::ostringstream	msg;
-		msg << "CKTable::CKTable(const std::vector<CKString> &, const "
-			"std::vector<CKString> &) - the requested size: "
+		msg << "CKTable::CKTable(const CKStringList &, const "
+			"CKStringList &) - the requested size: "
 			<< aRowLabels.size() << " by " << aColumnHeaders.size() <<
 			" doesn't make any sense. Please try again.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -2046,7 +2046,7 @@ bool CKTable::merge( const CKTable & aTable )
 	 * column headers.
 	 */
 	// do the new columns first...
-	std::vector<CKString>	newColumnHeaders;
+	CKStringList	newColumnHeaders;
 	if (!error) {
 		int		cnt = aTable.mNumColumns;
 		for (int i = 0; i < cnt; i++) {
@@ -2055,12 +2055,12 @@ bool CKTable::merge( const CKTable & aTable )
 				endingCols++;
 			} else if (getColumnForHeader(label) == -1) {
 				endingCols++;
-				newColumnHeaders.push_back(label);
+				newColumnHeaders.addToEnd(label);
 			}
 		}
 	}
 	// now do the new rows...
-	std::vector<CKString>	newRowLabels;
+	CKStringList	newRowLabels;
 	if (!error) {
 		int		cnt = aTable.mNumRows;
 		for (int i = 0; i < cnt; i++) {
@@ -2069,7 +2069,7 @@ bool CKTable::merge( const CKTable & aTable )
 				endingRows++;
 			} else if (getRowForLabel(label) == -1) {
 				endingRows++;
-				newRowLabels.push_back(label);
+				newRowLabels.addToEnd(label);
 			}
 		}
 	}
@@ -2091,11 +2091,11 @@ bool CKTable::merge( const CKTable & aTable )
 	// now we can put in the new column headers and row labels
 	if (!error) {
 		// do the column headers first
-		for (unsigned int i = 0; i < newColumnHeaders.size(); i++) {
+		for (int i = 0; i < newColumnHeaders.size(); i++) {
 			mColumnHeaders[oldCols + i] = newColumnHeaders[i];
 		}
 		// now do the row labels next
-		for (unsigned int i = 0; i < newRowLabels.size(); i++) {
+		for (int i = 0; i < newRowLabels.size(); i++) {
 			mRowLabels[oldRows + i] = newRowLabels[i];
 		}
 	}
@@ -2686,12 +2686,12 @@ void CKTable::setTable( CKVariant *aTable )
  * this class will take care of making sure they are there, and it's
  * probably best to let this class to this.
  */
-void CKTable::setColumnHeaders( const std::vector<CKString> & aList )
+void CKTable::setColumnHeaders( const CKStringList & aList )
 {
 	// first, check to see that we have something to do
-	if ((int)aList.size() != mNumColumns) {
+	if (aList.size() != mNumColumns) {
 		std::ostringstream	msg;
-		msg << "CKTable::setColumnHeaders(const std::vector<CKString> &) - "
+		msg << "CKTable::setColumnHeaders(const CKStringList &) - "
 			"the passed-in vector of strings did not contain " << mNumColumns <<
 			" elements which is the number of headers in this table. Please make "
 			"sure the data matches before setting.";
@@ -2712,12 +2712,12 @@ void CKTable::setColumnHeaders( const std::vector<CKString> & aList )
  * this class will take care of making sure they are there, and it's
  * probably best to let this class to this.
  */
-void CKTable::setRowLabels( const std::vector<CKString> & aList )
+void CKTable::setRowLabels( const CKStringList & aList )
 {
 	// first, check to see that we have something to do
-	if ((int)aList.size() != mNumRows) {
+	if (aList.size() != mNumRows) {
 		std::ostringstream	msg;
-		msg << "CKTable::setRowLabels(const std::vector<CKString> &) - "
+		msg << "CKTable::setRowLabels(const CKStringList &) - "
 			"the passed-in vector of strings did not contain " << mNumRows <<
 			" elements which is the number of labels in this table. Please make "
 			"sure the data matches before setting.";
@@ -3201,14 +3201,14 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
  * if the number of row labels or column headers make no sense, or
  * if there's an error in the allocation of the storage.
  */
-void CKTable::createTable( const std::vector<CKString> & aRowLabels,
-						   const std::vector<CKString> & aColHeaders )
+void CKTable::createTable( const CKStringList & aRowLabels,
+						   const CKStringList & aColHeaders )
 {
 	// first, see if we have anything to do - really
 	if (aRowLabels.empty() || aColHeaders.empty()) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<CKString> &, "
-			"const std::vector<CKString> &) - the requested table "
+		msg << "CKTable::createTable(const CKStringList &, "
+			"const CKStringList &) - the requested table "
 			"size makes no sense. Please send non-empty lists.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	}
@@ -3229,8 +3229,8 @@ void CKTable::createTable( const std::vector<CKString> & aRowLabels,
 		dropTable();
 		// ...and then throw the exception
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<CKString> &, "
-			"const std::vector<CKString> &) - the array of " <<
+		msg << "CKTable::createTable(const CKStringList &, "
+			"const CKStringList &) - the array of " <<
 			mNumRows << "x" << mNumColumns << " (" << mNumRows*mNumColumns <<
 			" elements) values could not be created for this table. "
 			"This is a serious allocation problem.";
@@ -3244,8 +3244,8 @@ void CKTable::createTable( const std::vector<CKString> & aRowLabels,
 	mColumnHeaders = new CKString[mNumColumns];
 	if (mColumnHeaders == NULL) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<CKString> &, "
-			"const std::vector<CKString> &) - the array of " <<
+		msg << "CKTable::createTable(const CKStringList &, "
+			"const CKStringList &) - the array of " <<
 			mNumColumns << " column headers could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
@@ -3262,8 +3262,8 @@ void CKTable::createTable( const std::vector<CKString> & aRowLabels,
 	mRowLabels = new CKString[mNumRows];
 	if (mRowLabels == NULL) {
 		std::ostringstream	msg;
-		msg << "CKTable::createTable(const std::vector<CKString> &, "
-			"const std::vector<CKString> &) - the array of " <<
+		msg << "CKTable::createTable(const CKStringList &, "
+			"const CKStringList &) - the array of " <<
 			mNumRows << " row labels could not be created for this "
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());

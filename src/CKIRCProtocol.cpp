@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.12 2004/09/20 16:19:31 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.13 2004/09/22 12:08:29 drbob Exp $
  */
 
 //	System Headers
@@ -457,7 +457,7 @@ const CKString CKIRCProtocol::getRealName() const
  * If you want to make a copy, do so, but otherwise, leave this guy
  * alone.
  */
-const std::list<CKString>	*CKIRCProtocol::getChannelList() const
+const CKStringList	*CKIRCProtocol::getChannelList() const
 {
 	return & mChannelList;
 }
@@ -491,11 +491,13 @@ bool CKIRCProtocol::isChannelInChannelList( const CKString & aChannel )
 	mChannelListMutex.lock();
 
 	// try to find the channel in the list
-	std::list<CKString>::iterator	i;
-	i = find(mChannelList.begin(), mChannelList.end(), aChannel);
-	if (i != mChannelList.end()) {
-		// yippee! we have it
-		retval = true;
+	CKStringNode		*i = NULL;
+	for (i = mChannelList.getHead(); i != NULL; i = i->getNext()) {
+		if ((*i) == aChannel) {
+			// yippee! we have it
+			retval = true;
+			break;
+		}
 	}
 
 	// finally, unlock the list to allow changes
@@ -980,9 +982,9 @@ CKString CKIRCProtocol::toString() const
 	retval += " RealName=";
 	retval += getRealName();
 	retval += " ChannelList: [";
-	std::list<CKString>::const_iterator	i;
-	for (i = mChannelList.begin(); i != mChannelList.end(); ++i) {
-		if (i != mChannelList.begin()) {
+	CKStringNode		*i = NULL;
+	for (i = mChannelList.getHead(); i != NULL; i = i->getNext()) {
+		if (i->getPrev() != NULL) {
 			retval += ", ";
 		}
 		retval += (*i);
@@ -1036,12 +1038,10 @@ void CKIRCProtocol::setIsLoggedIn( bool aFlag )
  * as a copy and not as an assumption of the memory management of
  * the elements of the list.
  */
-void CKIRCProtocol::setChannelList( const std::list<CKString> & aList )
+void CKIRCProtocol::setChannelList( const CKStringList & aList )
 {
 	// first, lock the list for changes
 	mChannelListMutex.lock();
-	// next, clear out the existing list
-	mChannelList.clear();
 	// ...and then copy in all the elements of the passed-in list
 	mChannelList = aList;
 	// finally, unlock it
@@ -1086,11 +1086,8 @@ void CKIRCProtocol::addToChannelList( const CKString & aChannel )
 	mChannelListMutex.lock();
 
 	// try to find the channel in the list
-	std::list<CKString>::iterator	i;
-	i = find(mChannelList.begin(), mChannelList.end(), aChannel);
-	if (i == mChannelList.end()) {
-		// we don't have it, so add it
-		mChannelList.push_back(aChannel);
+	if (!mChannelList.contains(aChannel)) {
+		mChannelList.addToEnd(aChannel);
 	}
 
 	// finally, unlock the list to allow changes
@@ -1161,7 +1158,7 @@ void CKIRCProtocol::stopListener()
 			int		cnt = 0;
 			while ((cnt < 6) && mListener->isRunning()) {
 				// wait for DEFAULT_IRC_READ_TIMEOUT/4 to see if it's dead
-				mmsleep((unsigned int)DEFAULT_IRC_READ_TIMEOUT * 1000000 / 4);
+				mmsleep((unsigned int)DEFAULT_IRC_READ_TIMEOUT * 1000 / 4);
 				cnt++;
 			}
 			// make sure it's stopped

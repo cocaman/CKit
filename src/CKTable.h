@@ -5,7 +5,7 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.12 2004/09/20 17:59:06 drbob Exp $
+ * $Id: CKTable.h,v 1.13 2004/09/22 12:08:45 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
@@ -92,8 +92,8 @@ class CKTable {
 		 * column headers. These lists not only define the structure of the
 		 * table, but also the row labels and column headers.
 		 */
-		CKTable( const std::vector<CKString> aRowLabels,
-				 const std::vector<CKString> aColumnHeaders );
+		CKTable( const CKStringList aRowLabels,
+				 const CKStringList aColumnHeaders );
 		/*
 		 * This constructor is interesting in that it takes the data as
 		 * it comes from another CKTable's generateCodeFromValues() method
@@ -487,7 +487,7 @@ class CKTable {
 		 * this class will take care of making sure they are there, and it's
 		 * probably best to let this class to this.
 		 */
-		void setColumnHeaders( const std::vector<CKString> & aList );
+		void setColumnHeaders( const CKStringList & aList );
 		/*
 		 * This method sets an array of CKString values to be the row
 		 * labels for the current table. It's important to note that there
@@ -495,7 +495,7 @@ class CKTable {
 		 * this class will take care of making sure they are there, and it's
 		 * probably best to let this class to this.
 		 */
-		void setRowLabels( const std::vector<CKString> & aList );
+		void setRowLabels( const CKStringList & aList );
 		/*
 		 * This method is really here to encapsulate the number of rows
 		 * that this data source represents. Since it's possible to have
@@ -678,8 +678,8 @@ class CKTable {
 		 * if the number of row labels or column headers make no sense, or
 		 * if there's an error in the allocation of the storage.
 		 */
-		void createTable( const std::vector<CKString> & aRowLabels,
-						  const std::vector<CKString> & aColHeaders );
+		void createTable( const CKStringList & aRowLabels,
+						  const CKStringList & aColHeaders );
 		/*
 		 * This private method takes care of dealing with the careful
 		 * deallocation of the table's data structure. It's not all

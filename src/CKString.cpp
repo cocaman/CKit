@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.5 2004/09/20 16:19:42 drbob Exp $
+ * $Id: CKString.cpp,v 1.6 2004/09/22 12:08:34 drbob Exp $
  */
 
 //	System Headers
@@ -3359,9 +3359,9 @@ bool CKString::operator>=( const std::string & anSTLString ) const
  * worry about the ownership of the representation, so this returns
  * a std::string.
  */
-std::string CKString::toString() const
+CKString CKString::toString() const
 {
-	return stl_str();
+	return CKString(mString);
 }
 
 
@@ -3510,6 +3510,1636 @@ std::ostream & operator<<( std::ostream & aStream, CKString & aString )
 std::ostream & operator<<( std::ostream & aStream, const CKString & aString )
 {
 	aStream << ((CKString &)aString).c_str();
+
+	return aStream;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize a list of strings. This is nice in that it's easy to use, easy
+ * to deal with, and the destructor takes care of cleaning up the strings
+ * itself.
+ *
+ * We base it off the CKString so that it appears to be a normal string in
+ * all regards - save the ability to exist in a doubly-linked list.
+ *
+ * The reason for this is that the STL std::vector and stl::list are no good
+ * in their implementations in GCC, so rather than try to fix that code, we
+ * chose to write our own classes.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKStringNode::CKStringNode() :
+	CKString(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+}
+
+
+/*
+ * This is a "promotion" constructor that takes a string and
+ * creates a new string node based on the data in that string.
+ * This is important because it'll be an easy way to add strings
+ * to the list.
+ */
+CKStringNode::CKStringNode( const CKString & anOther,
+							CKStringNode *aPrev,
+							CKStringNode *aNext ) :
+	CKString(anOther),
+	mPrev(aPrev),
+	mNext(aNext)
+{
+}
+
+
+CKStringNode::CKStringNode( const char * aCString,
+							CKStringNode *aPrev,
+							CKStringNode *aNext ) :
+	CKString(aCString),
+	mPrev(aPrev),
+	mNext(aNext)
+{
+}
+
+
+CKStringNode::CKStringNode( const std::string & anSTLString,
+							CKStringNode *aPrev,
+							CKStringNode *aNext ) :
+	CKString(anSTLString),
+	mPrev(aPrev),
+	mNext(aNext)
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKStringNode::CKStringNode( const CKStringNode & anOther ) :
+	CKString(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+	// now we can use the '=' operator to do the rest of the job
+	*this = anOther;
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKStringNode::~CKStringNode()
+{
+	// the super takes are of deleting all but the pointers
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKStringNode & CKStringNode::operator=( const CKStringNode & anOther )
+{
+	// start by letting the super do it's copying
+	CKString::operator=(anOther);
+	// just copy in all the values from the other
+	mPrev = anOther.mPrev;
+	mNext = anOther.mNext;
+
+	return *this;
+}
+
+
+/*
+ * At times it's also nice to be able to set a string to this
+ * node so that there's not a ton of casting in the code.
+ */
+CKStringNode & CKStringNode::operator=( const CKString & anOther )
+{
+	// just copy in the string value and leave the pointers alone
+	CKString::operator=(anOther);
+
+	return *this;
+}
+
+
+CKStringNode & CKStringNode::operator=( const char * aCString )
+{
+	// just copy in the string value and leave the pointers alone
+	CKString::operator=(aCString);
+
+	return *this;
+}
+
+
+CKStringNode & CKStringNode::operator=( const std::string & anSTLString )
+{
+	// just copy in the string value and leave the pointers alone
+	CKString::operator=(anSTLString);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the simple setters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+void CKStringNode::setPrev( CKStringNode *aNode )
+{
+	mPrev = aNode;
+}
+
+
+void CKStringNode::setNext( CKStringNode *aNode )
+{
+	mNext = aNode;
+}
+
+
+/*
+ * These are the simple getters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+CKStringNode *CKStringNode::getPrev()
+{
+	return mPrev;
+}
+
+
+CKStringNode *CKStringNode::getNext()
+{
+	return mNext;
+}
+
+
+/*
+ * This method is used to 'unlink' the node from the list it's in.
+ * This will NOT delete the node, merely take it out the the list
+ * and now it becomes the responsibility of the caller to delete
+ * this node, or add him to another list.
+ */
+void CKStringNode::removeFromList()
+{
+	// first, point the next's "prev" to the prev
+	if (mNext != NULL) {
+		mNext->mPrev = mPrev;
+	}
+	// next, point the prev's "next" to the next
+	if (mPrev != NULL) {
+		mPrev->mNext = mNext;
+	}
+	// finally, I'm not linked to *anyone* anymore
+	mPrev = NULL;
+	mNext = NULL;
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * This method checks to see if the two CKStringNodes are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKStringNode::operator==( const CKStringNode & anOther ) const
+{
+	bool		equal = true;
+
+	// first, see if the strings are equal
+	if (equal) {
+		if (!CKString::operator==(anOther)) {
+			equal = false;
+		}
+	}
+	// ...now check the pointers
+	if (equal) {
+		if ((mPrev != anOther.mPrev) ||
+			(mNext != anOther.mNext)) {
+			equal = false;
+		}
+	}
+
+	return equal;
+}
+
+
+/*
+ * This method checks to see if the two CKStringNodes are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKStringNode::operator!=( const CKStringNode & anOther ) const
+{
+	return !(this->operator==(anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKStringNode::toString() const
+{
+	// put everything in between angle brackets to make it look nice
+	CKString	retval = "<String='";
+	retval.append(mString).append("', ");
+	char	buff[80];
+	bzero(buff, 80);
+	snprintf(buff, 79, "Prev=%x, Next=%x>", (unsigned int)mPrev,
+			(unsigned int)mNext);
+	retval.append(buff);
+
+	return retval;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKStringNode & aNode )
+{
+	aStream << aNode.toString();
+
+	return aStream;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKString objects. It
+ * is organized as a doubly-linked list of CKStringNodes and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKStringList::CKStringList() :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKStringList::CKStringList( CKStringList & anOther ) :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+	// let the operator==() take care of this for me
+	*this = anOther;
+}
+
+
+CKStringList::CKStringList( const CKStringList & anOther ) :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+	// let the operator==() take care of this for me
+	*this = anOther;
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKStringList::~CKStringList()
+{
+	// we need to delete the head as long as there is one
+	while (mHead != NULL) {
+		CKStringNode	*next = mHead->mNext;
+		delete mHead;
+		mHead = next;
+		if (mHead != NULL) {
+			mHead->mPrev = NULL;
+		}
+	}
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKStringList & CKStringList::operator=( CKStringList & anOther )
+{
+	// first, clear out anything we might have right now
+	clear();
+
+	// now, do a deep copy of the source list
+	copyToEnd(anOther);
+
+	return *this;
+}
+
+
+CKStringList & CKStringList::operator=( const CKStringList & anOther )
+{
+	this->operator=((CKStringList &) anOther);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the easiest ways to get at the head and tail of this
+ * list. After that, the CKStringNode's getPrev() and getNext()
+ * do a good job of moving you around the list.
+ */
+CKStringNode *CKStringList::getHead()
+{
+	return mHead;
+}
+
+
+CKStringNode *CKStringList::getHead() const
+{
+	return mHead;
+}
+
+
+CKStringNode *CKStringList::getTail()
+{
+	return mTail;
+}
+
+
+CKStringNode *CKStringList::getTail() const
+{
+	return mTail;
+}
+
+
+/*
+ * Because there may be times that the user wants to lock us up
+ * for change, we're going to expose this here so it's easy for them
+ * to iterate, for example.
+ */
+void CKStringList::lock()
+{
+	mMutex.lock();
+}
+
+
+void CKStringList::lock() const
+{
+	((CKStringList *)this)->lock();
+}
+
+
+void CKStringList::unlock()
+{
+	mMutex.unlock();
+}
+
+
+void CKStringList::unlock() const
+{
+	((CKStringList *)this)->unlock();
+}
+
+
+/*
+ * This method is a simple indexing operator so that we can easily
+ * get the individual strings in the list. If the argument
+ * is -1, then the default is to get the *LAST* non-NULL
+ * string in the list.
+ */
+CKString & CKStringList::operator[]( int aPosition )
+{
+	CKStringNode	*node = NULL;
+
+	// first, see if the arg is -1, and if so, return the last one
+	if (aPosition == -1) {
+		node = mTail;
+	} else {
+		// first, lock up this guy against changes
+		mMutex.lock();
+		// all we need to do is count until we get there or the end
+		int		cnt = 0;
+		for (node = mHead; (cnt < aPosition) && (node != NULL); node = node->mNext) {
+			cnt++;
+		}
+		// now we can release the lock
+		mMutex.unlock();
+	}
+
+	// make sure that we have the node we're interested in
+	if (node == NULL) {
+		std::ostringstream	msg;
+		msg << "CKStringList::operator[](int) - the requested index: " << aPosition <<
+			" was not available in the list. Please make sure that you are asking "
+			"for a valid index in the list.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return (CKString &)(*node);
+}
+
+
+CKString & CKStringList::operator[]( int aPosition ) const
+{
+	return ((CKStringList *)this)->operator[](aPosition);
+}
+
+
+/********************************************************
+ *
+ *                List Methods
+ *
+ ********************************************************/
+/*
+ * This method gets the size of the list in a thread-safe
+ * way. This means that it will block until it can get the
+ * lock on the data, so be warned.
+ */
+int CKStringList::size()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// all we need to do is count them all up
+	int		cnt = 0;
+	for (CKStringNode *node = mHead; node != NULL; node = node->mNext) {
+		cnt++;
+	}
+	// now we can release the lock
+	mMutex.unlock();
+
+	return cnt;
+}
+
+
+int CKStringList::size() const
+{
+	return ((CKStringList *)this)->size();
+}
+
+
+/*
+ * This is used to tell the caller if the list is empty. It's
+ * faster than checking for a size() == 0.
+ */
+bool CKStringList::empty()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// all we need to do is count them all up
+	bool	empty = false;
+	if (mHead == NULL) {
+		empty = true;
+	}
+	// now we can release the lock
+	mMutex.unlock();
+
+	return empty;
+}
+
+
+bool CKStringList::empty() const
+{
+	return ((CKStringList *)this)->empty();
+}
+
+
+/*
+ * This method clears out the entire list and deletes all it's
+ * contents. After this, all node pointers to nodes in this list
+ * will be pointing to nothing, so watch out.
+ */
+void CKStringList::clear()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// we need to delete the head as long as there is one
+	while (mHead != NULL) {
+		CKStringNode	*next = mHead->mNext;
+		delete mHead;
+		mHead = next;
+		if (mHead != NULL) {
+			mHead->mPrev = NULL;
+		}
+	}
+	// now make sure to reset the head and tail
+	mHead = NULL;
+	mTail = NULL;
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKStringList::clear() const
+{
+	((CKStringList *)this)->clear();
+}
+
+
+/*
+ * When I want to add a string to the front or back of the list,
+ * these are the simplest ways to do that. The passed-in string
+ * is left untouched, and a copy is made of it at the proper point
+ * in the list.
+ */
+void CKStringList::addToFront( CKString & aString )
+{
+	addToFront(aString.mString);
+}
+
+
+void CKStringList::addToFront( const CKString & aString )
+{
+	addToFront((char *)aString.mString);
+}
+
+
+void CKStringList::addToFront( CKString & aString ) const
+{
+	((CKStringList *)this)->addToFront(aString.mString);
+}
+
+
+void CKStringList::addToFront( const CKString & aString ) const
+{
+	((CKStringList *)this)->addToFront((char *)aString.mString);
+}
+
+
+void CKStringList::addToFront( std::string & anSTLString )
+{
+	addToFront(anSTLString.c_str());
+}
+
+
+void CKStringList::addToFront( const std::string & anSTLString )
+{
+	addToFront((char *)anSTLString.c_str());
+}
+
+
+void CKStringList::addToFront( std::string & anSTLString ) const
+{
+	((CKStringList *)this)->addToFront(anSTLString.c_str());
+}
+
+
+void CKStringList::addToFront( const std::string & anSTLString ) const
+{
+	((CKStringList *)this)->addToFront((char *)anSTLString.c_str());
+}
+
+
+void CKStringList::addToFront( char * aCString )
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+
+	// we need to create a new data point node based on this guy
+	CKStringNode	*node = new CKStringNode(aCString, NULL, mHead);
+	if (node == NULL) {
+		// first we need to release the lock
+		mMutex.unlock();
+		// now we can throw the exception
+		std::ostringstream	msg;
+		msg << "CKStringList::addToFront(const char *) - a "
+			"new string node could not be created for the passed in string: '" <<
+			aCString << "' and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKStringList::addToFront( const char * aCString )
+{
+	addToFront((char *)aCString);
+}
+
+
+void CKStringList::addToFront( char * aCString ) const
+{
+	((CKStringList *)this)->addToFront(aCString);
+}
+
+
+void CKStringList::addToFront( const char * aCString ) const
+{
+	((CKStringList *)this)->addToFront((char *)aCString);
+}
+
+
+void CKStringList::addToEnd( CKString & aString )
+{
+	addToEnd(aString.mString);
+}
+
+
+void CKStringList::addToEnd( const CKString & aString )
+{
+	addToEnd((char *)aString.mString);
+}
+
+
+void CKStringList::addToEnd( CKString & aString ) const
+{
+	((CKStringList *)this)->addToEnd(aString.mString);
+}
+
+
+void CKStringList::addToEnd( const CKString & aString ) const
+{
+	((CKStringList *)this)->addToEnd((char *)aString.mString);
+}
+
+
+void CKStringList::addToEnd( std::string & anSTLString )
+{
+	addToEnd(anSTLString.c_str());
+}
+
+
+void CKStringList::addToEnd( const std::string & anSTLString )
+{
+	addToEnd((char *)anSTLString.c_str());
+}
+
+
+void CKStringList::addToEnd( std::string & anSTLString ) const
+{
+	((CKStringList *)this)->addToEnd(anSTLString.c_str());
+}
+
+
+void CKStringList::addToEnd( const std::string & anSTLString ) const
+{
+	((CKStringList *)this)->addToEnd((char *)anSTLString.c_str());
+}
+
+
+void CKStringList::addToEnd( char *aCString )
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+
+	// we need to create a new data point node based on this guy
+	CKStringNode	*node = new CKStringNode(aCString, mTail, NULL);
+	if (node == NULL) {
+		// first we need to release the lock
+		mMutex.unlock();
+		// now we can throw the exception
+		std::ostringstream	msg;
+		msg << "CKStringList::addToEnd(const char *) - a "
+			"new string node could not be created for the passed in string: '" <<
+			aCString << "' and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKStringList::addToEnd( const char *aCString )
+{
+	addToEnd((char *)aCString);
+}
+
+
+void CKStringList::addToEnd( char *aCString ) const
+{
+	((CKStringList *)this)->addToEnd(aCString);
+}
+
+
+void CKStringList::addToEnd( const char *aCString ) const
+{
+	((CKStringList *)this)->addToEnd((char *)aCString);
+}
+
+
+/*
+ * These methods take control of the passed-in arguments and place
+ * them in the proper place in the list. This is different in that
+ * the control of the node is passed to the list, but that's why
+ * we've created them... to make it easy to add in nodes by just
+ * changing the links.
+ */
+void CKStringList::putOnFront( CKStringNode *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		mMutex.lock();
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = NULL;
+		aNode->mNext = mHead;
+		if (mHead == NULL) {
+			mTail = aNode;
+		} else {
+			mHead->mPrev = aNode;
+		}
+		mHead = aNode;
+
+		// now we can release the lock
+		mMutex.unlock();
+	}
+}
+
+
+void CKStringList::putOnFront( const CKStringNode *aNode )
+{
+	putOnFront((CKStringNode *)aNode);
+}
+
+
+void CKStringList::putOnFront( CKStringNode *aNode ) const
+{
+	((CKStringList *)this)->putOnFront(aNode);
+}
+
+
+void CKStringList::putOnFront( const CKStringNode *aNode ) const
+{
+	((CKStringList *)this)->putOnFront((CKStringNode *)aNode);
+}
+
+
+void CKStringList::putOnEnd( CKStringNode *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		mMutex.lock();
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = mTail;
+		aNode->mNext = NULL;
+		if (mTail == NULL) {
+			mHead = aNode;
+		} else {
+			mTail->mNext = aNode;
+		}
+		mTail = aNode;
+
+		// now we can release the lock
+		mMutex.unlock();
+	}
+}
+
+
+void CKStringList::putOnEnd( const CKStringNode *aNode )
+{
+	putOnEnd((CKStringNode *)aNode);
+}
+
+
+void CKStringList::putOnEnd( CKStringNode *aNode ) const
+{
+	((CKStringList *)this)->putOnEnd(aNode);
+}
+
+
+void CKStringList::putOnEnd( const CKStringNode *aNode ) const
+{
+	((CKStringList *)this)->putOnEnd((CKStringNode *)aNode);
+}
+
+
+/*
+ * When you have a list that you want to add to this list, these
+ * are the methods to use. It's important to note that the arguments
+ * will NOT be altered - which is why this is called the 'copy' as
+ * opposed to the 'splice'.
+ */
+void CKStringList::copyToFront( CKStringList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data, but backwards because
+	 * I'll be putting these new nodes on the *front* of the list, and
+	 * if I go through the source in the forward order, I'll reverse the
+	 * order of the elements in the source as I add them. So I'll go
+	 * backwards... no biggie...
+	 */
+	for (CKStringNode *src = aList.mTail; src != NULL; src = src->mPrev) {
+		// first, make a copy of this guy
+		CKStringNode	*node = new CKStringNode(*src, NULL, mHead);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKStringList::copyToFront(CKStringList &) - a "
+				"new string node could not be created for the string: '" <<
+				src << "' and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the front of the list
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKStringList::copyToFront( const CKStringList & aList )
+{
+	copyToFront((CKStringList &)aList);
+}
+
+
+void CKStringList::copyToFront( CKStringList & aList ) const
+{
+	((CKStringList *)this)->copyToFront(aList);
+}
+
+
+void CKStringList::copyToFront( const CKStringList & aList ) const
+{
+	((CKStringList *)this)->copyToFront((CKStringList &)aList);
+}
+
+
+void CKStringList::copyToEnd( CKStringList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data. I'll be putting these new
+	 * nodes on the *end* of the list so the order is preserved.
+	 */
+	for (CKStringNode *src = aList.mHead; src != NULL; src = src->mNext) {
+		// first, make a copy of this guy
+		CKStringNode	*node = new CKStringNode(*src, mTail, NULL);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKStringList::copyToEnd(CKStringList &) - a "
+				"new string node could not be created for the node: " <<
+				src << " and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the end of the list
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKStringList::copyToEnd( const CKStringList & aList )
+{
+	copyToEnd((CKStringList &)aList);
+}
+
+
+void CKStringList::copyToEnd( CKStringList & aList ) const
+{
+	((CKStringList *)this)->copyToEnd(aList);
+}
+
+
+void CKStringList::copyToEnd( const CKStringList & aList ) const
+{
+	((CKStringList *)this)->copyToEnd((CKStringList &)aList);
+}
+
+
+/*
+ * When you have a list that you want to merge into this list, these
+ * are the methods to use. It's important to note that the argument
+ * lists will be EMPTIED - which is why this is called the 'splice'
+ * as opposed to the 'copy'.
+ */
+void CKStringList::spliceOnFront( CKStringList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the head of this list
+	if (mHead == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mHead->mPrev = aList.mTail;
+		if (aList.mTail != NULL) {
+			aList.mTail->mNext = mHead;
+		}
+		if (aList.mHead != NULL) {
+			mHead = aList.mHead;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKStringList::spliceOnFront( const CKStringList & aList )
+{
+	spliceOnFront((CKStringList &)aList);
+}
+
+
+void CKStringList::spliceOnFront( CKStringList & aList ) const
+{
+	((CKStringList *)this)->spliceOnFront(aList);
+}
+
+
+void CKStringList::spliceOnFront( const CKStringList & aList ) const
+{
+	((CKStringList *)this)->spliceOnFront((CKStringList &)aList);
+}
+
+
+void CKStringList::spliceOnEnd( CKStringList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the end of this list
+	if (mTail == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mTail->mNext = aList.mHead;
+		if (aList.mHead != NULL) {
+			aList.mHead->mPrev = mTail;
+		}
+		if (aList.mTail != NULL) {
+			mTail = aList.mTail;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKStringList::spliceOnEnd( const CKStringList & aList )
+{
+	spliceOnEnd((CKStringList &)aList);
+}
+
+
+void CKStringList::spliceOnEnd( CKStringList & aList ) const
+{
+	((CKStringList *)this)->spliceOnEnd(aList);
+}
+
+
+void CKStringList::spliceOnEnd( const CKStringList & aList ) const
+{
+	((CKStringList *)this)->spliceOnEnd((CKStringList &)aList);
+}
+
+
+/*
+ * This method removes the specified node from this list - actually,
+ * it's just guaranteed to remove it from the list it's in as the
+ * erasure simply removes this node from it's list and then deletes
+ * it.
+ */
+void CKStringList::erase( CKStringNode * & aNode )
+{
+	if (aNode != NULL) {
+		// lock this list up assuming it's in our list
+		mMutex.lock();
+		// we need to see if we are removing the head or tail
+		if (aNode == mHead) {
+			mHead = aNode->getNext();
+		}
+		if (aNode == mTail) {
+			mTail = aNode->getPrev();
+		}
+		// next, we tell this guy to remove himself from the links
+		CKStringNode	*next = aNode->getNext();
+		aNode->removeFromList();
+		// and delete him
+		delete aNode;
+		aNode = next;
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+}
+
+
+void CKStringList::erase( CKStringNode * & aNode ) const
+{
+	((CKStringList *)this)->erase(aNode);
+}
+
+
+void CKStringList::erase( CKString & aString )
+{
+	erase(aString.mString);
+}
+
+
+void CKStringList::erase( const CKString & aString )
+{
+	erase((char *)aString.mString);
+}
+
+
+void CKStringList::erase( CKString & aString ) const
+{
+	((CKStringList *)this)->erase(aString.mString);
+}
+
+
+void CKStringList::erase( const CKString & aString ) const
+{
+	((CKStringList *)this)->erase((char *)aString.mString);
+}
+
+
+void CKStringList::erase( char *aCString )
+{
+	bool		error = false;
+
+	// first, make sure that we have something to do
+	if (!error) {
+		if (aCString == NULL) {
+			error = true;
+			// no need to throw an exception, just stop
+		}
+	}
+
+	// now we can scan all the elements in the list looking for matches
+	if (!error) {
+		// lock this list up against all changes
+		mMutex.lock();
+
+		// ...and scan through the list looking for matches to delete
+		CKStringNode	*n = mHead;
+		while (n != NULL) {
+			if ((*n) == aCString) {
+				// we need to see if we are removing the head or tail
+				if (n == mHead) {
+					mHead = n->getNext();
+				}
+				if (n == mTail) {
+					mTail = n->getPrev();
+				}
+				// next, we tell this guy to remove himself from the links
+				CKStringNode	*next = n->getNext();
+				n->removeFromList();
+				// and delete him
+				delete n;
+				// get the next node in the list
+				n = next;
+			} else {
+				// move to the next node to check
+				n = n->getNext();
+			}
+		}
+
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+}
+
+
+void CKStringList::erase( const char *aCString )
+{
+	erase((char *)aCString);
+}
+
+
+void CKStringList::erase( char *aCString ) const
+{
+	((CKStringList *)this)->erase(aCString);
+}
+
+
+void CKStringList::erase( const char *aCString ) const
+{
+	((CKStringList *)this)->erase((char *)aCString);
+}
+
+
+void CKStringList::erase( std::string & anSTLString )
+{
+	erase(anSTLString.c_str());
+}
+
+
+void CKStringList::erase( const std::string & anSTLString )
+{
+	erase((char *)anSTLString.c_str());
+}
+
+
+void CKStringList::erase( std::string & anSTLString ) const
+{
+	((CKStringList *)this)->erase(anSTLString.c_str());
+}
+
+
+void CKStringList::erase( const std::string & anSTLString ) const
+{
+	((CKStringList *)this)->erase((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method is useful in that it will tell us if this list
+ * contains the provided string and that is a nice test if we
+ * want to be making list of unique elements.
+ */
+bool CKStringList::contains( CKString & aString )
+{
+	return contains(aString.mString);
+}
+
+
+bool CKStringList::contains( const CKString & aString )
+{
+	return contains((char *)aString.mString);
+}
+
+
+bool CKStringList::contains( CKString & aString ) const
+{
+	return ((CKStringList *)this)->contains(aString.mString);
+}
+
+
+bool CKStringList::contains( const CKString & aString ) const
+{
+	return ((CKStringList *)this)->contains((char *)aString.mString);
+}
+
+
+bool CKStringList::contains( char *aCString )
+{
+	bool		error = false;
+	bool		gotIt = false;
+
+	// first, make sure that we have something to do
+	if (!error) {
+		if (aCString == NULL) {
+			error = true;
+			// no need to throw an exception, just stop
+		}
+	}
+
+	// now we can scan all the elements in the list looking for a match
+	if (!error) {
+		// lock this list up against all changes
+		mMutex.lock();
+
+		// ...and scan through the list looking for the first match
+		CKStringNode	*n = mHead;
+		while (!gotIt && (n != NULL)) {
+			if ((*n) == aCString) {
+				gotIt = true;
+			} else {
+				// move to the next node to check
+				n = n->getNext();
+			}
+		}
+
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+
+	return gotIt;
+}
+
+
+bool CKStringList::contains( const char *aCString )
+{
+	return contains((char *)aCString);
+}
+
+
+bool CKStringList::contains( char *aCString ) const
+{
+	return ((CKStringList *)this)->contains(aCString);
+}
+
+
+bool CKStringList::contains( const char *aCString ) const
+{
+	return ((CKStringList *)this)->contains((char *)aCString);
+}
+
+
+bool CKStringList::contains( std::string & anSTLString )
+{
+	return contains(anSTLString.c_str());
+}
+
+
+bool CKStringList::contains( const std::string & anSTLString )
+{
+	return contains((char *)anSTLString.c_str());
+}
+
+
+bool CKStringList::contains( std::string & anSTLString ) const
+{
+	return ((CKStringList *)this)->contains(anSTLString.c_str());
+}
+
+
+bool CKStringList::contains( const std::string & anSTLString ) const
+{
+	return ((CKStringList *)this)->contains((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method is useful in that it will locate the CKStringNode
+ * in the list, if it exists, that matches the passed-in string.
+ * This is a nice way to find a location in the list.
+ */
+CKStringNode *CKStringList::find( CKString & aString )
+{
+	return find(aString.mString);
+}
+
+
+CKStringNode *CKStringList::find( const CKString & aString )
+{
+	return find((char *)aString.mString);
+}
+
+
+CKStringNode *CKStringList::find( CKString & aString ) const
+{
+	return ((CKStringList *)this)->find(aString.mString);
+}
+
+
+CKStringNode *CKStringList::find( const CKString & aString ) const
+{
+	return ((CKStringList *)this)->find((char *)aString.mString);
+}
+
+
+CKStringNode *CKStringList::find( char *aCString )
+{
+	bool			error = false;
+	CKStringNode	*retval = NULL;
+
+	// first, make sure that we have something to do
+	if (!error) {
+		if (aCString == NULL) {
+			error = true;
+			// no need to throw an exception, just stop
+		}
+	}
+
+	// now we can scan all the elements in the list looking for a match
+	if (!error) {
+		// lock this list up against all changes
+		mMutex.lock();
+
+		// ...and scan through the list looking for the first match
+		CKStringNode	*n = mHead;
+		while (n != NULL) {
+			if ((*n) == aCString) {
+				retval = n;
+				break;
+			} else {
+				// move to the next node to check
+				n = n->getNext();
+			}
+		}
+
+		// finally, we can unlock the list
+		mMutex.unlock();
+	}
+
+	return retval;
+}
+
+
+CKStringNode *CKStringList::find( const char *aCString )
+{
+	return find((char *)aCString);
+}
+
+
+CKStringNode *CKStringList::find( char *aCString ) const
+{
+	return ((CKStringList *)this)->find(aCString);
+}
+
+
+CKStringNode *CKStringList::find( const char *aCString ) const
+{
+	return ((CKStringList *)this)->find((char *)aCString);
+}
+
+
+CKStringNode *CKStringList::find( std::string & anSTLString )
+{
+	return find(anSTLString.c_str());
+}
+
+
+CKStringNode *CKStringList::find( const std::string & anSTLString )
+{
+	return find((char *)anSTLString.c_str());
+}
+
+
+CKStringNode *CKStringList::find( std::string & anSTLString ) const
+{
+	return ((CKStringList *)this)->find(anSTLString.c_str());
+}
+
+
+CKStringNode *CKStringList::find( const std::string & anSTLString ) const
+{
+	return ((CKStringList *)this)->find((char *)anSTLString.c_str());
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * This method checks to see if the two CKStringLists are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKStringList::operator==( CKStringList & anOther )
+{
+	bool		equal = true;
+
+	// first, lock up both lists against changes
+	mMutex.lock();
+	anOther.mMutex.lock();
+
+	/*
+	 * We need to compare each element in the list as strings and
+	 * NOT as string nodes as the pointers will never be the same
+	 * but the data will.
+	 */
+	CKStringNode	*me = mHead;
+	CKStringNode	*him = anOther.mHead;
+	while (equal) {
+		// see if we're at the end
+		if ((me == NULL) && (him == NULL)) {
+			break;
+		}
+
+		// see if the two lists are of different lengths
+		if (((me == NULL) && (him != NULL)) ||
+			((me != NULL) && (him == NULL))) {
+			equal = false;
+			break;
+		}
+
+		// compare the values by data contents only
+		if (!me->CKString::operator==(*(CKString*)him)) {
+			equal = false;
+			break;
+		}
+
+		// now move to the next point in each list
+		me = me->mNext;
+		him = him->mNext;
+	}
+
+	// now we're OK to unlock these lists and let them be free
+	anOther.mMutex.unlock();
+	mMutex.unlock();
+
+	return equal;
+}
+
+
+bool CKStringList::operator==( const CKStringList & anOther )
+{
+	return this->operator==((CKStringList &) anOther);
+}
+
+
+bool CKStringList::operator==( CKStringList & anOther ) const
+{
+	return ((CKStringList *)this)->operator==(anOther);
+}
+
+
+bool CKStringList::operator==( const CKStringList & anOther ) const
+{
+	return ((CKStringList *)this)->operator==((CKStringList &) anOther);
+}
+
+
+/*
+ * This method checks to see if the two CKStringLists are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKStringList::operator!=( CKStringList & anOther )
+{
+	return !(this->operator==(anOther));
+}
+
+
+bool CKStringList::operator!=( const CKStringList & anOther )
+{
+	return !(this->operator==((CKStringList &) anOther));
+}
+
+
+bool CKStringList::operator!=( CKStringList & anOther ) const
+{
+	return !(((CKStringList *)this)->operator==(anOther));
+}
+
+
+bool CKStringList::operator!=( const CKStringList & anOther ) const
+{
+	return !(((CKStringList *)this)->operator==((CKStringList &) anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKStringList::toString()
+{
+	// lock this guy up so he doesn't change
+	mMutex.lock();
+
+	CKString		retval = "[";
+	// put each data point out on the output
+	for (CKStringNode *node = mHead; node != NULL; node = node->mNext) {
+		retval += node->CKString::toString();
+		retval += "\n";
+	}
+	retval += "]";
+
+	// unlock him now
+	mMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * Setting the head or the tail is a bit dicey and so we're not
+ * going to let just anyone change these guys.
+ */
+void CKStringList::setHead( CKStringNode *aNode )
+{
+	mHead = aNode;
+}
+
+
+void CKStringList::setTail( CKStringNode *aNode )
+{
+	mTail = aNode;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKStringList & aList )
+{
+	aStream << aList.toString();
 
 	return aStream;
 }

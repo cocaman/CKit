@@ -5,7 +5,7 @@
  *                      implemented and therefore sets the contract that needs
  *                      to be adhered to for all delivery channels.
  *
- * $Id: CKMailDelivery.cpp,v 1.7 2004/09/20 16:19:35 drbob Exp $
+ * $Id: CKMailDelivery.cpp,v 1.8 2004/09/22 12:08:31 drbob Exp $
  */
 
 //	System Headers
@@ -109,7 +109,7 @@ bool CKMailDelivery::readyToDeliverMessages()
  */
 bool CKMailDelivery::deliver( const CKMailMessage & aMsg,
 							  bool aReadReceipt,
-							  const std::vector<CKString> & aPvtRecipients )
+							  const CKStringList & aPvtRecipients )
 {
 	return false;
 }

@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.8 2004/09/20 16:19:33 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.9 2004/09/22 12:08:30 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -269,7 +269,7 @@ class CKIRCProtocol
 		 * If you want to make a copy, do so, but otherwise, leave this guy
 		 * alone.
 		 */
-		const std::list<CKString>	*getChannelList() const;
+		const CKStringList	*getChannelList() const;
 		/*
 		 * This method returns a pointer to the listener thread that is
 		 * going to be listening to the incoming data from the IRC server.
@@ -443,7 +443,7 @@ class CKIRCProtocol
 		 * as a copy and not as an assumption of the memory management of
 		 * the elements of the list.
 		 */
-		void setChannelList( const std::list<CKString> & aList );
+		void setChannelList( const CKStringList & aList );
 		/*
 		 * This method sets the pointer to this instance's listener to the
 		 * passed-in value. The memory management of this listener will then
@@ -602,7 +602,7 @@ class CKIRCProtocol
 		CKTelnetConnection			mCommPort;
 		/*
 		 * This is used in those circumstances where we really need to only
-		 * have one thread working on the comm port at one time. Most 
+		 * have one thread working on the comm port at one time. Most
 		 * notably these times are when sending data so that messages aren't
 		 * garbled.
 		 */
@@ -632,7 +632,7 @@ class CKIRCProtocol
 		 * have already joined. Each new connection will need to reset this
 		 * list as it isn't persistent on the server.
 		 */
-		std::list<CKString>			mChannelList;
+		CKStringList				mChannelList;
 		// ...and this is the mutex for it to control access
 		CKFWMutex					mChannelListMutex;
 		/*

@@ -12,7 +12,7 @@
  *                            set that as the default prior to sending any
  *                            messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.cpp,v 1.7 2004/09/20 16:19:36 drbob Exp $
+ * $Id: CKMailDeliverySystem.cpp,v 1.8 2004/09/22 12:08:32 drbob Exp $
  */
 
 //	System Headers
@@ -135,7 +135,7 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 {
 	bool		error = false;
 
-	std::vector<CKString>	list;
+	CKStringList	list;
 	error = !cDefaultDelivery->deliver( aMsg, aReadReceipt, list );
 
 	return !error;
@@ -143,7 +143,7 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 
 
 bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-					const std::vector<CKString> & aPvtRecipients )
+									const CKStringList & aPvtRecipients )
 {
 	bool		error = false;
 
@@ -154,8 +154,8 @@ bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceip
 
 
 bool CKMailDeliverySystem::deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-					const std::vector<CKString> & aPvtRecipients,
-					CKMailDelivery & aChannel )
+									const CKStringList & aPvtRecipients,
+									CKMailDelivery & aChannel )
 {
 	bool		error = false;
 

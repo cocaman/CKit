@@ -6,7 +6,7 @@
  *                    communications. It's used in the Mail Delivery system
  *                    as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.h,v 1.7 2004/09/20 16:19:39 drbob Exp $
+ * $Id: CKSMTPDelivery.h,v 1.8 2004/09/22 12:08:34 drbob Exp $
  */
 #ifndef __CKSMTPDELIVERY_H
 #define __CKSMTPDELIVERY_H
@@ -136,7 +136,7 @@ class CKSMTPDelivery :
 		 */
 		virtual bool deliver( const CKMailMessage & aMsg,
 							  bool aReadReceipt,
-							  const std::vector<CKString> & aPvtRecipients );
+							  const CKStringList & aPvtRecipients );
 
 		/********************************************************
 		 *

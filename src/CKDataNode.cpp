@@ -9,11 +9,12 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.14 2004/09/20 16:19:21 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.15 2004/09/22 12:08:19 drbob Exp $
  */
 
 //	System Headers
 #include <sstream>
+#include <strings.h>
 
 //	Third-Party Headers
 
@@ -477,9 +478,9 @@ void CKDataNode::removeChild( const CKDataNode *aNode )
  * iterate over the children assuming they all have distinct names
  * as would be the case in most data sets.
  */
-std::vector<CKString> CKDataNode::getChildNames()
+CKStringList CKDataNode::getChildNames()
 {
-	std::vector<CKString>	retval;
+	CKStringList	retval;
 
 	// lock up the list to be safe
 	mKidsMutex.lock();
@@ -488,7 +489,7 @@ std::vector<CKString> CKDataNode::getChildNames()
 		std::list<CKDataNode*>::iterator	i;
 		for (i = mKids.begin(); i != mKids.end(); ++i) {
 			if ((*i) != NULL) {
-				retval.push_back((*i)->mName);
+				retval.addToEnd((*i)->mName);
 			}
 		}
 	}
@@ -617,8 +618,8 @@ CKVariant *CKDataNode::getVarAtPath( const CKString & aPath )
 	}
 
 	// next, turn the path into a vector of strings
-	std::vector<CKString>	steps;
-	int						stepCnt = 0;
+	CKStringList	steps;
+	int				stepCnt = 0;
 	if (!error) {
 		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
@@ -646,7 +647,7 @@ CKVariant *CKDataNode::getVarAtPath( const CKString & aPath )
  * you don't really want to make a single string just to store
  * the value.
  */
-CKVariant *CKDataNode::getVarAtPath( const std::vector<CKString> & aSteps )
+CKVariant *CKDataNode::getVarAtPath( const CKStringList & aSteps )
 {
 	bool		error = false;
 	CKVariant	*retval = NULL;
@@ -661,7 +662,7 @@ CKVariant *CKDataNode::getVarAtPath( const std::vector<CKString> & aSteps )
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::getVarAtPath(const std::vector<CKString> &) "
+			msg << "CKDataNode::getVarAtPath(const CKStringList &) "
 				"- the path had insufficient steps to create a valid path. Please "
 				"make sure that a valid path is passed to this method.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -734,8 +735,8 @@ void CKDataNode::putVarAtPath( const CKString & aPath, const CKVariant & aValue 
 	}
 
 	// next, turn the path into a vector of strings
-	std::vector<CKString>	steps;
-	int						stepCnt = 0;
+	CKStringList	steps;
+	int				stepCnt = 0;
 	if (!error) {
 		steps = pathToSteps(aPath);
 		stepCnt = steps.size();
@@ -762,7 +763,7 @@ void CKDataNode::putVarAtPath( const CKString & aPath, const CKVariant & aValue 
  * like a vector and you don't want to put it all together only
  * to have this method break it up.
  */
-void CKDataNode::putVarAtPath( const std::vector<CKString> & aSteps,
+void CKDataNode::putVarAtPath( const CKStringList & aSteps,
 							   const CKVariant & aValue )
 {
 	bool		error = false;
@@ -777,7 +778,7 @@ void CKDataNode::putVarAtPath( const std::vector<CKString> & aSteps,
 		if (stepCnt < 1) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKDataNode::putVarAtPath(const std::vector<CKString> &, "
+			msg << "CKDataNode::putVarAtPath(const CKStringList &, "
 				"const CKVariant &) - the path had insufficient steps to create "
 				"a valid path. Please make sure that a valid path is passed to "
 				"this method.";
@@ -797,7 +798,7 @@ void CKDataNode::putVarAtPath( const std::vector<CKString> & aSteps,
 						error = true;
 						std::ostringstream	msg;
 						msg << "CKDataNode::putVarAtPath(const "
-							"std::vector<CKString> &, const CKVariant &) - "
+							"CKStringList &, const CKVariant &) - "
 							"while trying to extend the tree to include "
 							"the step '" << aSteps[step] << "' an error occurred "
 							"and that step could not be created. Please check the "
@@ -830,12 +831,12 @@ void CKDataNode::putVarAtPath( const std::vector<CKString> & aSteps,
  * 'up' the tree to the root, building accumulating the steps
  * along the way.
  */
-std::vector<CKString> CKDataNode::getSteps() const
+CKStringList CKDataNode::getSteps() const
 {
-	std::vector<CKString>	retval;
+	CKStringList	retval;
 
 	// malk up the tree inserting names at the front
-	retval.push_back(mName);
+	retval.addToEnd(mName);
 	CKDataNode *n = mParent;
 	while (n != NULL) {
 		/*
@@ -845,7 +846,7 @@ std::vector<CKString> CKDataNode::getSteps() const
 		 * the path - it's not necessary in that case.
 		 */
 		if ((n->mParent != NULL) || (n->mName != "")) {
-			retval.insert(retval.begin(), n->mName);
+			retval.addToFront(n->mName);
 		}
 		// ...and move to the parent of this node
 		n = n->mParent;
@@ -865,7 +866,7 @@ CKString CKDataNode::getPath() const
 	CKString		retval;
 
 	// first, get the step in the path
-	std::vector<CKString>	steps = getSteps();
+	CKStringList	steps = getSteps();
 	if (steps.size() > 0) {
 		// now convert it to a path with proper escaping
 		retval = stepsToPath(steps);
@@ -883,11 +884,11 @@ CKString CKDataNode::getPath() const
  * path escaped by double-quotes will be kept intact. This is the
  * way for a component of the path to include a '/' character.
  */
-std::vector<CKString> CKDataNode::pathToSteps( const CKString & aPath )
+CKStringList CKDataNode::pathToSteps( const CKString & aPath )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
-	bool					done = false;
+	bool			error = false;
+	CKStringList	retval;
+	bool			done = false;
 
 	// first, strip any leading or trailing '/' characters
 	CKString		cleanPath = aPath;
@@ -904,8 +905,8 @@ std::vector<CKString> CKDataNode::pathToSteps( const CKString & aPath )
 	}
 
 	// next, convert the path into a series of raw steps
-	std::vector<CKString>	raw;
-	int							rawCnt = 0;
+	CKStringList	raw;
+	int				rawCnt = 0;
 	if (!error && !done) {
 		raw = parseIntoChunks(cleanPath, "/");
 		rawCnt = raw.size();
@@ -938,10 +939,10 @@ std::vector<CKString> CKDataNode::pathToSteps( const CKString & aPath )
 					}
 				}
 				// finally, add it to the path steps
-				retval.push_back(comp);
+				retval.addToEnd(comp);
 			} else {
 				// not escaped, so just add it
-				retval.push_back(raw[i]);
+				retval.addToEnd(raw[i]);
 			}
 		}
 	}
@@ -956,15 +957,15 @@ std::vector<CKString> CKDataNode::pathToSteps( const CKString & aPath )
  * that is properly escaped for the presence of '/' characters in
  * any one of the steps.
  */
-CKString CKDataNode::stepsToPath( const std::vector<CKString> & aPath )
+CKString CKDataNode::stepsToPath( const CKStringList & aPath )
 {
 	CKString		retval;
 
 	// loop over all the elements adding each as necessary
-	std::vector<CKString>::const_iterator	i;
-	for (i = aPath.begin(); i != aPath.end(); ++i) {
+	CKStringNode		*i = NULL;
+	for (i = aPath.getHead(); i != NULL; i = i->getNext()) {
 		// see if we need a delimiter between this and the next step
-		if (i != aPath.begin()) {
+		if (i->getPrev() != NULL) {
 			retval.append(1, '/');
 		}
 
@@ -991,10 +992,10 @@ CKString CKDataNode::stepsToPath( const std::vector<CKString> & aPath )
  * method does a great job of getting a unique vector of names
  * of all the leaf nodes under it, and all it's children.
  */
-std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
+CKStringList CKDataNode::getUniqueLeafNodeNames()
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1005,7 +1006,7 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNames();
+				CKStringList	part = (*i)->getUniqueLeafNodeNames();
 				if (part.size() < 1) {
 					// unlock the list of kids
 					mKidsMutex.unlock();
@@ -1023,11 +1024,10 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
 					 * OK... we have some leaf nodes from the child.
 					 * Let's add them to our list if they are unique.
 					 */
-					unsigned int	cnt = part.size();
-					for (unsigned int c = 0; c < cnt; c++) {
-						if (find(retval.begin(), retval.end(), part[c])
-								== retval.end()) {
-							retval.push_back(part[c]);
+					CKStringNode	*c = NULL;
+					for (c = part.getHead(); c != NULL; c = c->getNext()) {
+						if (!retval.contains(*c)) {
+							retval.addToEnd(*c);
 						}
 					}
 				}
@@ -1037,7 +1037,7 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
 			 * We are a leaf node! Then put our name in the vector
 			 * and that's all we have to do.
 			 */
-			retval.push_back(mName);
+			retval.addToEnd(mName);
 		}
 		// unlock the list of kids
 		mKidsMutex.unlock();
@@ -1054,11 +1054,10 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNames()
  * it allows us to ask the question: Who needs 'price'? and have
  * a list of node names that is returned.
  */
-std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
-												const CKString & aVarName )
+CKStringList CKDataNode::getUniqueLeafNodeNamesWithoutVar( const CKString & aVarName )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1069,18 +1068,17 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
+				CKStringList	part = (*i)->getUniqueLeafNodeNamesWithoutVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
 					 * variable. Let's add them to our list if they
 					 * are unique.
 					 */
-					unsigned int	cnt = part.size();
-					for (unsigned int c = 0; c < cnt; c++) {
-						if (find(retval.begin(), retval.end(), part[c])
-								== retval.end()) {
-							retval.push_back(part[c]);
+					CKStringNode	*c = NULL;
+					for (c = part.getHead(); c != NULL; c = c->getNext()) {
+						if (!retval.contains(*c)) {
+							retval.addToEnd(*c);
 						}
 					}
 				}
@@ -1091,7 +1089,7 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
 			 * we DO NOT have the variable named 'aVarName' in our list.
 			 */
 			if (getVar(aVarName) == NULL) {
-				retval.push_back(mName);
+				retval.addToEnd(mName);
 			}
 		}
 		// unlock the list of kids
@@ -1109,11 +1107,10 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithoutVar(
  * it allows us to ask the question: Who has 'price'? and have
  * a list of node names that is returned.
  */
-std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithVar(
-												const CKString & aVarName )
+CKStringList CKDataNode::getUniqueLeafNodeNamesWithVar( const CKString & aVarName )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// OK, we need to look and see if we are a leaf node
 	if (!error) {
@@ -1124,18 +1121,17 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithVar(
 			// ask all the kids for their unique leaf node names
 			std::list<CKDataNode*>::iterator	i;
 			for (i = mKids.begin(); i != mKids.end(); ++i) {
-				std::vector<CKString>	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
+				CKStringList	part = (*i)->getUniqueLeafNodeNamesWithVar(aVarName);
 				if (part.size() >= 1) {
 					/*
 					 * OK... we have some leaf nodes that have this
 					 * variable. Let's add them to our list if they
 					 * are unique.
 					 */
-					unsigned int	cnt = part.size();
-					for (unsigned int c = 0; c < cnt; c++) {
-						if (find(retval.begin(), retval.end(), part[c])
-								== retval.end()) {
-							retval.push_back(part[c]);
+					CKStringNode	*c = NULL;
+					for (c = part.getHead(); c != NULL; c = c->getNext()) {
+						if (!retval.contains(*c)) {
+							retval.addToEnd(*c);
 						}
 					}
 				}
@@ -1146,7 +1142,7 @@ std::vector<CKString>	CKDataNode::getUniqueLeafNodeNamesWithVar(
 			 * we have the variable named 'aVarName' in our list.
 			 */
 			if (getVar(aVarName) != NULL) {
-				retval.push_back(mName);
+				retval.addToEnd(mName);
 			}
 		}
 		// unlock the list of kids
@@ -1568,11 +1564,11 @@ std::list<CKDataNode*> *CKDataNode::getKids()
  * the return value is created on the stack, the user needs to
  * save it if they want it to stay around.
  */
-std::vector<CKString> CKDataNode::parseIntoChunks( const CKString & aString,
-												   const CKString & aDelim )
+CKStringList CKDataNode::parseIntoChunks( const CKString & aString,
+										  const CKString & aDelim )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// first, see if we have anything to do
 	if (!error) {
@@ -1623,10 +1619,10 @@ std::vector<CKString> CKDataNode::parseIntoChunks( const CKString & aString,
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back(CKString(""));
+			retval.addToEnd(CKString());
 		} else {
 			// pick off the substring up to the delimiter
-			retval.push_back(buff.substr(0, pos));
+			retval.addToEnd(buff.substr(0, pos));
 			// ...and then delete them from the buffer
 			buff.erase(0, pos);
 		}
@@ -1636,7 +1632,7 @@ std::vector<CKString> CKDataNode::parseIntoChunks( const CKString & aString,
 	}
 	// if we didn't error out, then add the remaining buff to the end
 	if (!error) {
-		retval.push_back(buff);
+		retval.addToEnd(buff);
 	}
 
 	return retval;
@@ -1651,6 +1647,1115 @@ std::vector<CKString> CKDataNode::parseIntoChunks( const CKString & aString,
 std::ostream & operator<<( std::ostream & aStream, const CKDataNode & aNode )
 {
 	aStream << aNode.toString();
+
+	return aStream;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize the data nodes. This is nice in that it's easy to use, easy
+ * to deal with, and the destructor takes care of cleaning up the data nodes
+ * itself.
+ *
+ * We base it off the data node so that it appears to be a normal nodein
+ * all regards - save the ability to exist in a doubly-linked list.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKDataNodeListElem::CKDataNodeListElem() :
+	CKDataNode(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+}
+
+
+/*
+ * This is a "promotion" constructor that takes a data point and
+ * creates a new data point node based on the data in that point.
+ * This is important because it'll be an easy way to add data
+ * points to the list.
+ */
+CKDataNodeListElem::CKDataNodeListElem( const CKDataNode & anOther,
+					CKDataNodeListElem *aPrev,
+					CKDataNodeListElem *aNext ) :
+	CKDataNode(anOther),
+	mPrev(aPrev),
+	mNext(aNext)
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKDataNodeListElem::CKDataNodeListElem( const CKDataNodeListElem & anOther ) :
+	CKDataNode(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+	// let the operator==() take care of this for me
+	*this = anOther;
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKDataNodeListElem::~CKDataNodeListElem()
+{
+	// the super takes are of deleting all but the pointers
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKDataNodeListElem & CKDataNodeListElem::operator=( const CKDataNodeListElem & anOther )
+{
+	// start by letting the super do it's copying
+	CKDataNode::operator=(anOther);
+	// just copy in all the values from the other
+	mPrev = anOther.mPrev;
+	mNext = anOther.mNext;
+
+	return *this;
+}
+
+
+/*
+ * At times it's also nice to be able to set a data point to this
+ * node so that there's not a ton of casting in the code.
+ */
+CKDataNodeListElem & CKDataNodeListElem::operator=( const CKDataNode & anOther )
+{
+	// just copy in the node value and leave the pointers alone
+	CKDataNode::operator=(anOther);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the simple setters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+void CKDataNodeListElem::setPrev( CKDataNodeListElem *aNode )
+{
+	mPrev = aNode;
+}
+
+
+void CKDataNodeListElem::setNext( CKDataNodeListElem *aNode )
+{
+	mNext = aNode;
+}
+
+
+/*
+ * These are the simple getters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+CKDataNodeListElem *CKDataNodeListElem::getPrev()
+{
+	return mPrev;
+}
+
+
+CKDataNodeListElem *CKDataNodeListElem::getNext()
+{
+	return mNext;
+}
+
+
+/*
+ * This method is used to 'unlink' the node from the list it's in.
+ * This will NOT delete the node, merely take it out the the list
+ * and now it becomes the responsibility of the caller to delete
+ * this node, or add him to another list.
+ */
+void CKDataNodeListElem::removeFromList()
+{
+	// first, point the next's "prev" to the prev
+	if (mNext != NULL) {
+		mNext->mPrev = mPrev;
+	}
+	// next, point the prev's "next" to the next
+	if (mPrev != NULL) {
+		mPrev->mNext = mNext;
+	}
+	// finally, I'm not linked to *anyone* anymore
+	mPrev = NULL;
+	mNext = NULL;
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * This method checks to see if the two CKDataNodeListElems are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKDataNodeListElem::operator==( const CKDataNodeListElem & anOther ) const
+{
+	bool		equal = true;
+
+	// first, see if the strings are equal
+	if (equal) {
+		if (!CKDataNode::operator==(anOther)) {
+			equal = false;
+		}
+	}
+	// ...now check the pointers
+	if (equal) {
+		if ((mPrev != anOther.mPrev) ||
+			(mNext != anOther.mNext)) {
+			equal = false;
+		}
+	}
+
+	return equal;
+}
+
+
+/*
+ * This method checks to see if the two CKDataNodeListElems are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKDataNodeListElem::operator!=( const CKDataNodeListElem & anOther ) const
+{
+	return !(this->operator==(anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKDataNodeListElem::toString() const
+{
+	// put everything in between angle brackets to make it look nice
+	CKString	retval = "<DataNode=";
+	retval.append(CKDataNode::toString()).append(", ");
+	char	buff[80];
+	bzero(buff, 80);
+	snprintf(buff, 79, "Prev=%x, Next=%x>", (unsigned int)mPrev,
+			(unsigned int)mNext);
+	retval.append(buff);
+
+	return retval;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKDataNodeListElem & aNode )
+{
+	aStream << aNode.toString();
+
+	return aStream;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKDataNode objects. It
+ * is organized as a doubly-linked list of CKDataNodeListElems and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKDataNodeList::CKDataNodeList() :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKDataNodeList::CKDataNodeList( CKDataNodeList & anOther ) :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+	// let the operator==() take care of this for me
+	*this = anOther;
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKDataNodeList::~CKDataNodeList()
+{
+	// simply clear out the list and we're done.
+	clear();
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKDataNodeList & CKDataNodeList::operator=( CKDataNodeList & anOther )
+{
+	// first, clear out anything we might have right now
+	clear();
+
+	// now, do a deep copy of the source list
+	copyToEnd(anOther);
+
+	return *this;
+}
+
+
+CKDataNodeList & CKDataNodeList::operator=( const CKDataNodeList & anOther )
+{
+	this->operator=((CKDataNodeList &) anOther);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the easiest ways to get at the head and tail of this
+ * list. After that, the CKDataNodeListElem's getPrev() and getNext()
+ * do a good job of moving you around the list.
+ */
+CKDataNodeListElem *CKDataNodeList::getHead()
+{
+	return mHead;
+}
+
+
+CKDataNodeListElem *CKDataNodeList::getHead() const
+{
+	return mHead;
+}
+
+
+CKDataNodeListElem *CKDataNodeList::getTail()
+{
+	return mTail;
+}
+
+
+CKDataNodeListElem *CKDataNodeList::getTail() const
+{
+	return mTail;
+}
+
+
+/*
+ * Because there may be times that the user wants to lock us up
+ * for change, we're going to expose this here so it's easy for them
+ * to iterate, for example.
+ */
+void CKDataNodeList::lock()
+{
+	mMutex.lock();
+}
+
+
+void CKDataNodeList::lock() const
+{
+	((CKDataNodeList *)this)->mMutex.lock();
+}
+
+
+void CKDataNodeList::unlock()
+{
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::unlock() const
+{
+	((CKDataNodeList *)this)->mMutex.unlock();
+}
+
+
+/*
+ * This method is a simple indexing operator so that we can easily
+ * get the individual strings in the list. If the argument
+ * is -1, then the default is to get the *LAST* non-NULL
+ * string in the list.
+ */
+CKDataNode & CKDataNodeList::operator[]( int aPosition )
+{
+	CKDataNodeListElem	*node = NULL;
+
+	// first, see if the arg is -1, and if so, return the last one
+	if (aPosition == -1) {
+		node = mTail;
+	} else {
+		// first, lock up this guy against changes
+		mMutex.lock();
+		// all we need to do is count until we get there or the end
+		int		cnt = 0;
+		for (node = mHead; (cnt < aPosition) && (node != NULL); node = node->mNext) {
+			cnt++;
+		}
+		// now we can release the lock
+		mMutex.unlock();
+	}
+
+	// make sure that we have the node we're interested in
+	if (node == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNodeList::operator[](int) - the requested index: " << aPosition <<
+			" was not available in the list. Please make sure that you are asking "
+			"for a valid index in the list.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return (CKDataNode &)(*node);
+}
+
+
+CKDataNode & CKDataNodeList::operator[]( int aPosition ) const
+{
+	return ((CKDataNodeList *)this)->operator[](aPosition);
+}
+
+
+/********************************************************
+ *
+ *                List Methods
+ *
+ ********************************************************/
+/*
+ * This method gets the size of the list in a thread-safe
+ * way. This means that it will block until it can get the
+ * lock on the data, so be warned.
+ */
+int CKDataNodeList::size()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// all we need to do is count them all up
+	int		cnt = 0;
+	for (CKDataNodeListElem *node = mHead; node != NULL; node = node->mNext) {
+		cnt++;
+	}
+	// now we can release the lock
+	mMutex.unlock();
+
+	return cnt;
+}
+
+
+int CKDataNodeList::size() const
+{
+	return ((CKStringList *)this)->size();
+}
+
+
+/*
+ * This is used to tell the caller if the list is empty. It's
+ * faster than checking for a size() == 0.
+ */
+bool CKDataNodeList::empty()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// all we need to do is count them all up
+	bool	empty = false;
+	if (mHead == NULL) {
+		empty = true;
+	}
+	// now we can release the lock
+	mMutex.unlock();
+
+	return empty;
+}
+
+
+bool CKDataNodeList::empty() const
+{
+	return ((CKStringList *)this)->empty();
+}
+
+
+/*
+ * This method clears out the entire list and deletes all it's
+ * contents. After this, all node pointers to nodes in this list
+ * will be pointing to nothing, so watch out.
+ */
+void CKDataNodeList::clear()
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+	// we need to delete the head as long as there is one
+	while (mHead != NULL) {
+		CKDataNodeListElem	*next = mHead->mNext;
+		delete mHead;
+		mHead = next;
+		if (mHead != NULL) {
+			mHead->mPrev = NULL;
+		}
+	}
+	// now make sure to reset the head and tail
+	mHead = NULL;
+	mTail = NULL;
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::clear() const
+{
+	((CKStringList *)this)->clear();
+}
+
+
+/*
+ * When I want to add a point to the front or back of the list,
+ * these are the simplest ways to do that. The passed-in data node
+ * is left untouched, and a copy is made of it at the proper point
+ * in the list.
+ */
+void CKDataNodeList::addToFront( CKDataNode & aNode )
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+
+	// we need to create a new list element based on this guy
+	CKDataNodeListElem	*node = new CKDataNodeListElem(aNode, NULL, mHead);
+	if (node == NULL) {
+		// first we need to release the lock
+		mMutex.unlock();
+		// now we can throw the exception
+		std::ostringstream	msg;
+		msg << "CKDataNodeList::addToFront(const CKDataNode &) - a "
+			"new data list node could not be created for the passed in node: " <<
+			aNode << " and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::addToFront( const CKDataNode & aNode )
+{
+	addToFront((CKDataNode &)aNode);
+}
+
+
+void CKDataNodeList::addToFront( CKDataNode & aNode ) const
+{
+	((CKDataNodeList *)this)->addToFront(aNode);
+}
+
+
+void CKDataNodeList::addToFront( const CKDataNode & aNode ) const
+{
+	((CKDataNodeList *)this)->addToFront((CKDataNode &)aNode);
+}
+
+
+void CKDataNodeList::addToEnd( CKDataNode & aNode )
+{
+	// first, lock up this guy against changes
+	mMutex.lock();
+
+	// we need to create a new list element based on this guy
+	CKDataNodeListElem	*node = new CKDataNodeListElem(aNode, mTail, NULL);
+	if (node == NULL) {
+		// first we need to release the lock
+		mMutex.unlock();
+		// now we can throw the exception
+		std::ostringstream	msg;
+		msg << "BBGDataPointList::addToEnd(const char *) - a "
+			"new data list element could not be created for the passed in node: " <<
+			aNode << " and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+
+	// now we can release the lock
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::addToEnd( const CKDataNode & aNode )
+{
+	addToEnd((CKDataNode &)aNode);
+}
+
+
+void CKDataNodeList::addToEnd( CKDataNode & aNode ) const
+{
+	((CKDataNodeList *)this)->addToEnd(aNode);
+}
+
+
+void CKDataNodeList::addToEnd( const CKDataNode & aNode ) const
+{
+	((CKDataNodeList *)this)->addToEnd((CKDataNode &)aNode);
+}
+
+
+/*
+ * These methods take control of the passed-in arguments and place
+ * them in the proper place in the list. This is different in that
+ * the control of the node is passed to the list, but that's why
+ * we've created them... to make it easy to add in nodes by just
+ * changing the links.
+ */
+void CKDataNodeList::putOnFront( CKDataNodeListElem *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		mMutex.lock();
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = NULL;
+		aNode->mNext = mHead;
+		if (mHead == NULL) {
+			mTail = aNode;
+		} else {
+			mHead->mPrev = aNode;
+		}
+		mHead = aNode;
+
+		// now we can release the lock
+		mMutex.unlock();
+	}
+}
+
+
+void CKDataNodeList::putOnFront( const CKDataNodeListElem *aNode )
+{
+	putOnFront((CKDataNodeListElem *)aNode);
+}
+
+
+void CKDataNodeList::putOnFront( CKDataNodeListElem *aNode ) const
+{
+	((CKDataNodeList *)this)->putOnFront(aNode);
+}
+
+
+void CKDataNodeList::putOnFront( const CKDataNodeListElem *aNode ) const
+{
+	((CKDataNodeList *)this)->putOnFront((CKDataNodeListElem *)aNode);
+}
+
+
+void CKDataNodeList::putOnEnd( CKDataNodeListElem *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		mMutex.lock();
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = mTail;
+		aNode->mNext = NULL;
+		if (mTail == NULL) {
+			mHead = aNode;
+		} else {
+			mTail->mNext = aNode;
+		}
+		mTail = aNode;
+
+		// now we can release the lock
+		mMutex.unlock();
+	}
+}
+
+
+void CKDataNodeList::putOnEnd( const CKDataNodeListElem *aNode )
+{
+	putOnEnd((CKDataNodeListElem *)aNode);
+}
+
+
+void CKDataNodeList::putOnEnd( CKDataNodeListElem *aNode ) const
+{
+	((CKDataNodeList *)this)->putOnEnd(aNode);
+}
+
+
+void CKDataNodeList::putOnEnd( const CKDataNodeListElem *aNode ) const
+{
+	((CKDataNodeList *)this)->putOnEnd((CKDataNodeListElem *)aNode);
+}
+
+
+/*
+ * When you have a list that you want to add to this list, these
+ * are the methods to use. It's important to note that the arguments
+ * will NOT be altered - which is why this is called the 'copy' as
+ * opposed to the 'splice'.
+ */
+void CKDataNodeList::copyToFront( CKDataNodeList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data, but backwards because
+	 * I'll be putting these new nodes on the *front* of the list, and
+	 * if I go through the source in the forward order, I'll reverse the
+	 * order of the elements in the source as I add them. So I'll go
+	 * backwards... no biggie...
+	 */
+	for (CKDataNodeListElem *src = aList.mTail; src != NULL; src = src->mPrev) {
+		// first, make a copy of this guy
+		CKDataNodeListElem	*node = new CKDataNodeListElem(*src, NULL, mHead);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKDataNodeList::copyToFront(CKDataNodeList &) - a "
+				"new list element could not be created for the node: " <<
+				src << " and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the front of the list
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::copyToFront( const CKDataNodeList & aList )
+{
+	copyToFront((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::copyToFront( CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->copyToFront(aList);
+}
+
+
+void CKDataNodeList::copyToFront( const CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->copyToFront((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::copyToEnd( CKDataNodeList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data. I'll be putting these new
+	 * nodes on the *end* of the list so the order is preserved.
+	 */
+	for (CKDataNodeListElem *src = aList.mHead; src != NULL; src = src->mNext) {
+		// first, make a copy of this guy
+		CKDataNodeListElem	*node = new CKDataNodeListElem(*src, mTail, NULL);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKDataNodeList::copyToEnd(CKDataNodeList &) - a "
+				"new list element could not be created for the node: " <<
+				src << " and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the end of the list
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::copyToEnd( const CKDataNodeList & aList )
+{
+	copyToEnd((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::copyToEnd( CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->copyToEnd(aList);
+}
+
+
+void CKDataNodeList::copyToEnd( const CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->copyToEnd((CKDataNodeList &)aList);
+}
+
+
+/*
+ * When you have a list that you want to merge into this list, these
+ * are the methods to use. It's important to note that the argument
+ * lists will be EMPTIED - which is why this is called the 'splice'
+ * as opposed to the 'copy'.
+ */
+void CKDataNodeList::spliceOnFront( CKDataNodeList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the head of this list
+	if (mHead == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mHead->mPrev = aList.mTail;
+		if (aList.mTail != NULL) {
+			aList.mTail->mNext = mHead;
+		}
+		if (aList.mHead != NULL) {
+			mHead = aList.mHead;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::spliceOnFront( const CKDataNodeList & aList )
+{
+	spliceOnFront((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::spliceOnFront( CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->spliceOnFront(aList);
+}
+
+
+void CKDataNodeList::spliceOnFront( const CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->spliceOnFront((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::spliceOnEnd( CKDataNodeList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the end of this list
+	if (mTail == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mTail->mNext = aList.mHead;
+		if (aList.mHead != NULL) {
+			aList.mHead->mPrev = mTail;
+		}
+		if (aList.mTail != NULL) {
+			mTail = aList.mTail;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKDataNodeList::spliceOnEnd( const CKDataNodeList & aList )
+{
+	spliceOnEnd((CKDataNodeList &)aList);
+}
+
+
+void CKDataNodeList::spliceOnEnd( CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->spliceOnEnd(aList);
+}
+
+
+void CKDataNodeList::spliceOnEnd( const CKDataNodeList & aList ) const
+{
+	((CKDataNodeList *)this)->spliceOnEnd((CKDataNodeList &)aList);
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * This method checks to see if the two CKDataNodeLists are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKDataNodeList::operator==( CKDataNodeList & anOther )
+{
+	bool		equal = true;
+
+	// first, lock up both lists against changes
+	mMutex.lock();
+	anOther.mMutex.lock();
+
+	/*
+	 * We need to compare each element in the list as nodes and
+	 * NOT as list elements as the pointers will never be the same
+	 * but the data will.
+	 */
+	CKDataNodeListElem	*me = mHead;
+	CKDataNodeListElem	*him = anOther.mHead;
+	while (equal) {
+		// see if we're at the end
+		if ((me == NULL) && (him == NULL)) {
+			break;
+		}
+
+		// see if the two lists are of different lengths
+		if (((me == NULL) && (him != NULL)) ||
+			((me != NULL) && (him == NULL))) {
+			equal = false;
+			break;
+		}
+
+		// compare the values by data contents only
+		if (!me->CKDataNode::operator==(*(CKDataNode*)him)) {
+			equal = false;
+			break;
+		}
+
+		// now move to the next point in each list
+		me = me->mNext;
+		him = him->mNext;
+	}
+
+	// now we're OK to unlock these lists and let them be free
+	anOther.mMutex.unlock();
+	mMutex.unlock();
+
+	return equal;
+}
+
+
+bool CKDataNodeList::operator==( const CKDataNodeList & anOther )
+{
+	return this->operator==((CKDataNodeList &) anOther);
+}
+
+
+bool CKDataNodeList::operator==( CKDataNodeList & anOther ) const
+{
+	return ((CKDataNodeList *)this)->operator==(anOther);
+}
+
+
+bool CKDataNodeList::operator==( const CKDataNodeList & anOther ) const
+{
+	return ((CKDataNodeList *)this)->operator==((CKDataNodeList &) anOther);
+}
+
+
+/*
+ * This method checks to see if the two CKDataNodeLists are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKDataNodeList::operator!=( CKDataNodeList & anOther )
+{
+	return !(this->operator==(anOther));
+}
+
+
+bool CKDataNodeList::operator!=( const CKDataNodeList & anOther )
+{
+	return !(this->operator==((CKDataNodeList &) anOther));
+}
+
+
+bool CKDataNodeList::operator!=( CKDataNodeList & anOther ) const
+{
+	return !(((CKDataNodeList *)this)->operator==(anOther));
+}
+
+
+bool CKDataNodeList::operator!=( const CKDataNodeList & anOther ) const
+{
+	return !(((CKDataNodeList *)this)->operator==((CKDataNodeList &) anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKDataNodeList::toString()
+{
+	// lock this guy up so he doesn't change
+	mMutex.lock();
+
+	CKString		retval = "[";
+	// put each data point out on the output
+	for (CKDataNodeListElem *node = mHead; node != NULL; node = node->mNext) {
+		retval += node->CKDataNode::toString();
+		retval += "\n";
+	}
+	retval += "]";
+
+	// unlock him now
+	mMutex.unlock();
+
+	return retval;
+}
+
+
+/*
+ * Setting the head or the tail is a bit dicey and so we're not
+ * going to let just anyone change these guys.
+ */
+void CKDataNodeList::setHead( CKDataNodeListElem *aNode )
+{
+	mHead = aNode;
+}
+
+
+void CKDataNodeList::setTail( CKDataNodeListElem *aNode )
+{
+	mTail = aNode;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKDataNodeList & aList )
+{
+	aStream << aList.toString();
 
 	return aStream;
 }
