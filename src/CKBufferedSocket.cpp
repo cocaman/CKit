@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.6 2004/08/31 21:23:35 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.7 2004/09/02 20:46:43 drbob Exp $
  */
 
 //	System Headers
@@ -196,14 +196,12 @@ std::string CKBufferedSocket::getPendingData() const
  */
 std::string CKBufferedSocket::read()
 {
-	std::string		retval;
-
 	// first, transfer all the data at the socket to the pending data buffer
 	transferWaitingDataAtSocketToPendingData();
 	// next, grab the buffer's contents
-	retval = getPendingData();
+	std::string	retval(mPendingData);
 	// ...and clear it out
-	emptyPendingData();
+	mPendingData.clear();
 
 	return retval;
 }
