@@ -12,7 +12,11 @@ SO_EXT = so
 SO_FLAG = -shared
 endif
 ifeq ($(shell uname),Linux)
+ifeq ($(shell gcc --version),2.96)
+CXX = g++ -DGPP2 -D_GNU_SOURCE
+else
 CXX = g++
+endif
 CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
