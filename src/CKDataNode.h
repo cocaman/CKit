@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.14 2004/09/28 15:45:45 drbob Exp $
+ * $Id: CKDataNode.h,v 1.15 2004/10/21 09:57:29 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -426,6 +426,21 @@ class CKDataNode
 		 *                Utility Methods
 		 *
 		 ********************************************************/
+		/*
+		 * This method can be called to make sure that the data node tree
+		 * is not in the middle of a load that could make it's contents
+		 * unstable. If you ignore this method's return value you do so
+		 * at your own risk.
+		 */
+		virtual bool isLoadInProgress();
+		/*
+		 * This method will allow the caller to wait until the load of this
+		 * data node tree is done - if it's currently in process. If the
+		 * data is loaded the this will return immediately, if not, it
+		 * will wait until the data tree is stable and then return.
+		 */
+		virtual void waitForLoad();
+
 		/*
 		 * This method checks to see if the two CKDataNodes are equal to one
 		 * another based on the values they represent and *not* on the actual
