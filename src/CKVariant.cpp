@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.2 2003/12/18 10:51:46 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.3 2004/02/27 14:37:47 drbob Exp $
  */
 
 //	System Headers
@@ -23,6 +23,7 @@
 //	Other Headers
 #include "CKVariant.h"
 #include "CKTable.h"
+#include "CKTimeSeries.h"
 
 //	Forward Declarations
 
@@ -130,6 +131,21 @@ CKVariant::CKVariant( const CKTable *aTableValue ) :
 
 
 /*
+ * This form of the constructor understands that the value that's
+ * intended to be stored here is a CKTimeSeries, and the value
+ * provided is what's to be stored. The value argument will not be
+ * touched in this constructor as we'll be making a copy of the
+ * contents for local use.
+ */
+CKVariant::CKVariant( const CKTimeSeries *aTimeSeriesValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setTimeSeriesValue(aTimeSeriesValue);
+}
+
+
+/*
  * This is the standard copy constructor and needs to be in every
  * class to make sure that we don't have too many things running
  * around.
@@ -168,6 +184,12 @@ CKVariant::~CKVariant()
 				mTableValue = NULL;
 			}
 			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				delete mTimeSeriesValue;
+				mTimeSeriesValue = NULL;
+			}
+			break;
 	}
 }
 
@@ -194,6 +216,9 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
 			break;
 		case eTableVariant:
 			setTableValue(anOther.getTableValue());
+			break;
+		case eTimeSeriesVariant:
+			setTimeSeriesValue(anOther.getTimeSeriesValue());
 			break;
 	}
 
@@ -239,19 +264,28 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 				/*
 				 * OK, we have a problem converting a number, so it's
 				 * likely that this is a string. Now we need to see if
-				 * it's a 'bulk' table format, or just a string.
+				 * it's a table or time series, or just a string.
 				 */
 				if ((aValue[0] != aValue[strlen(aValue) - 1]) ||
-					isalnum(aValue[0]) ||
-					(aValue[0] == '+') || (aValue[0] == '-') ||
-					(aValue[1] != '2') || (strlen(aValue) < 15)) {
+					isalnum(aValue[0]) || (strlen(aValue) < 15)) {
 					// OK, looks like a string for sure
 					setStringValue(aValue);
 				} else {
-					// make a table from the string representation
-					CKTable	tbl(aValue);
-					// ...and use that as the value
-					setTableValue(&tbl);
+					// could be a time series or a table...
+					char	*scanner = (char *)&(aValue[1]);
+					double	v = CKTable::parseDoubleFromBufferToDelim(
+												scanner, aValue[0]);
+					if ((v > 19760000) && (v < 20100000)) {
+						// make a time series from the string representation
+						CKTimeSeries	ts(aValue);
+						// ...and use that as the value
+						setTimeSeriesValue(&ts);
+					} else {
+						// make a table from the string representation
+						CKTable	tbl(aValue);
+						// ...and use that as the value
+						setTableValue(&tbl);
+					}
 				}
 			} else {
 				// could be a date, do a few more tests to be sure
@@ -279,10 +313,20 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 			setDateValue(atol(aValue));
 			break;
 		case eTableVariant:
-			// make a table from the string representation
-			CKTable	tbl(aValue);
-			// ...and use that as the value
-			setTableValue(&tbl);
+			{
+				// make a table from the string representation
+				CKTable	tbl(aValue);
+				// ...and use that as the value
+				setTableValue(&tbl);
+			}
+			break;
+		case eTimeSeriesVariant:
+			{
+				// make a time series from the string representation
+				CKTimeSeries	ts(aValue);
+				// ...and use that as the value
+				setTimeSeriesValue(&ts);
+			}
 			break;
 	}
 }
@@ -383,6 +427,36 @@ void CKVariant::setTableValue( const CKTable *aTableValue )
 	}
 	// ...and don't forget to set the type of data we have now
 	mType = eTableVariant;
+}
+
+
+/*
+ * This sets the value stored in this instance as a time series,
+ * but a local copy will be made so that the caller doesn't have
+ * to worry about holding on to the parameter, and is free to
+ * delete it.
+ */
+void CKVariant::setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue )
+{
+	// first, see if we need to delete what's might already be here
+	if (mType == eStringVariant) {
+		if (mStringValue != NULL) {
+			delete [] mStringValue;
+			mStringValue = NULL;
+		}
+	}
+	// next, if we have something to set, then create space for it
+	if (aTimeSeriesValue != NULL) {
+		mTimeSeriesValue = new CKTimeSeries(*aTimeSeriesValue);
+		if (mTimeSeriesValue == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKVariant::setTimeSeries"
+				"Value(const CKTimeSeries *) - the copy of this time series "
+				"value could not be created. This is a serious allocation "
+				"error.");
+		}
+	}
+	// ...and don't forget to set the type of data we have now
+	mType = eTimeSeriesVariant;
 }
 
 
@@ -488,6 +562,23 @@ const CKTable *CKVariant::getTableValue() const
 
 
 /*
+ * This method returns the actual time series value of the data that
+ * this instance is holding. If the user wants to use this value
+ * outside the scope of this class, then they need to make a copy.
+ */
+const CKTimeSeries *CKVariant::getTimeSeriesValue() const
+{
+	// make sure it's something that can be done
+	if (mType != eTimeSeriesVariant) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getTimeSeriesValue() - "
+			"the data contained in this instance is not a time series and "
+			"therefore we can't get a time series value from it.");
+	}
+	return mTimeSeriesValue;
+}
+
+
+/*
  * This method can be used to clear out any existing value in the
  * variant and reset it to it's "unknown" state. This is useful if
  * you want to clean up the memory used by the variant in preparation
@@ -513,6 +604,12 @@ void CKVariant::clearValue()
 			if (mTableValue != NULL) {
 				delete mTableValue;
 				mTableValue = NULL;
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue != NULL) {
+				delete mTimeSeriesValue;
+				mTimeSeriesValue = NULL;
 			}
 			break;
 	}
@@ -554,7 +651,18 @@ char *CKVariant::getValueAsString() const
 			buff << mDateValue;
 			break;
 		case eTableVariant:
-			buff << mTableValue->toString();
+			if (mTableValue == NULL) {
+				buff << "NULL";
+			} else {
+				buff << mTableValue->toString();
+			}
+			break;
+		case eTimeSeriesVariant:
+			if (mTimeSeriesValue == NULL) {
+				buff << "NULL";
+			} else {
+				buff << mTimeSeriesValue->toString();
+			}
 			break;
 	}
 	// now we need to create a copy of the string
@@ -611,6 +719,9 @@ char *CKVariant::generateCodeFromValues() const
 		case eTableVariant:
 			buff << "T:" << mTableValue->generateCodeFromValues();
 			break;
+		case eTimeSeriesVariant:
+			buff << "L:" << mTimeSeriesValue->generateCodeFromValues();
+			break;
 	}
 
 	// now create a new buffer to hold all this
@@ -659,6 +770,9 @@ void CKVariant::takeValuesFromCode( const char *aCode )
 			break;
 		case 'T':
 			setValueAsType(eTableVariant, &(aCode[2]));
+			break;
+		case 'L':
+			setValueAsType(eTimeSeriesVariant, &(aCode[2]));
 			break;
 	}
 }
@@ -727,6 +841,22 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 					}
 				}
 				break;
+			case eTimeSeriesVariant:
+				// two NULLs match in my opinion
+				if (mTimeSeriesValue == NULL) {
+					if (anOther.mTimeSeriesValue != NULL) {
+						equal = false;
+					}
+				} else {
+					if (anOther.mTimeSeriesValue == NULL) {
+						equal = false;
+					} else {
+						if ((*mTimeSeriesValue) != (*anOther.mTimeSeriesValue)) {
+							equal = false;
+						}
+					}
+				}
+				break;
 		}
 	}
 
@@ -775,8 +905,12 @@ std::string CKVariant::toString() const
 			retval = buff;
 			break;
 		case eTableVariant:
-			retval = "(BBGTable)";
+			retval = "(CKTable)";
 			retval.append(mTableValue->toString());
+			break;
+		case eTimeSeriesVariant:
+			retval = "(CKTimeSeries)";
+			retval.append(mTimeSeriesValue->toString());
 			break;
 	}
 
@@ -797,6 +931,7 @@ void CKVariant::setType( CKVariantType aType )
 		case eNumberVariant:
 		case eDateVariant:
 		case eTableVariant:
+		case eTimeSeriesVariant:
 			mType = aType;
 			break;
 		default:

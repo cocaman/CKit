@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.3 2004/02/27 10:52:06 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.4 2004/02/27 14:37:46 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -96,6 +96,14 @@ class CKTimeSeries
 		 */
 		CKTimeSeries( const std::vector<long> & aDateSeries,
 					  const std::vector<double> & aValueSeries );
+		/*
+		 * This constructor is interesting in that it takes the data as
+		 * it comes from another CKTimeSeries's generateCodeFromValues()
+		 * method and parses it into a time series of values directly.
+		 * This is very useful for serializing the table's data from one
+		 * host to another across a socket, for instance.
+		 */
+		CKTimeSeries( const char *aCode );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running

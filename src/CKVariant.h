@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.2 2003/12/18 10:51:46 drbob Exp $
+ * $Id: CKVariant.h,v 1.3 2004/02/27 14:37:48 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -24,6 +24,7 @@
 
 //	Forward Declarations
 class CKTable;
+class CKTimeSeries;
 
 //	Public Constants
 /*
@@ -36,7 +37,8 @@ enum CKVariantTypeEnum {
 	eStringVariant = 0,
 	eNumberVariant = 1,
 	eDateVariant = 2,
-	eTableVariant = 3
+	eTableVariant = 3,
+	eTimeSeriesVariant = 4
 };
 typedef CKVariantTypeEnum CKVariantType;
 
@@ -101,6 +103,14 @@ class CKVariant
 		 */
 		CKVariant( const CKTable *aTableValue );
 		/*
+		 * This form of the constructor understands that the value that's
+		 * intended to be stored here is a CKTimeSeries, and the value
+		 * provided is what's to be stored. The value argument will not be
+		 * touched in this constructor as we'll be making a copy of the
+		 * contents for local use.
+		 */
+		CKVariant( const CKTimeSeries *aTimeSeriesValue );
+		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
 		 * around.
@@ -159,6 +169,13 @@ class CKVariant
 		 * about holding on to the parameter, and is free to delete it.
 		 */
 		void setTableValue( const CKTable *aTableValue );
+		/*
+		 * This sets the value stored in this instance as a time series,
+		 * but a local copy will be made so that the caller doesn't have
+		 * to worry about holding on to the parameter, and is free to
+		 * delete it.
+		 */
+		void setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue );
 
 		/*
 		 * This method returns the enumerated type of the data that this
@@ -201,6 +218,12 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTable *getTableValue() const;
+		/*
+		 * This method returns the actual time series value of the data that
+		 * this instance is holding. If the user wants to use this value
+		 * outside the scope of this class, then they need to make a copy.
+		 */
+		const CKTimeSeries *getTimeSeriesValue() const;
 		
 		/*
 		 * This method can be used to clear out any existing value in the
@@ -288,10 +311,11 @@ class CKVariant
 		 * sets this data.
 		 */
 		union {
-			char		*mStringValue;
-			long		mDateValue;
-			double		mDoubleValue;
-			CKTable		*mTableValue;
+			char			*mStringValue;
+			long			mDateValue;
+			double			mDoubleValue;
+			CKTable			*mTableValue;
+			CKTimeSeries	*mTimeSeriesValue;
 		};
 };
 
