@@ -48,6 +48,16 @@ int main(int argc, char *argv[]) {
 	} else {
 		std::cout << "MainB/\"R/V\"/price = " << (*a) << std::endl;
 	}
+
+	std::cout << std::endl;
+	std::cout << "Unique Leaf Node Names:" << std::endl;
+	std::cout << "-----------------------" << std::endl;
+	std::vector<std::string>	leafs = n->getUniqueLeafNodeNames();
+	for (unsigned int l = 0; l < leafs.size(); l++) {
+		std::cout << "  " << leafs[l] << std::endl;
+	}
+	std::cout << std::endl;
+
 	CKDataNode::deleteNodeDeep(n);
 	if (n == NULL) {
 		std::cout << "...cleaned up successfully." << std::endl;
