@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.1 2003/11/21 18:08:06 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.2 2003/12/03 16:45:19 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H
@@ -118,11 +118,11 @@
 
 #ifdef __linux__
 /*
- * On Linux, there is no standard definition of the maximum length of
+ * On Linux, there is no standard definition for the maximum length of
  * a file name. So, in order to make the code as transportable as possible
  * we'll adopt the Solaris/Darwin definition and use that.
  */
-#define MAXHOSTNAMELEN		255
+#define MAXHOSTNAMELEN			255
 #endif
 
 //	Public Datatypes

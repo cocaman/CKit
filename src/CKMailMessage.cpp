@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.1 2003/11/21 18:08:08 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.2 2003/12/03 16:45:27 drbob Exp $
  */
 
 //	System Headers
@@ -356,8 +356,8 @@ bool CKMailMessage::messageIsDeliverable() const
 	}
 
 	/*
-	 * You can send a valid email message with only a subject
-	 * or only a message body but it's pretty
+	 * You can send a valid email message with only a subject 
+	 * or only a message body but it's pretty 
 	 * counterproductive to send a message with both empty.
 	 */
 	if (messageIsDeliverable) {
@@ -457,7 +457,7 @@ std::string CKMailMessage::getContentType( const std::string & anElement ) const
 	 * Simply run the tests for the data type and map it to a
 	 * string to return. Start with the simple ones and then work
 	 * on the harder ones.
-	 */
+	 */		
 	if ((anElement.find("HTML") != std::string::npos) ||
 		(anElement.find("html") != std::string::npos)) {
 		retval = "Content-type: text/html; charset=US-ASCII\r\n"
@@ -469,7 +469,7 @@ std::string CKMailMessage::getContentType( const std::string & anElement ) const
 		retval = "Content-type: text/plain; charset=US-ASCII\r\n"
 					"Content-Transfer-Encoding: 7bit\r\n";
 	}
-
+	
 	return retval;
 }
 
@@ -488,7 +488,7 @@ std::string CKMailMessage::encodeMessagePart( const std::string & anElement ) co
 	 * Simply run the tests for the data type and mapp it to a
 	 * String to return. Start with the simple ones and then work
 	 * on the harder ones.
-	 */
+	 */		
 	if (anElement.size() == 0) {
 		retval.append(" ");
 	} else {
@@ -497,7 +497,7 @@ std::string CKMailMessage::encodeMessagePart( const std::string & anElement ) co
 
 	// make sure it all ends with a line termination
 	retval.append("\r\n");
-
+		
 	return retval;
 }
 

@@ -6,7 +6,7 @@
  *                   all delivery mechanisms will use this one message
  *                   structure.
  *
- * $Id: CKMailMessage.h,v 1.1 2003/11/21 18:08:09 drbob Exp $
+ * $Id: CKMailMessage.h,v 1.2 2003/12/03 16:45:27 drbob Exp $
  */
 #ifndef __CKMAILMESSAGE_H
 #define __CKMAILMESSAGE_H
@@ -210,7 +210,7 @@ class CKMailMessage
 		/*
 		 * This method returns the MIME 'Content Type' string for inclusion
 		 * in the flattened message. This is important because having the
-		 * correct content type means that the mailers that eventually get
+		 * correct content type means that the mailers that eventually get 
 		 * this message will know how to decode it.
 		 */
 		std::string getContentType( const std::string & anElement ) const;

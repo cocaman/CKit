@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.3 2003/12/02 13:29:39 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.4 2003/12/03 16:45:14 drbob Exp $
  */
 
 //	System Headers
@@ -215,9 +215,9 @@ std::string CKBufferedSocket::read()
  * the terminal data is read before returning. As each data
  * 'chunk' is read from the socket within the read timeout
  * interval, it's contents is checked for the terminal data.
- * If a read timeout occurs, errno will be set to ERR_READ_TIMEOUT,
- * but if data continues to be available at the socket and the
- * terminal data has not arrived, reading will continue.
+ * If a read timeout occurs, an exception will be thrown, but
+ * if data continues to be available at the socket and the terminal
+ * data has not arrived, reading will continue.
  */
 std::string CKBufferedSocket::readUpTo( const std::string & aStopData )
 {
@@ -282,13 +282,28 @@ std::string CKBufferedSocket::readUpTo( const char *aStopData )
 		}
 
 		/*
-		 * Step 3 - wait for anything at the socket to arrive. If there's
+		 * Step 3 - wait for anything at the socket to arrive. It there's
 		 *          a timeout, then flag it as an error, set the errno to
-		 *          the timeout indicator, and bail out of this guy.
+		 *          the timeout indicator, and bail out of this guy. The
+		 *          one trick is that we need to assume that if the poll()
+		 *          says there's data, then we ought to be able to see some
+		 *          on the socket. That's the reason for the final argument
+		 *          in the poll() call.
 		 */
-		if (poll(getSocketHandle(), (int)(1000 * getReadTimeout())) != POLL_OK) {
+		int status = poll(getSocketHandle(), (int)(1000 * getReadTimeout()), true);
+		if (status != POLL_OK) {
 			error = true;
-			errno = ERR_READ_TIMEOUT;
+			switch (status) {
+				case POLL_ERROR:
+					errno = ERR_READ_ERROR;
+					break;
+				case POLL_TIMEOUT:
+					errno = ERR_READ_TIMEOUT;
+					break;
+				case POLL_INTERRUPT:
+					errno = ERR_READ_INTERRUPT;
+					break;
+			}
 			break;
 		}
 	}
@@ -352,7 +367,7 @@ bool CKBufferedSocket::checkForDataUpTo( const char *aStopData )
 
 
 /*
- * These are convenience methods that make it easer to get a
+ * These are convenience methods that make it easier to get a
  * complete line from the incoming socket.
  */
 bool CKBufferedSocket::checkForDataUpToCRLF()

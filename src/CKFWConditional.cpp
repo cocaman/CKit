@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.2 2003/11/24 19:01:02 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.3 2003/12/03 16:45:21 drbob Exp $
  */
 
 //	System Headers
@@ -60,15 +60,15 @@ int CKFWConditionalDefaultTest::test( )
 //
 //
 
-CKFWConditional::CKFWConditional( CKFWMutex & aMutex ) :
+CKFWConditional::CKFWConditional( CKFWMutex & aMutex ) : 
   mMutex( aMutex ),
   mConditional( )
-{
-  int lResults = 0;
+{  
+  int lResults = 0;   
   if ( ( lResults = pthread_cond_init( &mConditional, 0 ) ) != 0 ) {
     throw CKErrNoException( __FILE__, __LINE__, lResults );
   }
-
+    
   return ;
 }
 
@@ -79,28 +79,28 @@ CKFWConditional::~CKFWConditional( )
 
 
 int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
-								  int aTimeoutInMillis )
+				int aTimeoutInMillis )
 {
 	int lResult = FWCOND_LOCK_SUCCESS;
-	mMutex.lock();
+  mMutex.lock( );
 
-	while ( aTest.test() ) {
-		if ( aTimeoutInMillis > 0 ) {
-			timespec lTimeSpec;
+  while( aTest.test() ) {
+		if ( aTimeoutInMillis >= 0 ) {
+			timespec lTimeSpec; 
 			timeval lCurrentTimeval;
 			gettimeofday(&lCurrentTimeval, NULL);
-			lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis / 1000;
-			lTimeSpec.tv_nsec = lCurrentTimeval.tv_usec * 1000 +
-								(aTimeoutInMillis % 1000) * 1000000;
+			lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis / 1000; 
+			lTimeSpec.tv_nsec = lCurrentTimeval.tv_usec * 1000
+				+ (aTimeoutInMillis % 1000) * 1000000;
 
 			int rc = pthread_cond_timedwait(&mConditional, &mMutex.mMutex, &lTimeSpec);
-			if (rc == ETIMEDOUT) {
+			if (rc == ETIMEDOUT) { 
 				mMutex.unlock();
 				lResult = FWCOND_LOCK_ERROR;
 				break;
 			}
 		} else {
-			pthread_cond_wait(&mConditional, &mMutex.mMutex);
+			pthread_cond_wait( &mConditional, &mMutex.mMutex );
 		}
 	}
 
@@ -118,7 +118,7 @@ void CKFWConditional::wakeWaiter( )
   int lError;
   if ( (lError = pthread_cond_signal( &mConditional )) ) {
     throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
+  }  
 }
 
 void CKFWConditional::wakeWaiters( )
@@ -129,14 +129,9 @@ void CKFWConditional::wakeWaiters( )
   }
 }
 
-/**
- * This method just unlocks the underlying mutex that will have
- * been locked by the conditional. This is so you only have to
- * use the conditional to lock and unlock as opposed to locking
- * the conditional and unlocking the mutex underneath.
- */
 void CKFWConditional::unlock()
 {
 	mMutex.unlock();
 }
+
 // vim: set ts=2:

@@ -6,7 +6,7 @@
  *                      user really only needs to subclass off this class and
  *                      then write that one method.
  *
- * $Id: CKIRCResponder.cpp,v 1.1 2003/11/21 18:08:08 drbob Exp $
+ * $Id: CKIRCResponder.cpp,v 1.2 2003/12/03 16:45:26 drbob Exp $
  */
 
 //	System Headers

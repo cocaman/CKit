@@ -5,8 +5,8 @@
  *                      pass it back up the calling stack to the catch block.
  *                      This is basically the same class as it's namesake in
  *                      the MarketMash Server.
- *
- * $Id: CKErrNoException.h,v 1.1 2003/11/21 18:08:03 drbob Exp $
+ * 
+ * $Id: CKErrNoException.h,v 1.2 2003/12/03 16:45:15 drbob Exp $
  */
 #ifndef __CKERRNO_EXCEPTION_H
 #define __CKERRNO_EXCEPTION_H

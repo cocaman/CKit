@@ -8,7 +8,7 @@
  *                      class which in turn is used in other higher-level
  *                      classes in CKit.
  *
- * $Id: CKBufferedSocket.h,v 1.3 2003/12/02 13:29:39 drbob Exp $
+ * $Id: CKBufferedSocket.h,v 1.4 2003/12/03 16:45:15 drbob Exp $
  */
 #ifndef __CKBUFFEREDSOCKET_H
 #define __CKBUFFEREDSOCKET_H
@@ -32,15 +32,17 @@
 //	Public Constants
 /*
  * This is returned in errno from readUpTo() methods if a read timeout
- * occurred. In those routines, we really don't want to thrown an exception
+ * occurred. In those routines, we really don't want to throw an exception
  * if a timeout occurs, as it's probably not *exceptional* if a timeout
  * occurs. It could be just normal behavior. However, we also can't use the
  * return code for error condition as it's the data... so we're left with
- * errno. If it's 0, then all went well... if it's < 0 then it's a problem
- * no matter what the data said, and these are the different possible codes
- * for those 'problems'.
+ * errno. If it's 0 then all went well... is it's < 0 then is a problem
+ * no matter what the data said, and these are the different possible
+ * codes for those 'problems'.
  */
-#define	ERR_READ_TIMEOUT	-11111
+#define	ERR_READ_TIMEOUT		-11111
+#define	ERR_READ_ERROR			-11112
+#define	ERR_READ_INTERRUPT		-11113
 
 //	Public Datatypes
 
@@ -157,9 +159,9 @@ class CKBufferedSocket :
 		 * the terminal data is read before returning. As each data
 		 * 'chunk' is read from the socket within the read timeout
 		 * interval, it's contents is checked for the terminal data.
-		 * If a read timeout occurs, errno will be set to ERR_READ_TIMEOUT,
-		 * but if data continues to be available at the socket and the
-		 * terminal data has not arrived, reading will continue.
+		 * If a read timeout occurs, an exception will be thrown, but
+		 * if data continues to be available at the socket and the terminal
+		 * data has not arrived, reading will continue.
 		 */
 		std::string readUpTo( const std::string & aStopData );
 		std::string readUpTo( const char *aStopData );
@@ -187,7 +189,7 @@ class CKBufferedSocket :
 		bool checkForDataUpTo( const std::string & aStopData );
 		bool checkForDataUpTo( const char *aStopData );
 		/*
-		 * These are convenience methods that make it easer to get a
+		 * These are convenience methods that make it easier to get a
 		 * complete line from the incoming socket.
 		 */
 		bool checkForDataUpToCRLF();

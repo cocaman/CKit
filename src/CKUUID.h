@@ -9,7 +9,7 @@
  *            possibility of including a hashed class name so that the UUID
  *            can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.h,v 1.1 2003/11/21 18:08:12 drbob Exp $
+ * $Id: CKUUID.h,v 1.2 2003/12/03 16:45:34 drbob Exp $
  */
 #ifndef __CKUUID_H
 #define __CKUUID_H
@@ -40,11 +40,11 @@
 //	Public Constants
 #ifdef __linux__
 /*
- * On Linux, there is no standard definition of the maximum length of
+ * On Linux, there is no standard definition for the maximum length of
  * a file name. So, in order to make the code as transportable as possible
  * we'll adopt the Solaris/Darwin definition and use that.
  */
-#define MAXHOSTNAMELEN		255
+#define MAXHOSTNAMELEN			255
 #endif
 
 //	Public Datatypes

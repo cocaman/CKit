@@ -6,7 +6,7 @@
  *                   and return a std::string as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.1 2003/11/21 18:08:07 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.2 2003/12/03 16:45:24 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -69,11 +69,11 @@ class CKIRCResponder;
 
 #ifdef __linux__
 /*
- * On Linux, there is no standard definition of the maximum length of
+ * On Linux, there is no standard definition for the maximum length of
  * a file name. So, in order to make the code as transportable as possible
  * we'll adopt the Solaris/Darwin definition and use that.
  */
-#define MAXHOSTNAMELEN		255
+#define MAXHOSTNAMELEN			255
 #endif
 
 //	Public Datatypes
@@ -352,7 +352,7 @@ class CKIRCProtocol
 		 * of housekeeping messages without having to put that into
 		 * your responder's code.
 		 *
-		 * If this messages is handled in this method, then this method
+		 * If this message is handled in this method, then this method
 		 * will return true, otherwise, it hasn't been handled and
 		 * needs to be passed to all the responders for their input.
 		 */

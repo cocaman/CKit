@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.1 2003/11/21 18:08:08 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.2 2003/12/03 16:45:25 drbob Exp $
  */
 
 //	System Headers
@@ -235,6 +235,7 @@ int CKIRCProtocolListener::process()
 		tag += getProtocol()->getNickname();
 		tag += " :";
 		unsigned int	pos = std::string::npos;
+
 		if ((line[0] == ':') &&
 			((pos = line.find(tag)) != std::string::npos)) {
 			// build up the message packet for tossing around

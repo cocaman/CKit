@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.1 2003/11/21 18:08:05 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.2 2003/12/03 16:45:15 drbob Exp $
  */
 
 //	System Headers
@@ -361,7 +361,7 @@ bool CKFTPConnection::connectToHost( const std::string & aHost )
 		} else {
 			/*
 			 * Now that we have a connection, we can make sure that the
-			 * socket itself is in non-blocking moderegardless of the
+			 * socket itself is in non-blocking mode regardless of the
 			 * platform we're on.
 			 */
 			mControlPort.doNotBlockForTransferredData();
@@ -371,12 +371,11 @@ bool CKFTPConnection::connectToHost( const std::string & aHost )
     /*
      * Finally, we need to receive the reply we get from the FTP
      * server when we make a connection to it. Because there are
-     * instances that this will take a while, let's up the timeout
-     * on the socket.
+	 * instances that this will take a while, let's up the timeout
+	 * on the socket.
      */
     if (!error) {
-    	// three mins ought to be enough
-    	mControlPort.setReadTimeout(180);
+		mControlPort.setReadTimeout(180);
         if (getReply() != CKFTPServiceReadyForNewUser) {
             /*
              * Undo what we've done by disconnecting and resetting the
@@ -624,7 +623,7 @@ std::string CKFTPConnection::currentDirectoryPath()
 		unsigned int	end = mServerReplyLines[0].find("\"", (beg+1));
 		if ((beg == std::string::npos) ||
 			(end == std::string::npos) ||
-			(end <= beg) ) {
+			(end <= beg)) {
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKFTPConnection::currentDirectoryPath() - the directory "
@@ -2950,8 +2949,7 @@ std::string CKFTPConnection::transferData( const std::string & aType,
 	}
 
 	/*
-	 * We have moved all the data we need to move, so close down this
-	 * socket.
+	 * We have all the data we need, so close down this socket
 	 */
 	if (dataSocket != NULL) {
 		dataSocket->shutdownSocket();
@@ -3654,6 +3652,6 @@ std::string CKFTPConnection::stringForLastFTPReturnCode()
 std::ostream & operator<<( std::ostream & aStream, const CKFTPConnection & aConnection )
 {
 	aStream << aConnection.toString();
-
+	
 	return aStream;
 }

@@ -12,7 +12,7 @@
  *                          set that as the default prior to sending any
  *                          messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.h,v 1.1 2003/11/21 18:08:08 drbob Exp $
+ * $Id: CKMailDeliverySystem.h,v 1.2 2003/12/03 16:45:27 drbob Exp $
  */
 #ifndef __CKMAILDELIVERYSYSTEM_H
 #define __CKMAILDELIVERYSYSTEM_H
@@ -87,8 +87,8 @@ class CKMailDeliverySystem
 		 * through this interface will use this channel for their
 		 * delivery. The memory management of the delivery channel
 		 * is the responsibility of the caller, as they had to have
-		 * created it, and they need to make sure that it's going
-		 * to be around as long as this class is using it.
+		 * created it, and they need to make sure that it's going to
+		 * be around as long as this class is using it.
 		 */
 		static void setDefaultDelivery( CKMailDelivery *aChannel );
 
