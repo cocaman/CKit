@@ -14,7 +14,7 @@
  *                   no matter how the scope is exited - normally or by an
  *                   exception being thrown, the mutex will be unlocked.
  *
- * $Id: CKStackLocker.h,v 1.5 2004/09/20 16:19:42 drbob Exp $
+ * $Id: CKStackLocker.h,v 1.6 2004/12/01 18:28:20 drbob Exp $
  */
 #ifndef __CKSTACKLOCKER_H
 #define __CKSTACKLOCKER_H
@@ -25,6 +25,7 @@
 
 //	Other Headers
 #include "CKFWMutex.h"
+#include "CKFWRWMutex.h"
 
 //	Forward Declarations
 
@@ -47,11 +48,18 @@ class CKStackLocker
 		 *
 		 ********************************************************/
 		/*
-		 * This is the only public form of the constructor and it takes
-		 * the pointer to a CKFWMutex that needs to be non-NULL. It will
-		 * then proceed to lock this mutex and return. That's it.
+		 * This form of the constructor takes a pointer to a CKFWMutex that
+		 * needs to be non-NULL. It then proceeds to lock this mutex and
+		 * return. That's it.
 		 */
 		CKStackLocker( CKFWMutex *aMutex );
+		/*
+		 * This form of the constructor takes a pointer to a CKFWRWMutex that
+		 * needs to be non-NULL. It then proceeds to lock this mutex and
+		 * return. The nature of the lock is dictated by the boolean with
+		 * the default being to do a read lock. That's it.
+		 */
+		CKStackLocker( CKFWRWMutex *aRWMutex, bool aReadLock = true );
 		/*
 		 * This is the standard destructor and needs to be virtual to make
 		 * sure that if we subclass off this the right destructor will be
@@ -74,6 +82,8 @@ class CKStackLocker
 		 * going to leave him alone.
 		 */
 		CKFWMutex		*mMutex;
+		// ...and this is the pointer to the read/write mutex
+		CKFWRWMutex		*mRWMutex;
 };
 
 #endif	// __CKSTACKLOCKER_H
