@@ -6,7 +6,7 @@
  *                     and return a std::string as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.6 2004/07/27 20:01:27 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.7 2004/08/31 21:23:35 drbob Exp $
  */
 
 //	System Headers
@@ -1250,7 +1250,7 @@ std::vector<std::string> CKIRCProtocol::parseIntoChunks(
 std::string CKIRCProtocol::getReply()
 {
 	bool			error = false;
-	std::string		retval;
+	std::string		retval("");
 
 	/*
 	 * First, see if we're connected to some IRC server, and if not, then

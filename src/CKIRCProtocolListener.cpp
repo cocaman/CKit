@@ -6,12 +6,14 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.6 2004/08/31 11:18:07 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.7 2004/08/31 21:23:37 drbob Exp $
  */
 
 //	System Headers
 #include <sstream>
 #include <iostream>
+#include <stdio.h>
+#include <strings.h>
 
 //	Third-Party Headers
 
@@ -250,22 +252,21 @@ int CKIRCProtocolListener::process()
 	 * have to respond to. If so, then do it now without having
 	 * to make the client respond to these messages.
 	 */
-	if (!error && !timeToDie() && !processed && (line.size() > 0)) {
+	if (!error && !timeToDie() && !processed && !line.empty()) {
 		processed = mProtocol->isReflexChat(line);
 	}
 
 	/*
 	 * Next, let's see if it's a message that's meant for this user...
 	 */
-	if (!error && !timeToDie() && !processed && (line.size() > 0)) {
+	if (!error && !timeToDie() && !processed && !line.empty()) {
 		// now, compute the tagline for this protocol
-		std::string		tag = "PRIVMSG ";
-		tag += mProtocol->getNickname();
-		tag += " :";
-		unsigned int	pos = std::string::npos;
+		char	tag[128];
+		bzero(tag, 128);
+		snprintf(tag, 127, "PRIVMSG %s :", mProtocol->getNickname().c_str());
+		unsigned int	pos = line.find(tag);
 
-		if ((line[0] == ':') &&
-			((pos = line.find(tag)) != std::string::npos)) {
+		if ((line[0] == ':') && (pos != std::string::npos)) {
 			// build up the message packet for tossing around
 			CKIRCIncomingMessage	msg;
 			unsigned int	bang = line.find('!');
@@ -276,7 +277,7 @@ int CKIRCProtocolListener::process()
 			} else {
 				// pick off the sender and message to me
 				msg.userNickname = line.substr(1, (bang - 1));
-				msg.message = line.substr(pos + tag.size());
+				msg.message = line.substr(pos + strlen(tag));
 
 				// now process it outside of this thread
 				CKIRCProtocolExec::handleMessage(msg, mProtocol);
