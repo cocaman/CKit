@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really 
  *               simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.h,v 1.1 2003/12/16 18:09:14 drbob Exp $
+ * $Id: CKVariant.h,v 1.2 2003/12/18 10:51:46 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -201,6 +201,14 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKTable *getTableValue() const;
+		
+		/*
+		 * This method can be used to clear out any existing value in the
+		 * variant and reset it to it's "unknown" state. This is useful if
+		 * you want to clean up the memory used by the variant in preparation
+		 * for setting it to a new value.
+		 */
+		void clearValue();
 
 		/********************************************************
 		 *

@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really 
  *                 simplify dealing with tables of different types of data.
  * 
- * $Id: CKVariant.cpp,v 1.1 2003/12/16 18:09:13 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.2 2003/12/18 10:51:46 drbob Exp $
  */
 
 //	System Headers
@@ -484,6 +484,41 @@ const CKTable *CKVariant::getTableValue() const
 			"we can't get a table value from it.");
 	}
 	return mTableValue;
+}
+
+
+/*
+ * This method can be used to clear out any existing value in the
+ * variant and reset it to it's "unknown" state. This is useful if
+ * you want to clean up the memory used by the variant in preparation
+ * for setting it to a new value.
+ */
+void CKVariant::clearValue()
+{
+	// first, free up any memory used by the current value
+	switch(mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			if (mStringValue != NULL) {
+				delete [] mStringValue;
+				mStringValue = NULL;
+			}
+			break;
+		case eNumberVariant:
+			break;
+		case eDateVariant:
+			break;
+		case eTableVariant:
+			if (mTableValue != NULL) {
+				delete mTableValue;
+				mTableValue = NULL;
+			}
+			break;
+	}
+	
+	// don't forget to set it to 'unknown'
+	mType = eUnknownVariant;
 }
 
 
