@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.19 2005/02/04 10:37:32 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.20 2005/02/07 19:06:42 drbob Exp $
  */
 
 //	System Headers
@@ -91,6 +91,19 @@ CKVariant::CKVariant( const CKString *aStringValue ) :
 	mStringValue(NULL)
 {
 	setStringValue(aStringValue);
+}
+
+
+/*
+ * This form of the constructor understands that the value that's
+ * intended to be stored here is an int (double), and the value
+ * provided is what's to be stored.
+ */
+CKVariant::CKVariant( int anIntValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setDoubleValue((double)anIntValue);
 }
 
 
@@ -194,7 +207,7 @@ CKVariant::~CKVariant()
  * make sure that we do this right by always having an equals
  * operator on all classes.
  */
-CKVariant & CKVariant::operator=( const CKVariant & anOther )
+CKVariant & CKVariant::operator=( CKVariant & anOther )
 {
 	switch (anOther.getType()) {
 		case eUnknownVariant:
@@ -221,6 +234,12 @@ CKVariant & CKVariant::operator=( const CKVariant & anOther )
 	}
 
 	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKVariant & anOther )
+{
+	return operator=((CKVariant &)anOther);
 }
 
 
@@ -1108,6 +1127,81 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 bool CKVariant::operator!=( const CKVariant & anOther ) const
 {
 	return !(this->operator==(anOther));
+}
+
+
+/*
+ * These methods complete the inequality tests for the CKVariant and
+ * we need these as we might be doing a lot of testing and this makes
+ * it a lot easier than converting to the right type and then doing
+ * a low-level test.
+ */
+bool CKVariant::operator<( const CKVariant & anOther ) const
+{
+	bool		error = false;
+	bool		less = false;
+
+	// first, see if the types match
+	if (!error) {
+		if (mType != anOther.mType) {
+			error = true;
+		}
+	}
+
+	// now, see if the values match
+	if (!error) {
+		switch (mType) {
+			case eUnknownVariant:
+				break;
+			case eStringVariant:
+				if ((mStringValue != NULL) && (anOther.mStringValue != NULL)) {
+					less = mStringValue->operator<(*anOther.mStringValue);
+				}
+				break;
+			case eNumberVariant:
+				if (mDoubleValue < anOther.mDoubleValue) {
+					less = true;
+				}
+				break;
+			case eDateVariant:
+				if (mDateValue < anOther.mDateValue) {
+					less = true;
+				}
+				break;
+			case eTableVariant:
+				break;
+			case eTimeSeriesVariant:
+				break;
+			case ePriceVariant:
+				if ((mPriceValue != NULL) && (anOther.mPriceValue != NULL)) {
+					if ((mPriceValue->getUSD() < anOther.mPriceValue->getUSD()) &&
+						(mPriceValue->getNative() < anOther.mPriceValue->getNative())) {
+						less = true;
+					}
+				}
+				break;
+		}
+	}
+
+	return less;
+}
+
+
+bool CKVariant::operator<=( const CKVariant & anOther ) const
+{
+	return this->operator<(anOther) || this->operator==(anOther);
+}
+
+
+bool CKVariant::operator>( const CKVariant & anOther ) const
+{
+	return !(this->operator<=(anOther));
+}
+
+
+bool CKVariant::operator>=( const CKVariant & anOther ) const
+{
+	return !(this->operator<(anOther));
 }
 
 

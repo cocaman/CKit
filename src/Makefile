@@ -89,7 +89,10 @@ OBJS = CKUUID.o \
 	CKIndexNode.o \
 	CKStopwatch.o \
 	CKException.o \
-	CKErrNoException.o
+	CKErrNoException.o \
+	muParserBase.o \
+	muParser.o \
+	muParserTest.o
 SRCS = $(OBJS:%.o=%.cpp)
 
 #
@@ -184,3 +187,9 @@ CKStopwatch.o: CKStopwatch.h CKVector.h CKStackLocker.h
 CKException.o: CKException.h CKString.h CKFWMutex.h
 CKErrNoException.o: CKErrNoException.h 
 CKErrNoException.o: CKException.h CKString.h CKFWMutex.h
+muParserBase.o: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
+muParserBase.o: muParserException.h
+muParser.o: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
+muParser.o: muParserException.h
+muParserTest.o: muParserTest.h muParser.h muParserBase.h muParserDef.h
+muParserTest.o: muParserGenerics.h muParserException.h
