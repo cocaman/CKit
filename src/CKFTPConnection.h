@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.7 2004/09/20 16:19:28 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.8 2004/09/22 12:08:27 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H
@@ -548,7 +548,7 @@ class CKFTPConnection
 		 * If there is any problem in creating the directory list, an empty
 		 * list is returned, and if necessary, a CKException is thrown.
 		 */
-		std::vector<CKString> getDirectoryContents( const CKString & aDir );
+		CKStringList getDirectoryContents( const CKString & aDir );
 		/*
 		 * This method returns a std::vector of the entire
 		 * tree structure in the passed-in directory, and below.
@@ -559,7 +559,7 @@ class CKFTPConnection
 		 * If there is any problem in creating the directory list, an empty
 		 * list is returned, otherwise, a std::vector is returned.
 		 */
-		std::vector<CKString> getSubpathsAtPath( const CKString & aDir );
+		CKStringList getSubpathsAtPath( const CKString & aDir );
 
 		/********************************************************
 		 *
@@ -597,7 +597,7 @@ class CKFTPConnection
 		 * list. A copy is made so you don't have to worry about who
 		 * owns the argument - the caller does.
 		 */
-		void setServerReplyLines( const std::vector<CKString> & aList );
+		void setServerReplyLines( const CKStringList & aList );
 		/*
 		 * This method sets the flag when we get logged into the FTP server
 		 * on the remote host, and when we logoff. This is useful because
@@ -623,7 +623,7 @@ class CKFTPConnection
 		 * port command. This is useful as there's a lot of useful data in
 		 * the responses and many times we need to mine it.
 		 */
-		std::vector<CKString> getServerReplyLines() const;
+		CKStringList getServerReplyLines() const;
 
 		/*
 		 * This method clears out all the response lines from the FTP server
@@ -1162,8 +1162,8 @@ class CKFTPConnection
 		 * the return value is created on the stack, the user needs to
 		 * save it if they want it to stay around.
 		 */
-		static std::vector<CKString> parseIntoChunks( const CKString & aString,
-													  const CKString & aDelim );
+		static CKStringList parseIntoChunks( const CKString & aString,
+											 const CKString & aDelim );
 
 	private:
 		/*
@@ -1277,7 +1277,7 @@ class CKFTPConnection
 		 * they they contain a lot of information about the transfer and we'd
 		 * like to have that to make sure things are done properly.
 		 */
-		std::vector<CKString>		mServerReplyLines;
+		CKStringList				mServerReplyLines;
 		/*
 		 * This is updated as we log into and out of the remote host's FTP
 		 * service.

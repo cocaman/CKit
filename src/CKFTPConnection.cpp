@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.9 2004/09/20 16:19:24 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.10 2004/09/22 12:08:23 drbob Exp $
  */
 
 //	System Headers
@@ -1378,7 +1378,7 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const CKString & aFile )
 	 * for the type of FTP server that sent the data, and then we need to
 	 * use this line ending to chop up the response into lines.
 	 */
-	std::vector<CKString>	dirList;
+	CKStringList	dirList;
 	if (!error) {
 		// assume that the FTP server sent CRLF line endings
 		CKString		eol = "\r\n";
@@ -1395,17 +1395,13 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const CKString & aFile )
 		 * that are empty lines. Chances are that there will be at least one
 		 * of them.
 		 */
-		CKString							blank("");
-		std::vector<CKString>::iterator		i;
-		while (!error) {
-			// try to find a blank line
-			i = find(dirList.begin(), dirList.end(), blank);
-			if (*i == blank) {
+		for (CKStringNode *i = dirList.getHead(); i != NULL; ) {
+			if (((CKString *)i)->length() == 0) {
 				// got it! let's erase it
 				dirList.erase(i);
 			} else {
-				// not found, then nothing left to do
-				break;
+				// check the next one
+				i = i->getNext();
 			}
 		}
 
@@ -1497,10 +1493,10 @@ CKFilePermissions CKFTPConnection::getFileAttributes( const CKString & aFile )
  * If there is any problem in creating the directory list, an empty
  * list is returned, and if necessary, a CKException is thrown.
  */
-std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aDir )
+CKStringList CKFTPConnection::getDirectoryContents( const CKString & aDir )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// see if we are logged into the host
 	if (!error) {
@@ -1540,7 +1536,7 @@ std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aD
 	 * for the type of FTP server that sent the data, and then we need to
 	 * use this line ending to chop up the response into lines.
 	 */
-	std::vector<CKString>	dirList;
+	CKStringList	dirList;
 	if (!error) {
 		// assume that the FTP server sent CRLF line endings
 		CKString		eol = "\r\n";
@@ -1557,17 +1553,13 @@ std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aD
 		 * that are empty lines. Chances are that there will be at least one
 		 * of them.
 		 */
-		CKString							blank("");
-		std::vector<CKString>::iterator		i;
-		while (!error) {
-			// try to find a blank line
-			i = find(dirList.begin(), dirList.end(), blank);
-			if (*i == blank) {
+		for (CKStringNode *i = dirList.getHead(); i != NULL; ) {
+			if (((CKString *)i)->length() == 0) {
 				// got it! let's erase it
 				dirList.erase(i);
 			} else {
-				// not found, then nothing left to do
-				break;
+				// check the next one
+				i = i->getNext();
 			}
 		}
 	}
@@ -1579,13 +1571,11 @@ std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aD
 	 * the names, not the fully qualified path names.
 	 */
 	if (!error && (dirList.size() > 0)) {
-		int			dirSize = aDir.size();
-		std::vector<CKString>::iterator		i;
-		for (i = dirList.begin(); i != dirList.end(); ++i) {
-			if (i->size() >= dirSize) {
-				if (i->substr(0, dirSize) == aDir) {
-					i->erase(0, dirSize);
-				}
+		int				dirSize = aDir.size();
+		CKStringNode	*i = NULL;
+		for (i = dirList.getHead(); i != NULL; i = i->getNext()) {
+			if (i->left(dirSize) == aDir) {
+				i->erase(0, dirSize);
 			}
 		}
 	}
@@ -1604,10 +1594,10 @@ std::vector<CKString> CKFTPConnection::getDirectoryContents( const CKString & aD
  * If there is any problem in creating the directory list, an empty
  * list is returned, otherwise, a std::vector is returned.
  */
-std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir )
+CKStringList CKFTPConnection::getSubpathsAtPath( const CKString & aDir )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// see if we are logged into the host
 	if (!error) {
@@ -1638,7 +1628,7 @@ std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir 
 	}
 
 	// get the root data from the remote host for this file
-	std::vector<CKString>		rootDirList;
+	CKStringList		rootDirList;
 	if (!error) {
 		try {
 			rootDirList = getDirectoryContents(aDir);
@@ -1661,8 +1651,8 @@ std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir 
 	 * if a littls slow at times.
 	 */
 	if (!error && (rootDirList.size() > 0)) {
-		std::vector<CKString>::iterator		i;
-		for (i = rootDirList.begin(); i != rootDirList.end(); ++i) {
+		CKStringNode		*i = NULL;
+		for (i = rootDirList.getHead(); i != NULL; i = i->getNext()) {
 			// create the complete path for this directory entry
 			CKString		completePath = aDir;
 			completePath += "/";
@@ -1673,15 +1663,15 @@ std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir 
 				if (isPositiveCompletionReply(doCWD(completePath))) {
 					// looks like a directory, get the contents
 					try {
-						std::vector<CKString>	sub = getSubpathsAtPath(completePath);
-						std::vector<CKString>::iterator		j;
-						for (j = sub.begin(); j != sub.end(); ++j) {
+						CKStringList	sub = getSubpathsAtPath(completePath);
+						CKStringNode	*j = NULL;
+						for (j = sub.getHead(); j != NULL; j = j->getNext()) {
 							// create the new directory entry
 							CKString	newbie = completePath;
 							newbie += "/";
 							newbie += (*j);
 							// ...and add it to the return vector
-							retval.push_back(newbie);
+							retval.addToEnd(newbie);
 						}
 					} catch (CKException & e2) {
 						error = true;
@@ -1694,7 +1684,7 @@ std::vector<CKString> CKFTPConnection::getSubpathsAtPath( const CKString & aDir 
 					}
 				} else {
 					// just a file, so add it to the list as-is
-					retval.push_back(*i);
+					retval.addToEnd(*i);
 				}
 			} catch (CKException & e1) {
 				error = true;
@@ -1803,11 +1793,8 @@ CKString CKFTPConnection::toString() const
  * list. A copy is made so you don't have to worry about who
  * owns the argument - the caller does.
  */
-void CKFTPConnection::setServerReplyLines( const std::vector<CKString> & aList )
+void CKFTPConnection::setServerReplyLines( const CKStringList & aList )
 {
-	// first, clear out the existing list
-	mServerReplyLines.clear();
-	// now, copy in the list's contents
 	mServerReplyLines = aList;
 }
 
@@ -1846,7 +1833,7 @@ CKString CKFTPConnection::getPassword() const
  * port command. This is useful as there's a lot of useful data in
  * the responses and many times we need to mine it.
  */
-std::vector<CKString> CKFTPConnection::getServerReplyLines() const
+CKStringList CKFTPConnection::getServerReplyLines() const
 {
 	return mServerReplyLines;
 }
@@ -1871,7 +1858,7 @@ void CKFTPConnection::clearServerReplyLines()
  */
 void CKFTPConnection::addToServerReplyLines( const CKString & aLine )
 {
-	mServerReplyLines.push_back(aLine);
+	mServerReplyLines.addToEnd(aLine);
 }
 
 
@@ -3159,12 +3146,11 @@ CKString CKFTPConnection::permissionsToNumber( const CKFilePermissions & aSet )
  * the return value is created on the stack, the user needs to
  * save it if they want it to stay around.
  */
-std::vector<CKString> CKFTPConnection::parseIntoChunks(
-												const CKString & aString,
-												const CKString & aDelim )
+CKStringList CKFTPConnection::parseIntoChunks( const CKString & aString,
+											   const CKString & aDelim )
 {
-	bool					error = false;
-	std::vector<CKString>	retval;
+	bool			error = false;
+	CKStringList	retval;
 
 	// first, see if we have anything to do
 	if (!error) {
@@ -3215,10 +3201,10 @@ std::vector<CKString> CKFTPConnection::parseIntoChunks(
 			break;
 		} else if (pos == 0) {
 			// add an empty string to the vector
-			retval.push_back(CKString(""));
+			retval.addToEnd(CKString());
 		} else {
 			// pick off the substring up to the delimiter
-			retval.push_back(buff.substr(0, pos));
+			retval.addToEnd(buff.substr(0, pos));
 			// ...and then delete them from the buffer
 			buff.erase(0, pos);
 		}
@@ -3228,7 +3214,7 @@ std::vector<CKString> CKFTPConnection::parseIntoChunks(
 	}
 	// if we didn't error out, then add the remaining buff to the end
 	if (!error) {
-		retval.push_back(buff);
+		retval.addToEnd(buff);
 	}
 
 	return retval;
@@ -3660,6 +3646,6 @@ CKString CKFTPConnection::stringForLastFTPReturnCode()
 std::ostream & operator<<( std::ostream & aStream, const CKFTPConnection & aConnection )
 {
 	aStream << aConnection.toString();
-	
+
 	return aStream;
 }

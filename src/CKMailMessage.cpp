@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.8 2004/09/20 16:19:36 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.9 2004/09/22 12:08:32 drbob Exp $
  */
 
 //	System Headers
@@ -52,9 +52,9 @@ CKMailMessage::CKMailMessage() :
  * This is the constructor that takes a vector of names, a subject
  * line, and a body text and creates the message based on that.
  */
-CKMailMessage::CKMailMessage( const std::vector<CKString> & aRecipientList,
-			   const CKString & aSubject,
-			   const CKString & aBody ) :
+CKMailMessage::CKMailMessage( const CKStringList & aRecipientList,
+							  const CKString & aSubject,
+							  const CKString & aBody ) :
 	mRecipients(),
 	mSubject(),
 	mMessageBody()
@@ -119,7 +119,7 @@ CKMailMessage & CKMailMessage::operator=( const CKMailMessage & anOther )
  * that a copy is made of the contents, and the list itself
  * is still under the caller's control.
  */
-void CKMailMessage::setRecipients( const std::vector<CKString> & aList )
+void CKMailMessage::setRecipients( const CKStringList & aList )
 {
 	mRecipients = aList;
 }
@@ -145,7 +145,7 @@ void CKMailMessage::setSubject( const CKString & aSubject )
 void CKMailMessage::setMessageBody( const CKString & aMessage )
 {
 	mMessageBody.clear();
-	mMessageBody.push_back(aMessage);
+	mMessageBody.addToEnd(aMessage);
 }
 
 
@@ -155,7 +155,7 @@ void CKMailMessage::setMessageBody( const CKString & aMessage )
  * actual data, if the caller wants to do something with it, they
  * need to make a copy before it goes out of scope.
  */
-const std::vector<CKString> *CKMailMessage::getRecipients() const
+const CKStringList *CKMailMessage::getRecipients() const
 {
 	return &mRecipients;
 }
@@ -232,8 +232,8 @@ CKString CKMailMessage::getMessageBody() const
 		// ...and then a blank line to indicate the start of the msg
 		body.append("\r\n");
 		// ...and finally all the parts of the message
-		std::vector<CKString>::const_iterator	i;
-		for (i = mMessageBody.begin(); i != mMessageBody.end(); ++i) {
+		CKStringNode		*i = NULL;
+		for (i = mMessageBody.getHead(); i != NULL; i = i->getNext()) {
 			// start with the separator for this part
 			body.append("--");
 			body.append(separator);
@@ -268,14 +268,9 @@ CKString CKMailMessage::getMessageBody() const
 void CKMailMessage::addToRecipients( const CKString & anAddress )
 {
 	if (anAddress.length() > 0) {
-		if (mRecipients.size() > 0) {
-			std::vector<CKString>::iterator	i;
-			i = find(mRecipients.begin(), mRecipients.end(), anAddress);
-			if (i == mRecipients.end()) {
-				mRecipients.push_back(anAddress);
-			}
-		} else {
-			mRecipients.push_back(anAddress);
+		// see if it's not yet in the list
+		if (!mRecipients.contains(anAddress)) {
+			mRecipients.addToEnd(anAddress);
 		}
 	}
 }
@@ -288,7 +283,7 @@ void CKMailMessage::addToRecipients( const CKString & anAddress )
  */
 void CKMailMessage::addToMessageBody( const CKString & aMessage )
 {
-	mMessageBody.push_back(aMessage);
+	mMessageBody.addToEnd(aMessage);
 }
 
 
@@ -318,13 +313,7 @@ void CKMailMessage::addAttachment( const CKMailMessage & anAttachment )
  */
 void CKMailMessage::removeFromRecipients( const CKString & anAddress )
 {
-	if (mRecipients.size() > 0) {
-		std::vector<CKString>::iterator	i;
-		i = find(mRecipients.begin(), mRecipients.end(), anAddress);
-		if (i != mRecipients.end()) {
-			mRecipients.erase(i);
-		}
-	}
+	mRecipients.erase(anAddress);
 }
 
 
@@ -360,8 +349,8 @@ bool CKMailMessage::messageIsDeliverable() const
 	}
 
 	/*
-	 * You can send a valid email message with only a subject 
-	 * or only a message body but it's pretty 
+	 * You can send a valid email message with only a subject
+	 * or only a message body but it's pretty
 	 * counterproductive to send a message with both empty.
 	 */
 	if (messageIsDeliverable) {
@@ -432,10 +421,9 @@ bool CKMailMessage::operator!=( const CKMailMessage & anOther ) const
  */
 CKString CKMailMessage::toString() const
 {
-	std::vector<CKString>::const_iterator	i;
-
 	CKString	retval = "Recipients:";
-	for (i = mRecipients.begin(); i != mRecipients.end(); ++i) {
+	CKStringNode	*i = NULL;
+	for (i = mRecipients.getHead(); i != NULL; i = i->getNext()) {
 		retval += " '";
 		retval += (*i);
 		retval += " '";
@@ -464,7 +452,7 @@ CKString CKMailMessage::getContentType( const CKString & anElement ) const
 	 * Simply run the tests for the data type and map it to a
 	 * string to return. Start with the simple ones and then work
 	 * on the harder ones.
-	 */		
+	 */
 	if ((anElement.find("HTML") != -1) ||
 		(anElement.find("html") != -1)) {
 		retval = "Content-type: text/html; charset=US-ASCII\r\n"
@@ -476,7 +464,7 @@ CKString CKMailMessage::getContentType( const CKString & anElement ) const
 		retval = "Content-type: text/plain; charset=US-ASCII\r\n"
 					"Content-Transfer-Encoding: 7bit\r\n";
 	}
-	
+
 	return retval;
 }
 
@@ -495,7 +483,7 @@ CKString CKMailMessage::encodeMessagePart( const CKString & anElement ) const
 	 * Simply run the tests for the data type and mapp it to a
 	 * String to return. Start with the simple ones and then work
 	 * on the harder ones.
-	 */		
+	 */
 	if (anElement.size() == 0) {
 		retval.append(" ");
 	} else {
@@ -504,7 +492,7 @@ CKString CKMailMessage::encodeMessagePart( const CKString & anElement ) const
 
 	// make sure it all ends with a line termination
 	retval.append("\r\n");
-		
+
 	return retval;
 }
 

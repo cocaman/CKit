@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.3 2004/09/20 16:19:45 drbob Exp $
+ * $Id: CKString.h,v 1.4 2004/09/22 12:08:38 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -20,6 +20,7 @@
 #include <string>
 
 //	Third-Party Headers
+#include <CKFWMutex.h>
 
 //	Other Headers
 
@@ -822,7 +823,7 @@ class CKString
 		 * worry about the ownership of the representation, so this returns
 		 * a std::string.
 		 */
-		virtual std::string toString() const;
+		virtual CKString toString() const;
 
 	protected:
 		/*
@@ -844,6 +845,9 @@ class CKString
 		bool resize( int aSize );
 
 	private:
+		friend class CKStringNode;
+		friend class CKStringList;
+
 		/*
 		 * This is the character array that is the core of the storage of
 		 * the CKString. It's simple, but it's very effective as I can then
@@ -888,5 +892,479 @@ class CKString
  */
 std::ostream & operator<<( std::ostream & aStream, CKString & aString );
 std::ostream & operator<<( std::ostream & aStream, const CKString & aString );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize a list of strings. This is nice in that it's easy to use, easy
+ * to deal with, and the destructor takes care of cleaning up the strings
+ * itself.
+ *
+ * We base it off the CKString so that it appears to be a normal string in
+ * all regards - save the ability to exist in a doubly-linked list.
+ *
+ * The reason for this is that the STL std::vector and stl::list are no good
+ * in their implementations in GCC, so rather than try to fix that code, we
+ * chose to write our own classes.
+ * ----------------------------------------------------------------------------
+ */
+class CKStringNode :
+	public CKString
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKStringNode();
+		/*
+		 * This is a "promotion" constructor that takes a string and
+		 * creates a new string node based on the data in that string.
+		 * This is important because it'll be an easy way to add strings
+		 * to the list.
+		 */
+		CKStringNode( const CKString & anOther,
+					  CKStringNode *aPrev = NULL,
+					  CKStringNode *aNext = NULL );
+		CKStringNode( const char * aCString,
+					  CKStringNode *aPrev = NULL,
+					  CKStringNode *aNext = NULL );
+		CKStringNode( const std::string & anSTLString,
+					  CKStringNode *aPrev = NULL,
+					  CKStringNode *aNext = NULL );
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKStringNode( const CKStringNode & anOther );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKStringNode();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKStringNode & operator=( const CKStringNode & anOther );
+		/*
+		 * At times it's also nice to be able to set a string to this
+		 * node so that there's not a ton of casting in the code.
+		 */
+		CKStringNode & operator=( const CKString & anOther );
+		CKStringNode & operator=( const char * aCString );
+		CKStringNode & operator=( const std::string & aCString );
+
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the simple setters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		void setPrev( CKStringNode *aNode );
+		void setNext( CKStringNode *aNode );
+
+		/*
+		 * These are the simple getters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		CKStringNode *getPrev();
+		CKStringNode *getNext();
+
+		/*
+		 * This method is used to 'unlink' the node from the list it's in.
+		 * This will NOT delete the node, merely take it out the the list
+		 * and now it becomes the responsibility of the caller to delete
+		 * this node, or add him to another list.
+		 */
+		void removeFromList();
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method checks to see if the two CKStringNodes are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( const CKStringNode & anOther ) const;
+		/*
+		 * This method checks to see if the two CKStringNodes are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( const CKStringNode & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString() const;
+
+	private:
+		friend class CKStringList;
+
+		/*
+		 * Since we're a doubly-linked list, I'm just going to have a
+		 * prev and next pointers and that will take care of the linking.
+		 */
+		CKStringNode		*mPrev;
+		CKStringNode		*mNext;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKStringNode & aNode );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKString objects. It
+ * is organized as a doubly-linked list of CKStringNodes and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+class CKStringList
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKStringList();
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKStringList( CKStringList & anOther );
+		CKStringList( const CKStringList & anOther );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKStringList();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKStringList & operator=( CKStringList & anOther );
+		CKStringList & operator=( const CKStringList & anOther );
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the easiest ways to get at the head and tail of this
+		 * list. After that, the CKStringNode's getPrev() and getNext()
+		 * do a good job of moving you around the list.
+		 */
+		CKStringNode *getHead();
+		CKStringNode *getHead() const;
+		CKStringNode *getTail();
+		CKStringNode *getTail() const;
+
+		/*
+		 * Because there may be times that the user wants to lock us up
+		 * for change, we're going to expose this here so it's easy for them
+		 * to iterate, for example.
+		 */
+		void lock();
+		void lock() const;
+		void unlock();
+		void unlock() const;
+
+		/*
+		 * This method is a simple indexing operator so that we can easily
+		 * get the individual strings in the list. If the argument
+		 * is -1, then the default is to get the *LAST* non-NULL
+		 * string in the list.
+		 */
+		CKString & operator[]( int aPosition );
+		CKString & operator[]( int aPosition ) const;
+
+		/********************************************************
+		 *
+		 *                List Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method gets the size of the list in a thread-safe
+		 * way. This means that it will block until it can get the
+		 * lock on the data, so be warned.
+		 */
+		int size();
+		int size() const;
+
+		/*
+		 * This is used to tell the caller if the list is empty. It's
+		 * faster than checking for a size() == 0.
+		 */
+		bool empty();
+		bool empty() const;
+
+		/*
+		 * This method clears out the entire list and deletes all it's
+		 * contents. After this, all node pointers to nodes in this list
+		 * will be pointing to nothing, so watch out.
+		 */
+		void clear();
+		void clear() const;
+
+		/*
+		 * When I want to add a string to the front or back of the list,
+		 * these are the simplest ways to do that. The passed-in string
+		 * is left untouched, and a copy is made of it at the proper point
+		 * in the list.
+		 */
+		void addToFront( CKString & aString );
+		void addToFront( const CKString & aString );
+		void addToFront( CKString & aString ) const;
+		void addToFront( const CKString & aString ) const;
+
+		void addToFront( std::string & anSTLString );
+		void addToFront( const std::string & anSTLString );
+		void addToFront( std::string & anSTLString ) const;
+		void addToFront( const std::string & anSTLString ) const;
+
+		void addToFront( char * aCString );
+		void addToFront( const char * aCString );
+		void addToFront( char * aCString ) const;
+		void addToFront( const char * aCString ) const;
+
+		void addToEnd( CKString & aString );
+		void addToEnd( const CKString & aString );
+		void addToEnd( CKString & aString ) const;
+		void addToEnd( const CKString & aString ) const;
+
+		void addToEnd( std::string & anSTLString );
+		void addToEnd( const std::string & anSTLString );
+		void addToEnd( std::string & anSTLString ) const;
+		void addToEnd( const std::string & anSTLString ) const;
+
+		void addToEnd( char *aCString );
+		void addToEnd( const char *aCString );
+		void addToEnd( char *aCString ) const;
+		void addToEnd( const char *aCString ) const;
+
+		/*
+		 * These methods take control of the passed-in arguments and place
+		 * them in the proper place in the list. This is different in that
+		 * the control of the node is passed to the list, but that's why
+		 * we've created them... to make it easy to add in nodes by just
+		 * changing the links.
+		 */
+		void putOnFront( CKStringNode *aNode );
+		void putOnFront( const CKStringNode *aNode );
+		void putOnFront( CKStringNode *aNode ) const;
+		void putOnFront( const CKStringNode *aNode ) const;
+
+		void putOnEnd( CKStringNode *aNode );
+		void putOnEnd( const CKStringNode *aNode );
+		void putOnEnd( CKStringNode *aNode ) const;
+		void putOnEnd( const CKStringNode *aNode ) const;
+
+		/*
+		 * When you have a list that you want to add to this list, these
+		 * are the methods to use. It's important to note that the arguments
+		 * will NOT be altered - which is why this is called the 'copy' as
+		 * opposed to the 'splice'.
+		 */
+		void copyToFront( CKStringList & aList );
+		void copyToFront( const CKStringList & aList );
+		void copyToFront( CKStringList & aList ) const;
+		void copyToFront( const CKStringList & aList ) const;
+
+		void copyToEnd( CKStringList & aList );
+		void copyToEnd( const CKStringList & aList );
+		void copyToEnd( CKStringList & aList ) const;
+		void copyToEnd( const CKStringList & aList ) const;
+
+		/*
+		 * When you have a list that you want to merge into this list, these
+		 * are the methods to use. It's important to note that the argument
+		 * lists will be EMPTIED - which is why this is called the 'splice'
+		 * as opposed to the 'copy'.
+		 */
+		void spliceOnFront( CKStringList & aList );
+		void spliceOnFront( const CKStringList & aList );
+		void spliceOnFront( CKStringList & aList ) const;
+		void spliceOnFront( const CKStringList & aList ) const;
+
+		void spliceOnEnd( CKStringList & aList );
+		void spliceOnEnd( const CKStringList & aList );
+		void spliceOnEnd( CKStringList & aList ) const;
+		void spliceOnEnd( const CKStringList & aList ) const;
+
+		/*
+		 * This method removes the specified node from this list - actually,
+		 * it's just guaranteed to remove it from the list it's in as the
+		 * erasure simply removes this node from it's list and then deletes
+		 * it.
+		 */
+		void erase( CKStringNode * & aNode );
+		void erase( CKStringNode * & aNode ) const;
+
+		void erase( CKString & aString );
+		void erase( const CKString & aString );
+		void erase( CKString & aString ) const;
+		void erase( const CKString & aString ) const;
+
+		void erase( char *aCString );
+		void erase( const char *aCString );
+		void erase( char *aCString ) const;
+		void erase( const char *aCString ) const;
+
+		void erase( std::string & anSTLString );
+		void erase( const std::string & anSTLString );
+		void erase( std::string & anSTLString ) const;
+		void erase( const std::string & anSTLString ) const;
+
+		/*
+		 * This method is useful in that it will tell us if this list
+		 * contains the provided string and that is a nice test if we
+		 * want to be making list of unique elements.
+		 */
+		bool contains( CKString & aString );
+		bool contains( const CKString & aString );
+		bool contains( CKString & aString ) const;
+		bool contains( const CKString & aString ) const;
+
+		bool contains( char *aCString );
+		bool contains( const char *aCString );
+		bool contains( char *aCString ) const;
+		bool contains( const char *aCString ) const;
+
+		bool contains( std::string & anSTLString );
+		bool contains( const std::string & anSTLString );
+		bool contains( std::string & anSTLString ) const;
+		bool contains( const std::string & anSTLString ) const;
+
+		/*
+		 * This method is useful in that it will locate the CKStringNode
+		 * in the list, if it exists, that matches the passed-in string.
+		 * This is a nice way to find a location in the list.
+		 */
+		CKStringNode *find( CKString & aString );
+		CKStringNode *find( const CKString & aString );
+		CKStringNode *find( CKString & aString ) const;
+		CKStringNode *find( const CKString & aString ) const;
+
+		CKStringNode *find( char *aCString );
+		CKStringNode *find( const char *aCString );
+		CKStringNode *find( char *aCString ) const;
+		CKStringNode *find( const char *aCString ) const;
+
+		CKStringNode *find( std::string & anSTLString );
+		CKStringNode *find( const std::string & anSTLString );
+		CKStringNode *find( std::string & anSTLString ) const;
+		CKStringNode *find( const std::string & anSTLString ) const;
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method checks to see if the two CKStringLists are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( CKStringList & anOther );
+		bool operator==( const CKStringList & anOther );
+		bool operator==( CKStringList & anOther ) const;
+		bool operator==( const CKStringList & anOther ) const;
+		/*
+		 * This method checks to see if the two CKStringLists are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( CKStringList & anOther );
+		bool operator!=( const CKStringList & anOther );
+		bool operator!=( CKStringList & anOther ) const;
+		bool operator!=( const CKStringList & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString();
+
+	protected:
+		/*
+		 * Setting the head or the tail is a bit dicey and so we're not
+		 * going to let just anyone change these guys.
+		 */
+		void setHead( CKStringNode *aNode );
+		void setTail( CKStringNode *aNode );
+
+	private:
+		/*
+		 * A Doubly-linked list is pretty easy - there's a head and a
+		 * tail and that's about it.
+		 */
+		CKStringNode			*mHead;
+		CKStringNode			*mTail;
+		/*
+		 * This is the mutex that is going to protect all the dangerous
+		 * operations so that this list is thread-safe.
+		 */
+		CKFWMutex				mMutex;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKStringList & aList );
 
 #endif	// __CKSTRING_H

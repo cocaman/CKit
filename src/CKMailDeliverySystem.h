@@ -12,7 +12,7 @@
  *                          set that as the default prior to sending any
  *                          messages. In practice, this works very well.
  *
- * $Id: CKMailDeliverySystem.h,v 1.7 2004/09/20 16:19:36 drbob Exp $
+ * $Id: CKMailDeliverySystem.h,v 1.8 2004/09/22 12:08:32 drbob Exp $
  */
 #ifndef __CKMAILDELIVERYSYSTEM_H
 #define __CKMAILDELIVERYSYSTEM_H
@@ -113,10 +113,10 @@ class CKMailDeliverySystem
 		 */
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt = false );
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-							const std::vector<CKString> & aPvtRecipients );
+							 const CKStringList & aPvtRecipients );
 		static bool deliver( const CKMailMessage & aMsg, bool aReadReceipt,
-							const std::vector<CKString> & aPvtRecipients,
-							CKMailDelivery & aChannel );
+							 const CKStringList & aPvtRecipients,
+							 CKMailDelivery & aChannel );
 
 		/********************************************************
 		 *

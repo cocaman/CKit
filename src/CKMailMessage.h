@@ -6,7 +6,7 @@
  *                   all delivery mechanisms will use this one message
  *                   structure.
  *
- * $Id: CKMailMessage.h,v 1.7 2004/09/20 16:19:37 drbob Exp $
+ * $Id: CKMailMessage.h,v 1.8 2004/09/22 12:08:33 drbob Exp $
  */
 #ifndef __CKMAILMESSAGE_H
 #define __CKMAILMESSAGE_H
@@ -53,7 +53,7 @@ class CKMailMessage
 		 * This is the constructor that takes a vector of names, a subject
 		 * line, and a body text and creates the message based on that.
 		 */
-		CKMailMessage( const std::vector<CKString> & aRecipientList,
+		CKMailMessage( const CKStringList & aRecipientList,
 					   const CKString & aSubject,
 					   const CKString & aBody );
 		/*
@@ -87,7 +87,7 @@ class CKMailMessage
 		 * that a copy is made of the contents, and the list itself
 		 * is still under the caller's control.
 		 */
-		void setRecipients( const std::vector<CKString> & aList );
+		void setRecipients( const CKStringList & aList );
 		/*
 		 * This method sets the subject line for this message when
 		 * it finally gets delivered.
@@ -108,7 +108,7 @@ class CKMailMessage
 		 * actual data, if the caller wants to do something with it, they
 		 * need to make a copy before it goes out of scope.
 		 */
-		const std::vector<CKString> *getRecipients() const;
+		const CKStringList *getRecipients() const;
 		/*
 		 * This method returns the subject line for this message when it's
 		 * sent out through the delivery channel.
@@ -210,7 +210,7 @@ class CKMailMessage
 		/*
 		 * This method returns the MIME 'Content Type' string for inclusion
 		 * in the flattened message. This is important because having the
-		 * correct content type means that the mailers that eventually get 
+		 * correct content type means that the mailers that eventually get
 		 * this message will know how to decode it.
 		 */
 		CKString getContentType( const CKString & anElement ) const;
@@ -232,19 +232,19 @@ class CKMailMessage
 		 * too deliver the message through another channel, and then this
 		 * would have to require some real thought by the user of the class.
 		 */
-		std::vector<CKString>			mRecipients;
+		CKStringList			mRecipients;
 		/*
 		 * This is going to be the subject line of the email when it is
 		 * sent.
 		 */
-		CKString						mSubject;
+		CKString				mSubject;
 		/*
 		 * Since we allow multi-part MIME messages, we need to have a list
 		 * of all the parts a message can have. This is going to make the
 		 * sending very flexible, but at the same time, it's not a walk in
 		 * the park to get this formatted properly.
 		 */
-		std::vector<CKString>			mMessageBody;
+		CKStringList			mMessageBody;
 };
 
 /*
