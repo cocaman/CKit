@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.15 2004/09/22 12:08:19 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.16 2004/09/22 12:14:18 drbob Exp $
  */
 
 //	System Headers
@@ -1947,8 +1947,15 @@ CKDataNodeList::CKDataNodeList( CKDataNodeList & anOther ) :
  */
 CKDataNodeList::~CKDataNodeList()
 {
-	// simply clear out the list and we're done.
-	clear();
+	// we need to delete the head as long as there is one
+	while (mHead != NULL) {
+		CKDataNodeListElem	*next = mHead->mNext;
+		delete mHead;
+		mHead = next;
+		if (mHead != NULL) {
+			mHead->mPrev = NULL;
+		}
+	}
 }
 
 
