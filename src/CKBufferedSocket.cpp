@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.15 2005/01/13 10:32:41 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.16 2005/04/07 21:20:38 drbob Exp $
  */
 
 //	System Headers
@@ -116,7 +116,7 @@ CKBufferedSocket::CKBufferedSocket( const CKBufferedSocket & anOther ) :
  */
 CKBufferedSocket::~CKBufferedSocket()
 {
-	shutdownSocket();
+	// the sure does everything we need here...
 }
 
 

@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.19 2005/02/17 14:43:39 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.20 2005/04/07 21:20:39 drbob Exp $
  */
 
 //	System Headers
@@ -819,18 +819,18 @@ bool CKSocket::incomingConnectionActive() const
 void CKSocket::shutdownSocket()
 {
 	// if we have a valid socket handle, clean it up first
-	if (getSocketHandle() != INVALID_SOCKET) {
+	if (mSocketHandle != INVALID_SOCKET) {
 		// first shut down the socket against any communication
-		shutdown(getSocketHandle(), 2);
+		shutdown(mSocketHandle, 2);
 		// ...now close out the file handle for this guy
-		::close(getSocketHandle());
+		::close(mSocketHandle);
 		// finally, invalidate the ivar
-		setSocketHandle(INVALID_SOCKET);
+		mSocketHandle = INVALID_SOCKET;
 	}
 
 	// ...and reset the class variables
-	setConnectionEstablished(false);
-	setActivelyListening(false);
+	mConnectionEstablished = false;
+	mActivelyListening = false;
 }
 
 
