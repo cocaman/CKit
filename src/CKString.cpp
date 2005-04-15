@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.19 2005/02/24 15:07:24 drbob Exp $
+ * $Id: CKString.cpp,v 1.20 2005/04/15 21:15:31 drbob Exp $
  */
 
 //	System Headers
@@ -3136,8 +3136,10 @@ bool CKString::operator==( char *aCString )
 	}
 
 	// next, see if the sizes match
-	if (mSize != (int)strlen(aCString)) {
-		equal = false;
+	if (equal) {
+		if (mSize != (int)strlen(aCString)) {
+			equal = false;
+		}
 	}
 
 	// check the buffer contents
