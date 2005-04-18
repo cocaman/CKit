@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.20 2005/04/15 21:15:31 drbob Exp $
+ * $Id: CKString.cpp,v 1.21 2005/04/18 13:41:17 drbob Exp $
  */
 
 //	System Headers
@@ -5132,7 +5132,7 @@ void CKStringList::erase( char *aCString )
 		// ...and scan through the list looking for matches to delete
 		CKStringNode	*n = mHead;
 		while (n != NULL) {
-			if ((*n) == aCString) {
+			if ((*((CKString *)n)) == aCString) {
 				// we need to see if we are removing the head or tail
 				if (n == mHead) {
 					mHead = n->getNext();
