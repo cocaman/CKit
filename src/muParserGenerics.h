@@ -452,7 +452,12 @@ class ParserToken
 		{
 			switch (m_iType) {
 				case cmVAL:  return m_fVal;
-				case cmVAR:  return *((TBase*)m_pTok);
+				case cmVAR:
+					if (m_pTok == NULL) {
+						throw ParserException("internal error:  GetVal() called for NULL-valued variable token.");
+					} else {
+						return *((TBase*)m_pTok);
+					}
 				default:
 					throw ParserException("internal error:  GetVal() called for non value token.");
 			}
