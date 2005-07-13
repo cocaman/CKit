@@ -9,7 +9,7 @@
  *            possibility of including a hashed class name so that the UUID
  *            can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.h,v 1.7 2004/09/20 16:19:56 drbob Exp $
+ * $Id: CKUUID.h,v 1.8 2005/07/13 09:40:21 drbob Exp $
  */
 #ifndef __CKUUID_H
 #define __CKUUID_H
@@ -73,7 +73,7 @@ typedef struct {
     unsigned char	clock_seq_hi_and_reserved;
     unsigned char	clock_seq_low;
     unsigned char	node[6];
-} uuid_t, *uuid_p_t;
+} dce_uuid_t, *dce_uuid_p_t;
 
 typedef struct {
     time_t			timestamp;
@@ -82,7 +82,7 @@ typedef struct {
     unsigned char	_bitset;
     unsigned char	_reserved;
     struct in_addr	ip_address;
-} ns_uuid_t, *ns_uuid_p_t;
+} dce_ns_uuid_t, *dce_ns_uuid_p_t;
 
 /*
  * This structure is a representational mapping of four distinct ways of
@@ -93,8 +93,8 @@ typedef struct {
  * those different parts without a lot of bit-fiddeling.
  */
 typedef union {
-    uuid_t			dce;
-    ns_uuid_t		ns;
+    dce_uuid_t		dce;
+    dce_ns_uuid_t	ns;
     unsigned int	words[4];
     unsigned char	bytes[16];
 } CKUUID_struct;
