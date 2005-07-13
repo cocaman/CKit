@@ -367,13 +367,17 @@ class ParserToken
 		*/
 		ParserToken& SetVar(TBase *a_pVar, const TString &a_strTok)
 		{
-			m_iType = cmVAR;
-			m_fVal = 0;
-			m_pTok = (void*)a_pVar;
-			m_iFlags = 0;
-			m_strTok = a_strTok;
-
-			AddFlags(ParserToken::flVOLATILE);
+			if (m_pTok == NULL) {
+				throw ParserException("argument error:  SetVal() cannot be called with a NULL pointer for the variable value.");
+			} else {
+				m_iType = cmVAR;
+				m_fVal = 0;
+				m_pTok = (void*)a_pVar;
+				m_iFlags = 0;
+				m_strTok = a_strTok;
+	
+				AddFlags(ParserToken::flVOLATILE);
+			}
 			return *this;
 		}
 
