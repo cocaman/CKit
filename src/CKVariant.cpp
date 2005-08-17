@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.22 2005/02/08 19:48:19 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.23 2005/08/17 13:56:15 drbob Exp $
  */
 
 //	System Headers
@@ -2234,9 +2234,11 @@ CKVariant & CKVariant::operator-=( int aValue )
 		case eUnknownVariant:
 			break;
 		case eStringVariant:
-			if (mStringValue != NULL) {
-				mStringValue->append(-1*aValue);
-			}
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(int) - there is no defined operation for decrementing "
+				"a String by an int, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 		case eNumberVariant:
 			mDoubleValue -= aValue;
