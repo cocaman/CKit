@@ -5,17 +5,17 @@
  *               the important prices and values. This object makes it easy
  *               to get at these guys.
  *
- * $Id: CKPrice.cpp,v 1.2 2005/02/04 10:37:30 drbob Exp $
+ * $Id: CKPrice.cpp,v 1.3 2005/08/17 13:56:54 drbob Exp $
  */
 
 //	System Headers
 #include <stdio.h>
 
 //	Third-Party Headers
-#include <CKException.h>
-#include <CKTable.h>
 
 //	Other Headers
+#include "CKException.h"
+#include "CKTable.h"
 #include "CKPrice.h"
 
 //	Forward Declarations
