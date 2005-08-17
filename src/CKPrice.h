@@ -5,7 +5,7 @@
  *             the important prices and values. This object makes it easy
  *             to get at these guys.
  *
- * $Id: CKPrice.h,v 1.2 2005/02/04 10:37:31 drbob Exp $
+ * $Id: CKPrice.h,v 1.3 2005/08/17 13:56:54 drbob Exp $
  */
 #ifndef __CKPRICE_H
 #define __CKPRICE_H
@@ -51,9 +51,9 @@
 #endif
 
 //	Third-Party Headers
-#include <CKString.h>
 
 //	Other Headers
+#include "CKString.h"
 
 //	Forward Declarations
 
