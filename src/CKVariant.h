@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.14 2005/02/07 19:06:46 drbob Exp $
+ * $Id: CKVariant.h,v 1.15 2005/09/13 15:50:55 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -27,6 +27,7 @@
 //	Forward Declarations
 class CKTable;
 class CKPrice;
+class CKVariantList;
 
 //	Public Constants
 /*
@@ -41,7 +42,8 @@ enum CKVariantTypeEnum {
 	eDateVariant = 2,
 	eTableVariant = 3,
 	eTimeSeriesVariant = 4,
-	ePriceVariant = 5
+	ePriceVariant = 5,
+	eListVariant = 6
 };
 typedef CKVariantTypeEnum CKVariantType;
 
@@ -129,6 +131,14 @@ class CKVariant
 		 */
 		CKVariant( const CKPrice *aPriceValue );
 		/*
+		 * This form of the constructor understands that the value that's
+		 * intended to be stored here is a CKVariantList, and the value
+		 * provided is what's to be stored. The value argument will not be
+		 * touched in this constructor as we'll be making a copy of the
+		 * contents for local use.
+		 */
+		CKVariant( const CKVariantList *aListValue );
+		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
 		 * around.
@@ -162,6 +172,7 @@ class CKVariant
 		CKVariant & operator=( const CKTable & aTable );
 		CKVariant & operator=( const CKTimeSeries & aTimeSeries );
 		CKVariant & operator=( const CKPrice & aPrice );
+		CKVariant & operator=( const CKVariantList & aList );
 
 		/********************************************************
 		 *
@@ -217,6 +228,13 @@ class CKVariant
 		 * is free to delete it.
 		 */
 		void setPriceValue( const CKPrice *aPriceValue );
+		/*
+		 * This sets the value stored in this instance as a list of
+		 * variants, but a local copy will be made so that the caller
+		 * doesn't have to worry about holding on to the parameter, and
+		 * is free to delete it.
+		 */
+		void setListValue( const CKVariantList *aListValue );
 
 		/*
 		 * This method returns the enumerated type of the data that this
@@ -271,6 +289,12 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKPrice *getPriceValue() const;
+		/*
+		 * This method returns the actual list of the variants that
+		 * this instance is holding. If the user wants to use this value
+		 * outside the scope of this class, then they need to make a copy.
+		 */
+		const CKVariantList *getListValue() const;
 
 		/*
 		 * This method can be used to clear out any existing value in the
@@ -314,6 +338,13 @@ class CKVariant
 		 * without problems then we return true, otherwise we return false.
 		 */
 		static bool isTable( const char *aValue );
+		/*
+		 * When parsing the incoming data, it's important to be able
+		 * to tell what the data coming back is. That's the purpose of this
+		 * function - if the data (string) can be represented as a list
+		 * without problems then we return true, otherwise we return false.
+		 */
+		static bool isList( const char *aValue );
 
 		/*
 		 * This method returns a copy of the current value as contained in
@@ -400,6 +431,7 @@ class CKVariant
 		bool operator==( const CKTable & aTable ) const;
 		bool operator==( const CKTimeSeries & aSeries ) const;
 		bool operator==( const CKPrice & aPrice ) const;
+		bool operator==( const CKVariantList & aList ) const;
 
 		bool operator!=( const char *aCString ) const;
 		bool operator!=( const std::string & anSTLString ) const;
@@ -410,6 +442,7 @@ class CKVariant
 		bool operator!=( const CKTable & aTable ) const;
 		bool operator!=( const CKTimeSeries & aSeries ) const;
 		bool operator!=( const CKPrice & aPrice ) const;
+		bool operator!=( const CKVariantList & aList ) const;
 
 		bool operator<( const char *aCString ) const;
 		bool operator<( const std::string & anSTLString ) const;
@@ -420,6 +453,7 @@ class CKVariant
 		bool operator<( const CKTable & aTable ) const;
 		bool operator<( const CKTimeSeries & aSeries ) const;
 		bool operator<( const CKPrice & aPrice ) const;
+		bool operator<( const CKVariantList & aList ) const;
 
 		bool operator<=( const char *aCString ) const;
 		bool operator<=( const std::string & anSTLString ) const;
@@ -430,6 +464,7 @@ class CKVariant
 		bool operator<=( const CKTable & aTable ) const;
 		bool operator<=( const CKTimeSeries & aSeries ) const;
 		bool operator<=( const CKPrice & aPrice ) const;
+		bool operator<=( const CKVariantList & aList ) const;
 
 		bool operator>( const char *aCString ) const;
 		bool operator>( const std::string & anSTLString ) const;
@@ -440,6 +475,7 @@ class CKVariant
 		bool operator>( const CKTable & aTable ) const;
 		bool operator>( const CKTimeSeries & aSeries ) const;
 		bool operator>( const CKPrice & aPrice ) const;
+		bool operator>( const CKVariantList & aList ) const;
 
 		bool operator>=( const char *aCString ) const;
 		bool operator>=( const std::string & anSTLString ) const;
@@ -450,6 +486,7 @@ class CKVariant
 		bool operator>=( const CKTable & aTable ) const;
 		bool operator>=( const CKTimeSeries & aSeries ) const;
 		bool operator>=( const CKPrice & aPrice ) const;
+		bool operator>=( const CKVariantList & aList ) const;
 
 		/*
 		 * These operators are the convenience assignment operators for
@@ -467,6 +504,7 @@ class CKVariant
 		CKVariant & operator+=( const CKTimeSeries & aSeries );
 		CKVariant & operator+=( const CKPrice & aPrice );
 		CKVariant & operator+=( const CKVariant & aVar );
+		CKVariant & operator+=( const CKVariantList & aList );
 
 		CKVariant & operator-=( int aValue );
 		CKVariant & operator-=( long aDateValue );
@@ -475,6 +513,7 @@ class CKVariant
 		CKVariant & operator-=( const CKTimeSeries & aSeries );
 		CKVariant & operator-=( const CKPrice & aPrice );
 		CKVariant & operator-=( const CKVariant & aVar );
+		CKVariant & operator-=( const CKVariantList & aList );
 
 		CKVariant & operator*=( int aValue );
 		CKVariant & operator*=( long aDateValue );
@@ -483,6 +522,7 @@ class CKVariant
 		CKVariant & operator*=( const CKTimeSeries & aSeries );
 		CKVariant & operator*=( const CKPrice & aPrice );
 		CKVariant & operator*=( const CKVariant & aVar );
+		CKVariant & operator*=( const CKVariantList & aList );
 
 		CKVariant & operator/=( int aValue );
 		CKVariant & operator/=( long aDateValue );
@@ -491,6 +531,7 @@ class CKVariant
 		CKVariant & operator/=( const CKTimeSeries & aSeries );
 		CKVariant & operator/=( const CKPrice & aPrice );
 		CKVariant & operator/=( const CKVariant & aVar );
+		CKVariant & operator/=( const CKVariantList & aList );
 
 		/*
 		 * There are times that variants will be used in mathematical
@@ -628,6 +669,7 @@ class CKVariant
 			CKTable			*mTableValue;
 			CKTimeSeries	*mTimeSeriesValue;
 			CKPrice			*mPriceValue;
+			CKVariantList	*mListValue;
 		};
 };
 
@@ -746,5 +788,362 @@ CKVariant operator/( const CKTimeSeries & aSeries, CKVariant & aVar );
 
 CKVariant operator/( CKVariant & aVar, const CKPrice & aPrice );
 CKVariant operator/( const CKPrice & aPrice, CKVariant & aVar );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize the variants into a list that can also be a variant. This is
+ * nice in that it's easy to use, easy to deal with, and the destructor takes
+ * care of cleaning up the individual variants in the list itself.
+ *
+ * We base it off the variant so that it appears to be a normal point in
+ * all regards - save the ability to exist in a doubly-linked list.
+ * ----------------------------------------------------------------------------
+ */
+class CKVariantNode :
+	public CKVariant
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKVariantNode();
+		/*
+		 * This is a "promotion" constructor that takes a variant and
+		 * creates a new variant node based on the data in that variant.
+		 * This is important because it'll be an easy way to add variants
+		 * to the list.
+		 */
+		CKVariantNode( const CKVariant & anOther,
+					   CKVariantNode *aPrev = NULL,
+					   CKVariantNode *aNext = NULL );
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKVariantNode( const CKVariantNode & anOther );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKVariantNode();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKVariantNode & operator=( const CKVariantNode & anOther );
+		/*
+		 * At times it's also nice to be able to set a data point to this
+		 * node so that there's not a ton of casting in the code.
+		 */
+		CKVariantNode & operator=( const CKVariant & anOther );
+
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the simple setters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		void setPrev( CKVariantNode *aNode );
+		void setNext( CKVariantNode *aNode );
+
+		/*
+		 * These are the simple getters for the links to the previous and
+		 * next nodes in the list. There's nothing special here, so we're
+		 * exposing them directly.
+		 */
+		CKVariantNode *getPrev();
+		CKVariantNode *getNext();
+
+		/*
+		 * This method is used to 'unlink' the node from the list it's in.
+		 * This will NOT delete the node, merely take it out the the list
+		 * and now it becomes the responsibility of the caller to delete
+		 * this node, or add him to another list.
+		 */
+		void removeFromList();
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method checks to see if the two CKVariantNodes are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( const CKVariantNode & anOther ) const;
+		/*
+		 * This method checks to see if the two CKVariantNodes are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( const CKVariantNode & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString() const;
+
+	private:
+		friend class CKVariantList;
+
+		/*
+		 * Since we're a doubly-linked list, I'm just going to have a
+		 * prev and next pointers and that will take care of the linking.
+		 */
+		CKVariantNode		*mPrev;
+		CKVariantNode		*mNext;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKVariantNode & aNode );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKVariant objects. It
+ * is organized as a doubly-linked list of CKVariantNodes and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+class CKVariantList
+{
+	public:
+		/********************************************************
+		 *
+		 *                Constructors/Destructor
+		 *
+		 ********************************************************/
+		/*
+		 * This is the default constructor that really doesn't contain
+		 * anything. This isn't so bad, as the setters allow you to
+		 * populate this guy later with anything that you could want.
+		 */
+		CKVariantList();
+		/*
+		 * This is the standard copy constructor and needs to be in every
+		 * class to make sure that we don't have too many things running
+		 * around.
+		 */
+		CKVariantList( const CKVariantList & anOther );
+		/*
+		 * This method takes an encoded CKString and creates a new CKVariant
+		 * list based on the decoded contents. It's an easy way to get the
+		 * instance up and running from the other side of a serialized
+		 * connection.
+		 */
+		CKVariantList( const CKString & aCodedList );
+		/*
+		 * This is the standard destructor and needs to be virtual to make
+		 * sure that if we subclass off this the right destructor will be
+		 * called.
+		 */
+		virtual ~CKVariantList();
+
+		/*
+		 * When we want to process the result of an equality we need to
+		 * make sure that we do this right by always having an equals
+		 * operator on all classes.
+		 */
+		CKVariantList & operator=( CKVariantList & anOther );
+		CKVariantList & operator=( const CKVariantList & anOther );
+
+		/********************************************************
+		 *
+		 *                Accessor Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These are the easiest ways to get at the head and tail of this
+		 * list. After that, the CKVariantNode's getPrev() and getNext()
+		 * do a good job of moving you around the list.
+		 */
+		CKVariantNode *getHead() const;
+		CKVariantNode *getTail() const;
+
+		/*
+		 * Because there may be times that the user wants to lock us up
+		 * for change, we're going to expose this here so it's easy for them
+		 * to iterate, for example.
+		 */
+		void lock();
+		void unlock();
+
+		/********************************************************
+		 *
+		 *                List Methods
+		 *
+		 ********************************************************/
+		/*
+		 * This method gets the size of the list in a thread-safe
+		 * way. This means that it will block until it can get the
+		 * lock on the data, so be warned.
+		 */
+		int size();
+		int size() const;
+
+		/*
+		 * This is used to tell the caller if the list is empty. It's
+		 * faster than checking for a size() == 0.
+		 */
+		bool empty();
+		bool empty() const;
+
+		/*
+		 * This method clears out the entire list and deletes all it's
+		 * contents. After this, all node pointers to nodes in this list
+		 * will be pointing to nothing, so watch out.
+		 */
+		void clear();
+
+		/*
+		 * When I want to add a point to the front or back of the list,
+		 * these are the simplest ways to do that. The passed-in data point
+		 * is left untouched, and a copy is made of it at the proper point
+		 * in the list.
+		 */
+		void addToFront( const CKVariant & aPoint );
+		void addToEnd( const CKVariant & aPoint );
+
+		/*
+		 * These methods take control of the passed-in arguments and place
+		 * them in the proper place in the list. This is different in that
+		 * the control of the node is passed to the list, but that's why
+		 * we've created them... to make it easy to add in nodes by just
+		 * changing the links.
+		 */
+		void putOnFront( CKVariantNode *aNode );
+		void putOnEnd( CKVariantNode *aNode );
+
+		/*
+		 * When you have a list that you want to add to this list, these
+		 * are the methods to use. It's important to note that the arguments
+		 * will NOT be altered - which is why this is called the 'copy' as
+		 * opposed to the 'splice'.
+		 */
+		void copyToFront( CKVariantList & aList );
+		void copyToFront( const CKVariantList & aList );
+		void copyToEnd( CKVariantList & aList );
+		void copyToEnd( const CKVariantList & aList );
+
+		/*
+		 * When you have a list that you want to merge into this list, these
+		 * are the methods to use. It's important to note that the argument
+		 * lists will be EMPTIED - which is why this is called the 'splice'
+		 * as opposed to the 'copy'.
+		 */
+		void spliceOnFront( CKVariantList & aList );
+		void spliceOnEnd( CKVariantList & aList );
+
+		/********************************************************
+		 *
+		 *                Utility Methods
+		 *
+		 ********************************************************/
+		/*
+		 * In order to simplify the move of this object from C++ to Java
+		 * it makes sense to encode the value's data into a (char *) that
+		 * can be converted to a Java String and then the Java object can
+		 * interpret it and "reconstitue" the object from this coding.
+		 */
+		virtual CKString generateCodeFromValues() const;
+		/*
+		 * This method takes a code that could have been written with the
+		 * generateCodeFromValues() method on either the C++ or Java
+		 * versions of this class and extracts all the values from the code
+		 * that are needed to populate this value. The argument is left
+		 * untouched, and is the responsible of the caller to free.
+		 */
+		virtual void takeValuesFromCode( const CKString & aCode );
+		/*
+		 * This method checks to see if the two CKVariantLists are equal to
+		 * one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator==( CKVariantList & anOther );
+		bool operator==( const CKVariantList & anOther );
+		bool operator==( const CKVariantList & anOther ) const;
+		/*
+		 * This method checks to see if the two CKVariantLists are not equal
+		 * to one another based on the values they represent and *not* on the
+		 * actual pointers themselves. If they are not equal, then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool operator!=( CKVariantList & anOther );
+		bool operator!=( const CKVariantList & anOther );
+		bool operator!=( const CKVariantList & anOther ) const;
+		/*
+		 * Because there are times when it's useful to have a nice
+		 * human-readable form of the contents of this instance. Most of the
+		 * time this means that it's used for debugging, but it could be used
+		 * for just about anything. In these cases, it's nice not to have to
+		 * worry about the ownership of the representation, so this returns
+		 * a CKString.
+		 */
+		virtual CKString toString();
+
+	protected:
+		/*
+		 * Setting the head or the tail is a bit dicey and so we're not
+		 * going to let just anyone change these guys.
+		 */
+		void setHead( CKVariantNode *aNode );
+		void setTail( CKVariantNode *aNode );
+
+	private:
+		/*
+		 * A Doubly-linked list is pretty easy - there's a head and a
+		 * tail and that's about it.
+		 */
+		CKVariantNode		*mHead;
+		CKVariantNode		*mTail;
+		/*
+		 * This is the mutex that is going to protect all the dangerous
+		 * operations so that this list is thread-safe.
+		 */
+		CKFWMutex			mMutex;
+};
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKVariantList & aList );
 
 #endif	// __CKVARIANT_H
