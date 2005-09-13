@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.13 2005/02/24 15:07:29 drbob Exp $
+ * $Id: CKString.h,v 1.14 2005/09/13 15:46:59 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -222,6 +222,7 @@ class CKString
 		CKString & append( int anInteger, int aNumOfDigits = -1 );
 		CKString & append( long aLong, int aNumOfDigits = -1 );
 		CKString & append( double aDouble, int aNumDecPlaces = -1 );
+		CKString & append( void *anAddress );
 
 		/*
 		 * These methods add the different kinds of strings to the
@@ -245,6 +246,7 @@ class CKString
 		CKString & prepend( int anInteger, int aNumOfDigits = -1 );
 		CKString & prepend( long aLong, int aNumOfDigits = -1 );
 		CKString & prepend( double aDouble, int aNumDecPlaces = -1 );
+		CKString & prepend( void *anAddress );
 
 		/*
 		 * When you want to fill an existing string with a repeated value,
