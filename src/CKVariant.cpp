@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.23 2005/08/17 13:56:15 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.24 2005/09/13 15:50:56 drbob Exp $
  */
 
 //	System Headers
@@ -19,13 +19,14 @@
 #include <strings.h>
 
 //	Third-Party Headers
-#include <CKException.h>
 
 //	Other Headers
 #include "CKVariant.h"
 #include "CKTable.h"
 #include "CKTimeSeries.h"
 #include "CKPrice.h"
+#include "CKException.h"
+#include "CKStackLocker.h"
 
 //	Forward Declarations
 
@@ -179,6 +180,21 @@ CKVariant::CKVariant( const CKPrice *aPriceValue ) :
 
 
 /*
+ * This form of the constructor understands that the value that's
+ * intended to be stored here is a CKVariantList, and the value
+ * provided is what's to be stored. The value argument will not be
+ * touched in this constructor as we'll be making a copy of the
+ * contents for local use.
+ */
+CKVariant::CKVariant( const CKVariantList *aListValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setListValue(aListValue);
+}
+
+
+/*
  * This is the standard copy constructor and needs to be in every
  * class to make sure that we don't have too many things running
  * around.
@@ -230,6 +246,9 @@ CKVariant & CKVariant::operator=( CKVariant & anOther )
 			break;
 		case ePriceVariant:
 			setPriceValue(anOther.mPriceValue);
+			break;
+		case eListVariant:
+			setListValue(anOther.mListValue);
 			break;
 	}
 
@@ -304,6 +323,13 @@ CKVariant & CKVariant::operator=( const CKPrice & aPrice )
 }
 
 
+CKVariant & CKVariant::operator=( const CKVariantList & aList )
+{
+	setListValue(&aList);
+	return *this;
+}
+
+
 /********************************************************
  *
  *                Accessor Methods
@@ -329,7 +355,12 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 			 * OK... we need to see what this data is and act on that.
 			 * Thankfully, we have some helper functions for this.
 			 */
-			if (isTable(aValue)) {
+			if (isList(aValue)) {
+				// make a list from the string representation
+				CKVariantList	list(aValue);
+				// ...and use that as the value
+				setListValue(&list);
+			} else if (isTable(aValue)) {
 				// this could be a table, price or timeseries... check the value
 				double	v = strtod(&(aValue[1]), (char **)NULL);
 				if (v != floor(v)) {
@@ -388,6 +419,14 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 				CKPrice		price(aValue);
 				// ...and use that as the value
 				setPriceValue(&price);
+			}
+			break;
+		case eListVariant:
+			{
+				// make a list from the string representation
+				CKVariantList	list(aValue);
+				// ...and use that as the value
+				setListValue(&list);
 			}
 			break;
 	}
@@ -537,6 +576,30 @@ void CKVariant::setPriceValue( const CKPrice *aPriceValue )
 
 
 /*
+ * This sets the value stored in this instance as a list of
+ * variants, but a local copy will be made so that the caller
+ * doesn't have to worry about holding on to the parameter, and
+ * is free to delete it.
+ */
+void CKVariant::setListValue( const CKVariantList *aListValue )
+{
+	// first, see if we need to delete what's might already be here
+	clearValue();
+	// next, if we have something to set, then create space for it
+	if (aListValue != NULL) {
+		mListValue = new CKVariantList(*aListValue);
+		if (mListValue == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKVariant::setListValue("
+				"const CKVariantList *) - the copy of this list could not be "
+				"created. This is a serious allocation error.");
+		}
+	}
+	// ...and don't forget to set the type of data we have now
+	mType = eListVariant;
+}
+
+
+/*
  * This method returns the enumerated type of the data that this
  * instance is currently holding.
  */
@@ -672,6 +735,23 @@ const CKPrice *CKVariant::getPriceValue() const
 
 
 /*
+ * This method returns the actual list of the variants that
+ * this instance is holding. If the user wants to use this value
+ * outside the scope of this class, then they need to make a copy.
+ */
+const CKVariantList *CKVariant::getListValue() const
+{
+	// make sure it's something that can be done
+	if (mType != eListVariant) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getListValue() - "
+			"the data contained in this instance is not a list and "
+			"therefore we can't get a list value from it.");
+	}
+	return mListValue;
+}
+
+
+/*
  * This method can be used to clear out any existing value in the
  * variant and reset it to it's "unknown" state. This is useful if
  * you want to clean up the memory used by the variant in preparation
@@ -711,6 +791,16 @@ void CKVariant::clearValue()
 				mPriceValue = NULL;
 			}
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				delete mListValue;
+				mListValue = NULL;
+			}
+			break;
+		default:
+			throw CKException(__FILE__, __LINE__, "CKVariant::clearValue() - "
+				"the data contained in this instance is unknown and that's "
+				"a serious data corruption problem. Please look into it.");
 	}
 
 	// don't forget to set it to 'unknown'
@@ -872,6 +962,52 @@ bool CKVariant::isTable( const char *aValue )
 
 
 /*
+ * When parsing the incoming data, it's important to be able
+ * to tell what the data coming back is. That's the purpose of this
+ * function - if the data (string) can be represented as a list
+ * without problems then we return true, otherwise we return false.
+ */
+bool CKVariant::isList( const char *aValue )
+{
+	bool		error = false;
+
+	// see if we have anything to do
+	if (!error) {
+		if (aValue == NULL) {
+			error = true;
+		}
+	}
+
+	// make sure that it's terminated properly and that it's not too small
+	if (!error) {
+		if ((aValue[0] != aValue[strlen(aValue) - 1]) ||
+			(strlen(aValue) < 6)) {
+			error = true;
+		}
+	}
+
+	// now make sure that the second entry is a variant decoding
+	if (!error) {
+		char	*delim1 = strchr(&(aValue[1]), aValue[0]);
+		if ((delim1 == NULL) || !isdigit(delim1[1])) {
+			error = true;
+		} else {
+			char	*delim2 = strchr(&(aValue[1]), aValue[0]);
+			if (delim2 == NULL) {
+				error = true;
+			} else {
+				if (delim2[2] != ':') {
+					error = true;
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+/*
  * This method returns a copy of the current value as contained in
  * a string. This is returned as a CKString just so it's easy to use.
  */
@@ -911,6 +1047,13 @@ CKString CKVariant::getValueAsString() const
 				retval += "NULL";
 			} else {
 				retval += mPriceValue->toString();
+			}
+			break;
+		case eListVariant:
+			if (mListValue == NULL) {
+				retval += "NULL";
+			} else {
+				retval += mListValue->toString();
 			}
 			break;
 	}
@@ -975,6 +1118,13 @@ CKString CKVariant::generateCodeFromValues() const
 				buff.append("P:").append(mPriceValue->generateCodeFromValues());
 			}
 			break;
+		case eListVariant:
+			if (mListValue == NULL) {
+				buff.append("U:");
+			} else {
+				buff.append("A:").append(mListValue->generateCodeFromValues());
+			}
+			break;
 	}
 
 	return buff;
@@ -1011,6 +1161,9 @@ void CKVariant::takeValuesFromCode( const CKString & aCode )
 			break;
 		case 'P':
 			setValueAsType(ePriceVariant, aCode.substr(2).c_str());
+			break;
+		case 'A':
+			setValueAsType(eListVariant, aCode.substr(2).c_str());
 			break;
 	}
 }
@@ -1111,6 +1264,22 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 					}
 				}
 				break;
+			case eListVariant:
+				// two NULLs match in my opinion
+				if (mListValue == NULL) {
+					if (anOther.mListValue != NULL) {
+						equal = false;
+					}
+				} else {
+					if (anOther.mListValue == NULL) {
+						equal = false;
+					} else {
+						if ((*mListValue) != (*anOther.mListValue)) {
+							equal = false;
+						}
+					}
+				}
+				break;
 		}
 	}
 
@@ -1179,6 +1348,8 @@ bool CKVariant::operator<( const CKVariant & anOther ) const
 						less = true;
 					}
 				}
+				break;
+			case eListVariant:
 				break;
 		}
 	}
@@ -1249,6 +1420,10 @@ CKString CKVariant::toString() const
 			retval = "(CKPrice)";
 			retval.append(mPriceValue->toString());
 			break;
+		case eListVariant:
+			retval = "(CKVariantList)";
+			retval.append(mListValue->toString());
+			break;
 	}
 
 	return retval;
@@ -1287,6 +1462,13 @@ bool CKVariant::inverse()
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->inverse();
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant *)n)->inverse();
+				}
 			}
 			break;
 	}
@@ -1408,6 +1590,18 @@ bool CKVariant::operator==( const CKPrice & aPrice ) const
 }
 
 
+bool CKVariant::operator==( const CKVariantList & aList ) const
+{
+	bool		equal = false;
+	if (mType == eListVariant) {
+		if (mListValue != NULL) {
+			equal = mListValue->operator==(aList);
+		}
+	}
+	return equal;
+}
+
+
 bool CKVariant::operator!=( const char *aCString ) const
 {
 	return !(this->operator==(aCString));
@@ -1459,6 +1653,12 @@ bool CKVariant::operator!=( const CKTimeSeries & aSeries ) const
 bool CKVariant::operator!=( const CKPrice & aPrice ) const
 {
 	return !(this->operator==(aPrice));
+}
+
+
+bool CKVariant::operator!=( const CKVariantList & aList ) const
+{
+	return !(this->operator==(aList));
 }
 
 
@@ -1565,6 +1765,14 @@ bool CKVariant::operator<( const CKPrice & aPrice ) const
 }
 
 
+bool CKVariant::operator<( const CKVariantList & aList ) const
+{
+	throw CKException(__FILE__, __LINE__, "CKVariant::operator<(const CKVariantList &) - "
+		"there is no defined comparision method for two lists at this time. If "
+		"this is a serious issue please contact the developers.");
+}
+
+
 bool CKVariant::operator<=( const char *aCString ) const
 {
 	bool		le = false;
@@ -1623,6 +1831,12 @@ bool CKVariant::operator<=( const CKPrice & aPrice ) const
 }
 
 
+bool CKVariant::operator<=( const CKVariantList & aList ) const
+{
+	return this->operator<(aList) || this->operator==(aList);
+}
+
+
 bool CKVariant::operator>( const char *aCString ) const
 {
 	return !(this->operator<=(aCString));
@@ -1674,6 +1888,12 @@ bool CKVariant::operator>( const CKTimeSeries & aSeries ) const
 bool CKVariant::operator>( const CKPrice & aPrice ) const
 {
 	return !(this->operator<=(aPrice));
+}
+
+
+bool CKVariant::operator>( const CKVariantList & aList ) const
+{
+	return !(this->operator<=(aList));
 }
 
 
@@ -1731,6 +1951,12 @@ bool CKVariant::operator>=( const CKPrice & aPrice ) const
 }
 
 
+bool CKVariant::operator>=( const CKVariantList & aList ) const
+{
+	return !(this->operator<(aList));
+}
+
+
 /*
  * These operators are the convenience assignment operators for
  * the variant and are meant to make it easy to use these guys in
@@ -1779,6 +2005,13 @@ CKVariant & CKVariant::operator+=( const char *aCString )
 					"a Price by a String, and so there's nothing I can do. You might "
 					"want to check on the types of the variants before doing the "
 					"math.");
+				break;
+			case eListVariant:
+				if (mListValue != NULL) {
+					for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+						((CKVariant*)n)->operator+=(aCString);
+					}
+				}
 				break;
 		}
 	}
@@ -1830,6 +2063,13 @@ CKVariant & CKVariant::operator+=( const std::string & anSTLString )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(anSTLString);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -1879,6 +2119,13 @@ CKVariant & CKVariant::operator+=( const CKString & aString )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aString);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -1916,6 +2163,13 @@ CKVariant & CKVariant::operator+=( int aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->add((double)aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aValue);
+				}
 			}
 			break;
 	}
@@ -1979,6 +2233,13 @@ CKVariant & CKVariant::operator+=( long aDateValue )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aDateValue);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2020,6 +2281,13 @@ CKVariant & CKVariant::operator+=( double aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->add(aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aValue);
+				}
 			}
 			break;
 	}
@@ -2075,6 +2343,13 @@ CKVariant & CKVariant::operator+=( const CKTable & aTable )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aTable);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2128,6 +2403,13 @@ CKVariant & CKVariant::operator+=( const CKTimeSeries & aSeries )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aSeries);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2172,13 +2454,20 @@ CKVariant & CKVariant::operator+=( const CKPrice & aPrice )
 		case eTimeSeriesVariant:
 			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
 				"(const CKPrice &) - there is no defined operation for incrementing "
-				"a Price by a Price, and so there's nothing I can do. You might "
+				"a TimeSeries by a Price, and so there's nothing I can do. You might "
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->add(aPrice);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aPrice);
+				}
 			}
 			break;
 	}
@@ -2220,6 +2509,71 @@ CKVariant & CKVariant::operator+=( const CKVariant & aVar )
 				operator+=(*aVar.mPriceValue);
 			}
 			break;
+		case eListVariant:
+			if (aVar.mListValue != NULL) {
+				operator+=(*aVar.mListValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKVariantList & aList )
+{
+	// what we do is based on what *he* is
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a String by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a Number by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a Date by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a TimeSeries by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a Price by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				mListValue->copyToEnd(aList);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2259,6 +2613,13 @@ CKVariant & CKVariant::operator-=( int aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->subtract((double)aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aValue);
+				}
 			}
 			break;
 	}
@@ -2316,6 +2677,13 @@ CKVariant & CKVariant::operator-=( long aDateValue )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aDateValue);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2359,6 +2727,13 @@ CKVariant & CKVariant::operator-=( double aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->subtract(aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aValue);
+				}
 			}
 			break;
 	}
@@ -2415,6 +2790,13 @@ CKVariant & CKVariant::operator-=( const CKTable & aTable )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aTable);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2468,6 +2850,13 @@ CKVariant & CKVariant::operator-=( const CKTimeSeries & aSeries )
 				"a Price by a TimeSeries, and so there's nothing I can do. You might "
 				"want to check on the types of the variants before doing the "
 				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aSeries);
+				}
+			}
 			break;
 	}
 
@@ -2523,6 +2912,13 @@ CKVariant & CKVariant::operator-=( const CKPrice & aPrice )
 				mPriceValue->subtract(aPrice);
 			}
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aPrice);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2563,6 +2959,73 @@ CKVariant & CKVariant::operator-=( const CKVariant & aVar )
 			if (aVar.mPriceValue != NULL) {
 				operator-=(*aVar.mPriceValue);
 			}
+			break;
+		case eListVariant:
+			if (aVar.mListValue != NULL) {
+				operator-=(*aVar.mListValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKVariantList & aList )
+{
+	// what we do is based on what *he* is
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a String by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a Number by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a Date by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a TimeSeries by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a Price by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a List by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -2607,6 +3070,13 @@ CKVariant & CKVariant::operator*=( int aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->multiply((double)aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aValue);
+				}
 			}
 			break;
 	}
@@ -2664,6 +3134,13 @@ CKVariant & CKVariant::operator*=( long aDateValue )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aDateValue);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2707,6 +3184,13 @@ CKVariant & CKVariant::operator*=( double aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->multiply(aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aValue);
+				}
 			}
 			break;
 	}
@@ -2762,6 +3246,13 @@ CKVariant & CKVariant::operator*=( const CKTable & aTable )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aTable);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2814,6 +3305,13 @@ CKVariant & CKVariant::operator*=( const CKTimeSeries & aSeries )
 				"a Price by a TimeSeries, and so there's nothing I can do. You might "
 				"want to check on the types of the variants before doing the "
 				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aSeries);
+				}
+			}
 			break;
 	}
 
@@ -2868,6 +3366,13 @@ CKVariant & CKVariant::operator*=( const CKPrice & aPrice )
 				mPriceValue->multiply(aPrice);
 			}
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aPrice);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2908,6 +3413,73 @@ CKVariant & CKVariant::operator*=( const CKVariant & aVar )
 			if (aVar.mPriceValue != NULL) {
 				operator*=(*aVar.mPriceValue);
 			}
+			break;
+		case eListVariant:
+			if (aVar.mListValue != NULL) {
+				operator*=(*aVar.mListValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKVariantList & aList )
+{
+	// what we do is based on what *he* is
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a String by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a Number by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a Date by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a TimeSeries by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a Price by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a List by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -2952,6 +3524,13 @@ CKVariant & CKVariant::operator/=( int aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->divide((double)aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aValue);
+				}
 			}
 			break;
 	}
@@ -3009,6 +3588,13 @@ CKVariant & CKVariant::operator/=( long aDateValue )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aDateValue);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3052,6 +3638,13 @@ CKVariant & CKVariant::operator/=( double aValue )
 		case ePriceVariant:
 			if (mPriceValue != NULL) {
 				mPriceValue->divide(aValue);
+			}
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aValue);
+				}
 			}
 			break;
 	}
@@ -3108,6 +3701,13 @@ CKVariant & CKVariant::operator/=( const CKTable & aTable )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aTable);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3161,6 +3761,13 @@ CKVariant & CKVariant::operator/=( const CKTimeSeries & aSeries )
 				"a Price by a TimeSeries, and so there's nothing I can do. You might "
 				"want to check on the types of the variants before doing the "
 				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aSeries);
+				}
+			}
 			break;
 	}
 
@@ -3216,6 +3823,13 @@ CKVariant & CKVariant::operator/=( const CKPrice & aPrice )
 				mPriceValue->divide(aPrice);
 			}
 			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aPrice);
+				}
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3256,6 +3870,73 @@ CKVariant & CKVariant::operator/=( const CKVariant & aVar )
 			if (aVar.mPriceValue != NULL) {
 				operator/=(*aVar.mPriceValue);
 			}
+			break;
+		case eListVariant:
+			if (aVar.mListValue != NULL) {
+				operator/=(*aVar.mListValue);
+			}
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKVariantList & aList )
+{
+	// what we do is based on what *he* is
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a String by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a Number by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a Date by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a TimeSeries by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a Price by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a List by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -3786,4 +4467,982 @@ CKVariant operator/( const CKPrice & aPrice, CKVariant & aVar )
 	CKVariant	retval(&aPrice);
 	retval /= aVar;
 	return retval;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the low-level node in the doubly-linked list that will be used
+ * to organize the variants into a list that can also be a variant. This is
+ * nice in that it's easy to use, easy to deal with, and the destructor takes
+ * care of cleaning up the individual variants in the list itself.
+ *
+ * We base it off the variant so that it appears to be a normal point in
+ * all regards - save the ability to exist in a doubly-linked list.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKVariantNode::CKVariantNode() :
+	CKVariant(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+}
+
+
+/*
+ * This is a "promotion" constructor that takes a variant and
+ * creates a new variant node based on the data in that variant.
+ * This is important because it'll be an easy way to add variants
+ * to the list.
+ */
+CKVariantNode::CKVariantNode( const CKVariant & anOther,
+							  CKVariantNode *aPrev,
+							  CKVariantNode *aNext ) :
+	CKVariant(anOther),
+	mPrev(aPrev),
+	mNext(aNext)
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKVariantNode::CKVariantNode( const CKVariantNode & anOther ) :
+	CKVariant(),
+	mPrev(NULL),
+	mNext(NULL)
+{
+	// let the '=' operator do all the work for me
+	*this = anOther;
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKVariantNode::~CKVariantNode()
+{
+	// the super takes care of deleting all but the pointers
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKVariantNode & CKVariantNode::operator=( const CKVariantNode & anOther )
+{
+	// start by letting the super do it's thing
+	CKVariant::operator=(anOther);
+	// now we can do the rest
+	mPrev = anOther.mPrev;
+	mNext = anOther.mNext;
+
+	return *this;
+}
+
+
+/*
+ * At times it's also nice to be able to set a data point to this
+ * node so that there's not a ton of casting in the code.
+ */
+CKVariantNode & CKVariantNode::operator=( const CKVariant & anOther )
+{
+	// all we need to do is the super's job and leave the pointers alone
+	CKVariant::operator=(anOther);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the simple setters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+void CKVariantNode::setPrev( CKVariantNode *aNode )
+{
+	mPrev = aNode;
+}
+
+
+void CKVariantNode::setNext( CKVariantNode *aNode )
+{
+	mNext = aNode;
+}
+
+
+/*
+ * These are the simple getters for the links to the previous and
+ * next nodes in the list. There's nothing special here, so we're
+ * exposing them directly.
+ */
+CKVariantNode *CKVariantNode::getPrev()
+{
+	return mPrev;
+}
+
+
+CKVariantNode *CKVariantNode::getNext()
+{
+	return mNext;
+}
+
+
+/*
+ * This method is used to 'unlink' the node from the list it's in.
+ * This will NOT delete the node, merely take it out the the list
+ * and now it becomes the responsibility of the caller to delete
+ * this node, or add him to another list.
+ */
+void CKVariantNode::removeFromList()
+{
+	// first, point the next's "prev" to the prev
+	if (mNext != NULL) {
+		mNext->mPrev = mPrev;
+	}
+	// next, point the prev's "next" to the next
+	if (mPrev != NULL) {
+		mPrev->mNext = mNext;
+	}
+	// finally, I'm not linked to *anyone* anymore
+	mPrev = NULL;
+	mNext = NULL;
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * This method checks to see if the two CKVariantNodes are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKVariantNode::operator==( const CKVariantNode & anOther ) const
+{
+	bool		equal = true;
+
+	// first, see if the data points are equal
+	if (equal) {
+		if (!CKVariant::operator==(anOther)) {
+			equal = false;
+		}
+	}
+	// ...now check the pointers
+	if (equal) {
+		if ((mPrev != anOther.mPrev) ||
+			(mNext != anOther.mNext)) {
+			equal = false;
+		}
+	}
+
+	return equal;
+}
+
+
+/*
+ * This method checks to see if the two CKVariantNodes are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKVariantNode::operator!=( const CKVariantNode & anOther ) const
+{
+	return !(this->operator==(anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKVariantNode::toString() const
+{
+	CKString	retval = "<";
+	retval.append("Value=").append(((CKVariant*)this)->toString()).append(", ");
+	retval.append("Prev=").append((void *)mPrev).append(", ");
+	retval.append("Next=").append((void *)mNext).append(">");
+	return retval;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, const CKVariantNode & aNode )
+{
+	aStream << aNode.toString();
+
+	return aStream;
+}
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * This is the high-level interface to a list of CKVariant objects. It
+ * is organized as a doubly-linked list of CKVariantNodes and the interface
+ * to the list if controlled by a nice CKFWMutex. This is a nice and clean
+ * replacement to the STL std::list.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                Constructors/Destructor
+ *
+ ********************************************************/
+/*
+ * This is the default constructor that really doesn't contain
+ * anything. This isn't so bad, as the setters allow you to
+ * populate this guy later with anything that you could want.
+ */
+CKVariantList::CKVariantList() :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+}
+
+
+/*
+ * This is the standard copy constructor and needs to be in every
+ * class to make sure that we don't have too many things running
+ * around.
+ */
+CKVariantList::CKVariantList( const CKVariantList & anOther ) :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+	// let's let the '=' operator handle this for us
+	*this = anOther;
+}
+
+
+/*
+ * This method takes an encoded CKString and creates a new CKVariant
+ * list based on the decoded contents. It's an easy way to get the
+ * instance up and running from the other side of a serialized
+ * connection.
+ */
+CKVariantList::CKVariantList( const CKString & aCodedList ) :
+	mHead(NULL),
+	mTail(NULL),
+	mMutex()
+{
+	// we jjust need to take the values from the code itself
+	takeValuesFromCode(aCodedList);
+}
+
+
+/*
+ * This is the standard destructor and needs to be virtual to make
+ * sure that if we subclass off this the right destructor will be
+ * called.
+ */
+CKVariantList::~CKVariantList()
+{
+	// simply clear out the list and we're done.
+	clear();
+}
+
+
+/*
+ * When we want to process the result of an equality we need to
+ * make sure that we do this right by always having an equals
+ * operator on all classes.
+ */
+CKVariantList & CKVariantList::operator=( CKVariantList & anOther )
+{
+	// first, clear out anything we might have right now
+	clear();
+
+	// now, do a deep copy of the source list
+	copyToEnd(anOther);
+
+	return *this;
+}
+
+
+CKVariantList & CKVariantList::operator=( const CKVariantList & anOther )
+{
+	this->operator=((CKVariantList &) anOther);
+
+	return *this;
+}
+
+
+/********************************************************
+ *
+ *                Accessor Methods
+ *
+ ********************************************************/
+/*
+ * These are the easiest ways to get at the head and tail of this
+ * list. After that, the CKVariantNode's getPrev() and getNext()
+ * do a good job of moving you around the list.
+ */
+CKVariantNode *CKVariantList::getHead() const
+{
+	return mHead;
+}
+
+
+CKVariantNode *CKVariantList::getTail() const
+{
+	return mTail;
+}
+
+
+/*
+ * Because there may be times that the user wants to lock us up
+ * for change, we're going to expose this here so it's easy for them
+ * to iterate, for example.
+ */
+void CKVariantList::lock()
+{
+	mMutex.lock();
+}
+
+
+void CKVariantList::unlock()
+{
+	mMutex.unlock();
+}
+
+
+/********************************************************
+ *
+ *                List Methods
+ *
+ ********************************************************/
+/*
+ * This method gets the size of the list in a thread-safe
+ * way. This means that it will block until it can get the
+ * lock on the data, so be warned.
+ */
+int CKVariantList::size()
+{
+	// first, lock up this guy against changes
+	CKStackLocker	lockem(&mMutex);
+	// all we need to do is count them all up
+	int		cnt = 0;
+	for (CKVariantNode *node = mHead; node != NULL; node = node->mNext) {
+		cnt++;
+	}
+
+	return cnt;
+}
+
+
+int CKVariantList::size() const
+{
+	return ((CKVariantList *)this)->size();
+}
+
+
+/*
+ * This is used to tell the caller if the list is empty. It's
+ * faster than checking for a size() == 0.
+ */
+bool CKVariantList::empty()
+{
+	// first, lock up this guy against changes
+	CKStackLocker	lockem(&mMutex);
+	// all we need to do is count them all up
+	bool	empty = false;
+	if (mHead == NULL) {
+		empty = true;
+	}
+
+	return empty;
+}
+
+
+bool CKVariantList::empty() const
+{
+	return ((CKVariantList *)this)->empty();
+}
+
+
+/*
+ * This method clears out the entire list and deletes all it's
+ * contents. After this, all node pointers to nodes in this list
+ * will be pointing to nothing, so watch out.
+ */
+void CKVariantList::clear()
+{
+	// first, lock up this guy against changes
+	CKStackLocker	lockem(&mMutex);
+	// we need to delete the head as long as there is one
+	while (mHead != NULL) {
+		CKVariantNode	*next = mHead->mNext;
+		delete mHead;
+		mHead = next;
+		if (mHead != NULL) {
+			mHead->mPrev = NULL;
+		}
+	}
+	// now make sure to reset the head and tail
+	mHead = NULL;
+	mTail = NULL;
+}
+
+
+/*
+ * When I want to add a point to the front or back of the list,
+ * these are the simplest ways to do that. The passed-in data point
+ * is left untouched, and a copy is made of it at the proper point
+ * in the list.
+ */
+void CKVariantList::addToFront( const CKVariant & aPoint )
+{
+	// first, lock up this guy against changes
+	CKStackLocker	lockem(&mMutex);
+
+	// we need to create a new data point node based on this guy
+	CKVariantNode	*node = new CKVariantNode(aPoint, NULL, mHead);
+	if (node == NULL) {
+		std::ostringstream	msg;
+		msg << "CKVariantList::addToFront(const CKVariant &) - a "
+			"new variant node could not be created for the passed in value: " <<
+			aPoint << " and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+}
+
+
+void CKVariantList::addToEnd( const CKVariant & aPoint )
+{
+	// first, lock up this guy against changes
+	CKStackLocker	lockem(&mMutex);
+
+	// we need to create a new data point node based on this guy
+	CKVariantNode	*node = new CKVariantNode(aPoint, mTail, NULL);
+	if (node == NULL) {
+		std::ostringstream	msg;
+		msg << "CKVariantList::addToEnd(const CKVariant &) - a "
+			"new variant node could not be created for the passed in value: " <<
+			aPoint << " and that's a serious allocation problem that needs to "
+			"be looked into.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// finish linking this guy into the list properly
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+}
+
+
+/*
+ * These methods take control of the passed-in arguments and place
+ * them in the proper place in the list. This is different in that
+ * the control of the node is passed to the list, but that's why
+ * we've created them... to make it easy to add in nodes by just
+ * changing the links.
+ */
+void CKVariantList::putOnFront( CKVariantNode *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		CKStackLocker	lockem(&mMutex);
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = NULL;
+		aNode->mNext = mHead;
+		if (mHead == NULL) {
+			mTail = aNode;
+		} else {
+			mHead->mPrev = aNode;
+		}
+		mHead = aNode;
+	}
+}
+
+
+void CKVariantList::putOnEnd( CKVariantNode *aNode )
+{
+	// first, make sure we have something to do
+	if (aNode != NULL) {
+		// next, lock up this guy against changes
+		CKStackLocker	lockem(&mMutex);
+
+		// we simply need to link this bad boy into the list
+		aNode->mPrev = mTail;
+		aNode->mNext = NULL;
+		if (mTail == NULL) {
+			mHead = aNode;
+		} else {
+			mTail->mNext = aNode;
+		}
+		mTail = aNode;
+	}
+}
+
+
+/*
+ * When you have a list that you want to add to this list, these
+ * are the methods to use. It's important to note that the arguments
+ * will NOT be altered - which is why this is called the 'copy' as
+ * opposed to the 'splice'.
+ */
+void CKVariantList::copyToFront( CKVariantList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data, but backwards because
+	 * I'll be putting these new nodes on the *front* of the list, and
+	 * if I go through the source in the forward order, I'll reverse the
+	 * order of the elements in the source as I add them. So I'll go
+	 * backwards... no biggie...
+	 */
+	for (CKVariantNode *src = aList.mTail; src != NULL; src = src->mPrev) {
+		// first, make a copy of this guy
+		CKVariantNode	*node = new CKVariantNode(*src, NULL, mHead);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKVariantList::copyToFront(CKVariantList &) - a "
+				"new variant node could not be created for the value: " <<
+				(*src) << " and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the front of the list
+		if (mHead == NULL) {
+			mTail = node;
+		} else {
+			mHead->mPrev = node;
+		}
+		mHead = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKVariantList::copyToFront( const CKVariantList & aList )
+{
+	copyToFront((CKVariantList &)aList);
+}
+
+
+void CKVariantList::copyToEnd( CKVariantList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	/*
+	 * I need to go through all the source data. I'll be putting these new
+	 * nodes on the *end* of the list so the order is preserved.
+	 */
+	for (CKVariantNode *src = aList.mHead; src != NULL; src = src->mNext) {
+		// first, make a copy of this guy
+		CKVariantNode	*node = new CKVariantNode(*src, mTail, NULL);
+		if (node == NULL) {
+			// first we need to release the locks
+			aList.mMutex.unlock();
+			mMutex.unlock();
+			// now we can throw the exception
+			std::ostringstream	msg;
+			msg << "CKVariantList::copyToEnd(CKVariantList &) - a "
+				"new variant node could not be created for the value: " <<
+				(*src) << " and that's a serious allocation problem that needs to "
+				"be looked into.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+
+		// now, add this guy to the end of the list
+		if (mTail == NULL) {
+			mHead = node;
+		} else {
+			mTail->mNext = node;
+		}
+		mTail = node;
+	}
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKVariantList::copyToEnd( const CKVariantList & aList )
+{
+	copyToEnd((CKVariantList &)aList);
+}
+
+
+/*
+ * When you have a list that you want to merge into this list, these
+ * are the methods to use. It's important to note that the argument
+ * lists will be EMPTIED - which is why this is called the 'splice'
+ * as opposed to the 'copy'.
+ */
+void CKVariantList::spliceOnFront( CKVariantList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the head of this list
+	if (mHead == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mHead->mPrev = aList.mTail;
+		if (aList.mTail != NULL) {
+			aList.mTail->mNext = mHead;
+		}
+		if (aList.mHead != NULL) {
+			mHead = aList.mHead;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+void CKVariantList::spliceOnEnd( CKVariantList & aList )
+{
+	// first, I need to lock up both me and the source
+	mMutex.lock();
+	aList.mMutex.lock();
+
+	// add the source, in total, to the end of this list
+	if (mTail == NULL) {
+		// take their list in toto - mine is empty
+		mHead = aList.mHead;
+		mTail = aList.mTail;
+	} else {
+		mTail->mNext = aList.mHead;
+		if (aList.mHead != NULL) {
+			aList.mHead->mPrev = mTail;
+		}
+		if (aList.mTail != NULL) {
+			mTail = aList.mTail;
+		}
+	}
+	// ...and empty the source list
+	aList.mHead = NULL;
+	aList.mTail = NULL;
+
+	// now I can release both locks
+	aList.mMutex.unlock();
+	mMutex.unlock();
+}
+
+
+/********************************************************
+ *
+ *                Utility Methods
+ *
+ ********************************************************/
+/*
+ * In order to simplify the move of this object from C++ to Java
+ * it makes sense to encode the value's data into a (char *) that
+ * can be converted to a Java String and then the Java object can
+ * interpret it and "reconstitue" the object from this coding.
+ */
+CKString CKVariantList::generateCodeFromValues() const
+{
+	/*
+	 * OK... this is interesting because I happen to like the idea
+	 * that Bloomberg had for delimiting the data - have the first
+	 * character be the delimiter for the entire string. The trick
+	 * is that we'll generate the terminated string with a placeholder
+	 * and then see what character we can place in the string as the
+	 * delimiter that's from our list of accecptable values. It's
+	 * interesting and pretty fun.
+	 */
+
+	// start by getting a buffer to build up this value
+	CKString buff;
+
+	// first, send out the row and column counts
+	int		cnt = size();
+	buff.append("\x01").append(cnt).append("\x01");
+
+	// next, loop over all the elements and write them out as well
+	for (CKVariantNode *n = getHead(); n != NULL; n = n->getNext()) {
+		buff.append(n->generateCodeFromValues()).append("\x01");
+	}
+
+	/*
+	 * OK, it's now in a simple character array that we can scan to check
+	 * for acceptable delimiter values. What we'll do is to check the string
+	 * for the existence of a series of possible delimiters, and as soon as
+	 * we find one that's not used in the string we'll use that guy.
+	 */
+	if (!CKTable::chooseAndApplyDelimiter(buff)) {
+		throw CKException(__FILE__, __LINE__, "CKVariantList::generateCodeFrom"
+			"Values() - while trying to find an acceptable delimiter for "
+			"the data in the table we ran out of possibles before finding "
+			"one that wasn't being used in the text of the code. This is "
+			"a serious problem that the developers need to look into.");
+	}
+
+	return buff;
+}
+
+
+/*
+ * This method takes a code that could have been written with the
+ * generateCodeFromValues() method on either the C++ or Java
+ * versions of this class and extracts all the values from the code
+ * that are needed to populate this value. The argument is left
+ * untouched, and is the responsible of the caller to free.
+ */
+void CKVariantList::takeValuesFromCode( const CKString & aCode )
+{
+	// first, see if we have anything to do
+	if (aCode.empty()) {
+		throw CKException(__FILE__, __LINE__, "CKVariantList::takeValuesFromCode("
+			"const CKString &) - the passed-in code is empty which means that "
+			"there's nothing I can do. Please make sure that the argument is "
+			"not empty before calling this method.");
+	}
+
+	// clear out everything we have
+	clear();
+
+	/*
+	 * The data is character-delimited and the delimiter is
+	 * the first character of the field data. All subsequent
+	 * values will be delimited by this character. We need to
+	 * get it.
+	 */
+	char	delim = aCode[0];
+	// ...and parse this guy into chunks
+	int		bit = 0;
+	CKStringList	chunks = CKStringList::parseIntoChunks(
+									aCode.substr(1, aCode.size()-2), delim);
+	if (chunks.size() < 2) {
+		std::ostringstream	msg;
+		msg << "CKVariantList::takeValuesFromCode(const CKString &) - the code: '" <<
+			aCode << "' does not represent a valid list encoding. Please check "
+			"on it's source as soon as possible.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	/*
+	 * Next thing is the count of the elements - not that we really
+	 * need it, but go ahead and get it off...
+	 */
+	int cnt = chunks[bit++].intValue();
+	/*
+	 * Now we get into the actual data for this field.
+	 */
+	for (int i = 0; i < cnt; i++)  {
+		CKVariant	v;
+		v.takeValuesFromCode(chunks[bit++]);
+		addToEnd(v);
+	}
+}
+
+
+/*
+ * This method checks to see if the two CKVariantLists are equal to
+ * one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKVariantList::operator==( CKVariantList & anOther )
+{
+	bool		equal = true;
+
+	// first, lock up both lists against changes
+	mMutex.lock();
+	anOther.mMutex.lock();
+
+	/*
+	 * We need to compare each element in the list as data points and
+	 * NOT as data point nodes as the pointers will never be the same
+	 * but the data will.
+	 */
+	CKVariantNode	*me = mHead;
+	CKVariantNode	*him = anOther.mHead;
+	while (equal) {
+		// see if we're at the end
+		if ((me == NULL) && (him == NULL)) {
+			break;
+		}
+
+		// see if the two lists are of different lengths
+		if (((me == NULL) && (him != NULL)) ||
+			((me != NULL) && (him == NULL))) {
+			equal = false;
+			break;
+		}
+
+		// compare the values by data contents only
+		if (!me->CKVariant::operator==(*(CKVariant*)him)) {
+			equal = false;
+			break;
+		}
+
+		// now move to the next point in each list
+		me = me->mNext;
+		him = him->mNext;
+	}
+
+	// now we're OK to unlock these lists and let them be free
+	anOther.mMutex.unlock();
+	mMutex.unlock();
+
+	return equal;
+}
+
+
+bool CKVariantList::operator==( const CKVariantList & anOther )
+{
+	return this->operator==((CKVariantList &) anOther);
+}
+
+
+bool CKVariantList::operator==( const CKVariantList & anOther ) const
+{
+	return ((CKVariantList *)this)->operator==((CKVariantList &) anOther);
+}
+
+
+/*
+ * This method checks to see if the two CKVariantLists are not equal
+ * to one another based on the values they represent and *not* on the
+ * actual pointers themselves. If they are not equal, then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKVariantList::operator!=( CKVariantList & anOther )
+{
+	return !(this->operator==(anOther));
+}
+
+
+bool CKVariantList::operator!=( const CKVariantList & anOther )
+{
+	return !(this->operator==((CKVariantList &) anOther));
+}
+
+
+bool CKVariantList::operator!=( const CKVariantList & anOther ) const
+{
+	return !(((CKVariantList *)this)->operator==((CKVariantList &) anOther));
+}
+
+
+/*
+ * Because there are times when it's useful to have a nice
+ * human-readable form of the contents of this instance. Most of the
+ * time this means that it's used for debugging, but it could be used
+ * for just about anything. In these cases, it's nice not to have to
+ * worry about the ownership of the representation, so this returns
+ * a CKString.
+ */
+CKString CKVariantList::toString()
+{
+	// lock this guy up so he doesn't change
+	CKStackLocker	lockem(&mMutex);
+
+	CKString		retval = "[";
+	// put each data point out on the output
+	for (CKVariantNode *node = mHead; node != NULL; node = node->mNext) {
+		retval += node->CKVariant::toString();
+		retval += "\n";
+	}
+	retval += "]";
+
+	return retval;
+}
+
+
+/*
+ * Setting the head or the tail is a bit dicey and so we're not
+ * going to let just anyone change these guys.
+ */
+void CKVariantList::setHead( CKVariantNode *aNode )
+{
+	mHead = aNode;
+}
+
+
+void CKVariantList::setTail( CKVariantNode *aNode )
+{
+	mTail = aNode;
+}
+
+
+/*
+ * For debugging purposes, let's make it easy for the user to stream
+ * out this value. It basically is just the value of toString() which
+ * will indicate the data type and the value.
+ */
+std::ostream & operator<<( std::ostream & aStream, CKVariantList & aList )
+{
+	aStream << aList.toString();
+
+	return aStream;
 }
