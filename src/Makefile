@@ -84,6 +84,7 @@ OBJS = CKUUID.o \
 	CKVariant.o \
 	CKTable.o \
 	CKTimeSeries.o \
+	CKTimeTable.o \
 	CKPrice.o \
 	CKDataNode.o \
 	CKIndexNode.o \
@@ -171,12 +172,14 @@ CKFWThreadLocal.o: CKFWThreadLocal.h
 CKFWTime.o: CKFWTime.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h 
 CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h 
 CKString.o: CKString.h CKFWMutex.h 
-CKVariant.o: CKException.h CKString.h CKFWMutex.h 
+CKVariant.o: CKException.h CKString.h CKFWMutex.h CKTimeTable.h
 CKVariant.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h CKTable.h
 CKTable.o: CKException.h CKString.h CKFWMutex.h
 CKTable.o: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKTimeSeries.o: CKException.h CKString.h CKFWMutex.h CKTable.h 
 CKTimeSeries.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
+CKTimeTable.o: CKException.h CKString.h CKFWMutex.h CKTable.h 
+CKTimeTable.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKPrice.o: CKPrice.h CKException.h CKString.h CKFWMutex.h CKTable.h 
 CKPrice.o: CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
 CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
