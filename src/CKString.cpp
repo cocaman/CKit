@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.21 2005/04/18 13:41:17 drbob Exp $
+ * $Id: CKString.cpp,v 1.22 2005/09/13 15:47:00 drbob Exp $
  */
 
 //	System Headers
@@ -626,6 +626,16 @@ CKString & CKString::append( double aDouble, int aNumDecPlaces )
 }
 
 
+CKString & CKString::append( void *anAddress )
+{
+	// make a simple buffer for this guy too
+	char	c[80];
+	bzero(c, 80);
+	snprintf(c, 79, "%x", (unsigned int)anAddress);
+	return append(c);
+}
+
+
 /*
  * These methods add the different kinds of strings to the
  * beginning of the existing string and return 'true' if successful,
@@ -794,6 +804,16 @@ CKString & CKString::prepend( double aDouble, int aNumDecPlaces )
 	} else {
 		snprintf(c, 79, "%.16g", aDouble);
 	}
+	return prepend(c);
+}
+
+
+CKString & CKString::prepend( void *anAddress )
+{
+	// make a simple buffer for this guy too
+	char	c[80];
+	bzero(c, 80);
+	snprintf(c, 79, "%x", (unsigned int)anAddress);
 	return prepend(c);
 }
 
