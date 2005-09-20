@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.24 2005/09/13 15:50:56 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.25 2005/09/20 18:07:16 drbob Exp $
  */
 
 //	System Headers
@@ -24,6 +24,7 @@
 #include "CKVariant.h"
 #include "CKTable.h"
 #include "CKTimeSeries.h"
+#include "CKTimeTable.h"
 #include "CKPrice.h"
 #include "CKException.h"
 #include "CKStackLocker.h"
@@ -195,6 +196,21 @@ CKVariant::CKVariant( const CKVariantList *aListValue ) :
 
 
 /*
+ * This form of the constructor understands that the value that's
+ * intended to be stored here is a CKTimeTable, and the value provided
+ * is what's to be stored. The value argument will not be touched
+ * in this constructor as we'll be making a copy of the contents
+ * for local use.
+ */
+CKVariant::CKVariant( const CKTimeTable *aTimeTableValue ) :
+	mType(eUnknownVariant),
+	mStringValue(NULL)
+{
+	setTimeTableValue(aTimeTableValue);
+}
+
+
+/*
  * This is the standard copy constructor and needs to be in every
  * class to make sure that we don't have too many things running
  * around.
@@ -249,6 +265,9 @@ CKVariant & CKVariant::operator=( CKVariant & anOther )
 			break;
 		case eListVariant:
 			setListValue(anOther.mListValue);
+			break;
+		case eTimeTableVariant:
+			setTimeTableValue(anOther.mTimeTableValue);
 			break;
 	}
 
@@ -326,6 +345,13 @@ CKVariant & CKVariant::operator=( const CKPrice & aPrice )
 CKVariant & CKVariant::operator=( const CKVariantList & aList )
 {
 	setListValue(&aList);
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator=( const CKTimeTable & aTimeTable )
+{
+	setTimeTableValue(&aTimeTable);
 	return *this;
 }
 
@@ -427,6 +453,14 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
 				CKVariantList	list(aValue);
 				// ...and use that as the value
 				setListValue(&list);
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				// make a time table from the string representation
+				CKTimeTable		timetable(aValue);
+				// ...and use that as the value
+				setTimeTableValue(&timetable);
 			}
 			break;
 	}
@@ -600,6 +634,30 @@ void CKVariant::setListValue( const CKVariantList *aListValue )
 
 
 /*
+ * This sets the value stored in this instance to a copy of the
+ * time table that's pointed to by the argument. Because we'll
+ * be making a copy, the caller is still in control of the
+ * argument.
+ */
+void CKVariant::setTimeTableValue( const CKTimeTable *aTimeTableValue )
+{
+	// first, see if we need to delete what's might already be here
+	clearValue();
+	// next, if we have something to set, then create space for it
+	if (aTimeTableValue != NULL) {
+		mTimeTableValue = new CKTimeTable(*aTimeTableValue);
+		if (mTimeTableValue == NULL) {
+			throw CKException(__FILE__, __LINE__, "CKVariant::setTimeTableValue("
+				"const CKTimeTable *) - the copy of this time table could not be "
+				"created. This is a serious allocation error.");
+		}
+	}
+	// ...and don't forget to set the type of data we have now
+	mType = eTimeTableVariant;
+}
+
+
+/*
  * This method returns the enumerated type of the data that this
  * instance is currently holding.
  */
@@ -752,6 +810,23 @@ const CKVariantList *CKVariant::getListValue() const
 
 
 /*
+ * This method returns the actual time table that this instance is
+ * holding. If the user wants to use this value outside the scope
+ * of this class, then they need to make a copy.
+ */
+const CKTimeTable *CKVariant::getTimeTableValue() const
+{
+	// make sure it's something that can be done
+	if (mType != eTimeTableVariant) {
+		throw CKException(__FILE__, __LINE__, "CKVariant::getTimeTableValue() - "
+			"the data contained in this instance is not a time table and "
+			"therefore we can't get a time table value from it.");
+	}
+	return mTimeTableValue;
+}
+
+
+/*
  * This method can be used to clear out any existing value in the
  * variant and reset it to it's "unknown" state. This is useful if
  * you want to clean up the memory used by the variant in preparation
@@ -795,6 +870,12 @@ void CKVariant::clearValue()
 			if (mListValue != NULL) {
 				delete mListValue;
 				mListValue = NULL;
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				delete mTimeTableValue;
+				mTimeTableValue = NULL;
 			}
 			break;
 		default:
@@ -1056,6 +1137,13 @@ CKString CKVariant::getValueAsString() const
 				retval += mListValue->toString();
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue == NULL) {
+				retval += "NULL";
+			} else {
+				retval += mTimeTableValue->toString();
+			}
+			break;
 	}
 
 	return retval;
@@ -1125,6 +1213,13 @@ CKString CKVariant::generateCodeFromValues() const
 				buff.append("A:").append(mListValue->generateCodeFromValues());
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue == NULL) {
+				buff.append("U:");
+			} else {
+				buff.append("R:").append(mTimeTableValue->generateCodeFromValues());
+			}
+			break;
 	}
 
 	return buff;
@@ -1164,6 +1259,9 @@ void CKVariant::takeValuesFromCode( const CKString & aCode )
 			break;
 		case 'A':
 			setValueAsType(eListVariant, aCode.substr(2).c_str());
+			break;
+		case 'R':
+			setValueAsType(eTimeTableVariant, aCode.substr(2).c_str());
 			break;
 	}
 }
@@ -1280,6 +1378,22 @@ bool CKVariant::operator==( const CKVariant & anOther ) const
 					}
 				}
 				break;
+			case eTimeTableVariant:
+				// two NULLs match in my opinion
+				if (mTimeTableValue == NULL) {
+					if (anOther.mTimeTableValue != NULL) {
+						equal = false;
+					}
+				} else {
+					if (anOther.mTimeTableValue == NULL) {
+						equal = false;
+					} else {
+						if ((*mTimeTableValue) != (*anOther.mTimeTableValue)) {
+							equal = false;
+						}
+					}
+				}
+				break;
 		}
 	}
 
@@ -1350,6 +1464,8 @@ bool CKVariant::operator<( const CKVariant & anOther ) const
 				}
 				break;
 			case eListVariant:
+				break;
+			case eTimeTableVariant:
 				break;
 		}
 	}
@@ -1424,6 +1540,10 @@ CKString CKVariant::toString() const
 			retval = "(CKVariantList)";
 			retval.append(mListValue->toString());
 			break;
+		case eTimeTableVariant:
+			retval = "(CKTimeTable)";
+			retval.append(mTimeTableValue->toString());
+			break;
 	}
 
 	return retval;
@@ -1469,6 +1589,11 @@ bool CKVariant::inverse()
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant *)n)->inverse();
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->inverse();
 			}
 			break;
 	}
@@ -1602,6 +1727,18 @@ bool CKVariant::operator==( const CKVariantList & aList ) const
 }
 
 
+bool CKVariant::operator==( const CKTimeTable & aTimeTable ) const
+{
+	bool		equal = false;
+	if (mType == eTimeTableVariant) {
+		if (mTimeTableValue != NULL) {
+			equal = mTimeTableValue->operator==(aTimeTable);
+		}
+	}
+	return equal;
+}
+
+
 bool CKVariant::operator!=( const char *aCString ) const
 {
 	return !(this->operator==(aCString));
@@ -1659,6 +1796,12 @@ bool CKVariant::operator!=( const CKPrice & aPrice ) const
 bool CKVariant::operator!=( const CKVariantList & aList ) const
 {
 	return !(this->operator==(aList));
+}
+
+
+bool CKVariant::operator!=( const CKTimeTable & aTimeTable ) const
+{
+	return !(this->operator==(aTimeTable));
 }
 
 
@@ -1773,6 +1916,14 @@ bool CKVariant::operator<( const CKVariantList & aList ) const
 }
 
 
+bool CKVariant::operator<( const CKTimeTable & aTimeTable ) const
+{
+	throw CKException(__FILE__, __LINE__, "CKVariant::operator<(const CKTimeTable &) - "
+		"there is no defined comparision method for two time tables at this time. If "
+		"this is a serious issue please contact the developers.");
+}
+
+
 bool CKVariant::operator<=( const char *aCString ) const
 {
 	bool		le = false;
@@ -1837,6 +1988,12 @@ bool CKVariant::operator<=( const CKVariantList & aList ) const
 }
 
 
+bool CKVariant::operator<=( const CKTimeTable & aTimeTable ) const
+{
+	return this->operator<(aTimeTable) || this->operator==(aTimeTable);
+}
+
+
 bool CKVariant::operator>( const char *aCString ) const
 {
 	return !(this->operator<=(aCString));
@@ -1894,6 +2051,12 @@ bool CKVariant::operator>( const CKPrice & aPrice ) const
 bool CKVariant::operator>( const CKVariantList & aList ) const
 {
 	return !(this->operator<=(aList));
+}
+
+
+bool CKVariant::operator>( const CKTimeTable & aTimeTable ) const
+{
+	return !(this->operator<=(aTimeTable));
 }
 
 
@@ -1957,6 +2120,12 @@ bool CKVariant::operator>=( const CKVariantList & aList ) const
 }
 
 
+bool CKVariant::operator>=( const CKTimeTable & aTimeTable ) const
+{
+	return !(this->operator<(aTimeTable));
+}
+
+
 /*
  * These operators are the convenience assignment operators for
  * the variant and are meant to make it easy to use these guys in
@@ -2012,6 +2181,13 @@ CKVariant & CKVariant::operator+=( const char *aCString )
 						((CKVariant*)n)->operator+=(aCString);
 					}
 				}
+				break;
+			case eTimeTableVariant:
+				throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+					"(const char *) - there is no defined operation for incrementing "
+					"a Time Table by a String, and so there's nothing I can do. You might "
+					"want to check on the types of the variants before doing the "
+					"math.");
 				break;
 		}
 	}
@@ -2070,6 +2246,13 @@ CKVariant & CKVariant::operator+=( const std::string & anSTLString )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const std::string &) - there is no defined operation for incrementing "
+				"a Time Table by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2126,6 +2309,13 @@ CKVariant & CKVariant::operator+=( const CKString & aString )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKString &) - there is no defined operation for incrementing "
+				"a Time Table by a String, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2170,6 +2360,11 @@ CKVariant & CKVariant::operator+=( int aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator+=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->add((double)aValue);
 			}
 			break;
 	}
@@ -2240,6 +2435,13 @@ CKVariant & CKVariant::operator+=( long aDateValue )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(long) - there is no defined operation for incrementing "
+				"a Time Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2288,6 +2490,11 @@ CKVariant & CKVariant::operator+=( double aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator+=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->add(aValue);
 			}
 			break;
 	}
@@ -2350,6 +2557,11 @@ CKVariant & CKVariant::operator+=( const CKTable & aTable )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->add(aTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2409,6 +2621,13 @@ CKVariant & CKVariant::operator+=( const CKTimeSeries & aSeries )
 					((CKVariant*)n)->operator+=(aSeries);
 				}
 			}
+			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeSeries &) - there is no defined operation for incrementing "
+				"a Time Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -2470,6 +2689,13 @@ CKVariant & CKVariant::operator+=( const CKPrice & aPrice )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKPrice &) - there is no defined operation for incrementing "
+				"a Time Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2512,6 +2738,11 @@ CKVariant & CKVariant::operator+=( const CKVariant & aVar )
 		case eListVariant:
 			if (aVar.mListValue != NULL) {
 				operator+=(*aVar.mListValue);
+			}
+			break;
+		case eTimeTableVariant:
+			if (aVar.mTimeTableValue != NULL) {
+				operator+=(*aVar.mTimeTableValue);
 			}
 			break;
 	}
@@ -2574,6 +2805,80 @@ CKVariant & CKVariant::operator+=( const CKVariantList & aList )
 				mListValue->copyToEnd(aList);
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKVariantList &) - there is no defined operation for incrementing "
+				"a Time Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator+=( const CKTimeTable & aTimeTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeTable &) - there is no defined operation for incrementing "
+				"a String by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeTable		a = aTimeTable;
+				a += mDoubleValue;
+				setTimeTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeTable &) - there is no defined operation for incrementing "
+				"a Date by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeTable &) - there is no defined operation for incrementing "
+				"a Table by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeTable &) - there is no defined operation for incrementing "
+				"a TimeSeries by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator+="
+				"(const CKTimeTable &) - there is no defined operation for incrementing "
+				"a Price by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator+=(aTimeTable);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->add(aTimeTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2620,6 +2925,11 @@ CKVariant & CKVariant::operator-=( int aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator-=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->subtract((double)aValue);
 			}
 			break;
 	}
@@ -2684,6 +2994,13 @@ CKVariant & CKVariant::operator-=( long aDateValue )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(long) - there is no defined operation for decrementing "
+				"a Time Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2734,6 +3051,11 @@ CKVariant & CKVariant::operator-=( double aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator-=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->subtract(aValue);
 			}
 			break;
 	}
@@ -2797,6 +3119,11 @@ CKVariant & CKVariant::operator-=( const CKTable & aTable )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->subtract(aTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -2857,6 +3184,13 @@ CKVariant & CKVariant::operator-=( const CKTimeSeries & aSeries )
 					((CKVariant*)n)->operator-=(aSeries);
 				}
 			}
+			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeSeries &) - there is no defined operation for decrementing "
+				"a Time Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -2919,6 +3253,13 @@ CKVariant & CKVariant::operator-=( const CKPrice & aPrice )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKPrice &) - there is no defined operation for decrementing "
+				"a Time Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -2963,6 +3304,11 @@ CKVariant & CKVariant::operator-=( const CKVariant & aVar )
 		case eListVariant:
 			if (aVar.mListValue != NULL) {
 				operator-=(*aVar.mListValue);
+			}
+			break;
+		case eTimeTableVariant:
+			if (aVar.mTimeTableValue != NULL) {
+				operator-=(*aVar.mTimeTableValue);
 			}
 			break;
 	}
@@ -3027,6 +3373,81 @@ CKVariant & CKVariant::operator-=( const CKVariantList & aList )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKVariantList &) - there is no defined operation for decrementing "
+				"a Time Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator-=( const CKTimeTable & aTimeTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeTable &) - there is no defined operation for decrementing "
+				"a String by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeTable		a = aTimeTable;
+				a *= -1.0;
+				a += mDoubleValue;
+				setTimeTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeTable &) - there is no defined operation for decrementing "
+				"a Date by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeTable &) - there is no defined operation for decrementing "
+				"a Table by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeTable &) - there is no defined operation for decrementing "
+				"a TimeSeries by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator-="
+				"(const CKTimeTable &) - there is no defined operation for decrementing "
+				"a Price by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator-=(aTimeTable);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->subtract(aTimeTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3077,6 +3498,11 @@ CKVariant & CKVariant::operator*=( int aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator*=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->multiply((double)aValue);
 			}
 			break;
 	}
@@ -3141,6 +3567,13 @@ CKVariant & CKVariant::operator*=( long aDateValue )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(long) - there is no defined operation for multiplying "
+				"a Time Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -3191,6 +3624,11 @@ CKVariant & CKVariant::operator*=( double aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator*=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->multiply(aValue);
 			}
 			break;
 	}
@@ -3253,6 +3691,11 @@ CKVariant & CKVariant::operator*=( const CKTable & aTable )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->multiply(aTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3312,6 +3755,13 @@ CKVariant & CKVariant::operator*=( const CKTimeSeries & aSeries )
 					((CKVariant*)n)->operator*=(aSeries);
 				}
 			}
+			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeSeries &) - there is no defined operation for multiplying "
+				"a Time Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -3373,6 +3823,13 @@ CKVariant & CKVariant::operator*=( const CKPrice & aPrice )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKPrice &) - there is no defined operation for multiplying "
+				"a Time Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -3417,6 +3874,11 @@ CKVariant & CKVariant::operator*=( const CKVariant & aVar )
 		case eListVariant:
 			if (aVar.mListValue != NULL) {
 				operator*=(*aVar.mListValue);
+			}
+			break;
+		case eTimeTableVariant:
+			if (aVar.mTimeTableValue != NULL) {
+				operator*=(*aVar.mTimeTableValue);
 			}
 			break;
 	}
@@ -3481,6 +3943,80 @@ CKVariant & CKVariant::operator*=( const CKVariantList & aList )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKVariantList &) - there is no defined operation for multiplying "
+				"a Time Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator*=( const CKTimeTable & aTimeTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeTable &) - there is no defined operation for multiplying "
+				"a String by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeTable		a = aTimeTable;
+				a *= mDoubleValue;
+				setTimeTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeTable &) - there is no defined operation for multiplying "
+				"a Date by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeTable &) - there is no defined operation for multiplying "
+				"a Table by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeTable &) - there is no defined operation for multiplying "
+				"a TimeSeries by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator*="
+				"(const CKTimeTable &) - there is no defined operation for multiplying "
+				"a Price by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator*=(aTimeTable);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->multiply(aTimeTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3531,6 +4067,11 @@ CKVariant & CKVariant::operator/=( int aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator/=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->divide((double)aValue);
 			}
 			break;
 	}
@@ -3595,6 +4136,13 @@ CKVariant & CKVariant::operator/=( long aDateValue )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(long) - there is no defined operation for dividing "
+				"a Time Table by a Date, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -3645,6 +4193,11 @@ CKVariant & CKVariant::operator/=( double aValue )
 				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
 					((CKVariant*)n)->operator/=(aValue);
 				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->divide(aValue);
 			}
 			break;
 	}
@@ -3708,6 +4261,11 @@ CKVariant & CKVariant::operator/=( const CKTable & aTable )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->divide(aTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3768,6 +4326,13 @@ CKVariant & CKVariant::operator/=( const CKTimeSeries & aSeries )
 					((CKVariant*)n)->operator/=(aSeries);
 				}
 			}
+			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeSeries &) - there is no defined operation for dividing "
+				"a Time Table by a TimeSeries, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
 			break;
 	}
 
@@ -3830,6 +4395,13 @@ CKVariant & CKVariant::operator/=( const CKPrice & aPrice )
 				}
 			}
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKPrice &) - there is no defined operation for dividing "
+				"a Time Table by a Price, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
 	}
 
 	// we always need to return who we are
@@ -3874,6 +4446,11 @@ CKVariant & CKVariant::operator/=( const CKVariant & aVar )
 		case eListVariant:
 			if (aVar.mListValue != NULL) {
 				operator/=(*aVar.mListValue);
+			}
+			break;
+		case eTimeTableVariant:
+			if (aVar.mTimeTableValue != NULL) {
+				operator/=(*aVar.mTimeTableValue);
 			}
 			break;
 	}
@@ -3938,6 +4515,81 @@ CKVariant & CKVariant::operator/=( const CKVariantList & aList )
 				"want to check on the types of the variants before doing the "
 				"math.");
 			break;
+		case eTimeTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKVariantList &) - there is no defined operation for dividing "
+				"a Time Table by a List, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+	}
+
+	// we always need to return who we are
+	return *this;
+}
+
+
+CKVariant & CKVariant::operator/=( const CKTimeTable & aTimeTable )
+{
+	// what we do is based on what we are
+	switch (mType) {
+		case eUnknownVariant:
+			break;
+		case eStringVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeTable &) - there is no defined operation for dividing "
+				"a String by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eNumberVariant:
+			{
+				CKTimeTable		a = aTimeTable;
+				a.inverse();
+				a *= mDoubleValue;
+				setTimeTableValue(&a);
+			}
+			break;
+		case eDateVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeTable &) - there is no defined operation for dividing "
+				"a Date by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTableVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeTable &) - there is no defined operation for dividing "
+				"a Table by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eTimeSeriesVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeTable &) - there is no defined operation for dividing "
+				"a TimeSeries by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case ePriceVariant:
+			throw CKException(__FILE__, __LINE__, "CKVariant::operator/="
+				"(const CKTimeTable &) - there is no defined operation for dividing "
+				"a Price by a Time Table, and so there's nothing I can do. You might "
+				"want to check on the types of the variants before doing the "
+				"math.");
+			break;
+		case eListVariant:
+			if (mListValue != NULL) {
+				for (CKVariantNode *n = mListValue->getHead(); n != NULL; n = n->getNext()) {
+					((CKVariant*)n)->operator/=(aTimeTable);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			if (mTimeTableValue != NULL) {
+				mTimeTableValue->divide(aTimeTable);
+			}
+			break;
 	}
 
 	// we always need to return who we are
@@ -3960,6 +4612,7 @@ void CKVariant::setType( CKVariantType aType )
 		case eTableVariant:
 		case eTimeSeriesVariant:
 		case ePriceVariant:
+		case eTimeTableVariant:
 			mType = aType;
 			break;
 		default:

@@ -5,7 +5,7 @@
  *                 nicely into the CKVariant scheme and will be able to
  *                 represent a series of tabular results - one per day.
  *
- * $Id: CKTimeTable.h,v 1.1 2005/09/13 15:55:04 drbob Exp $
+ * $Id: CKTimeTable.h,v 1.2 2005/09/20 18:07:16 drbob Exp $
  */
 #ifndef __CKTIMETABLE_H
 #define __CKTIMETABLE_H
@@ -24,6 +24,7 @@
 #include "CKFWMutex.h"
 #include "CKTable.h"
 #include "CKTimeSeries.h"
+#include "CKString.h"
 
 //	Forward Declarations
 
@@ -75,6 +76,14 @@ class CKTimeTable
 		 */
 		CKTimeTable( const CKStringList & aRowLabelList,
 					 const CKStringList & aColumnHeaderList );
+		/*
+		 * This constructor is interesting in that it takes the data as
+		 * it comes from another CKTimeTable's generateCodeFromValues() method
+		 * and parses it into a time table of values directly. This is very
+		 * useful for serializing the time table's data from one host to
+		 * another across a socket, for instance.
+		 */
+		CKTimeTable( const CKString & aCode );
 		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
@@ -329,6 +338,7 @@ class CKTimeTable
 		 * need to make a copy as this is our original and can't be touched.
 		 */
 		CKTable *getTableForDate( long aDate );
+		CKTable *getTableForDate( long aDate ) const;
 
 		/*
 		 * When the user needs to know what dates are in this response, this
@@ -337,6 +347,7 @@ class CKTimeTable
 		 * corresponding CKTable in this instance's data structures.
 		 */
 		const CKVector<long> getDateValues();
+		const CKVector<long> getDateValues() const;
 
 		/*
 		 * Each CKTable has the methods getRow() and getColumn() to get
@@ -415,9 +426,125 @@ class CKTimeTable
 
 		/********************************************************
 		 *
+		 *                Simple Math Methods
+		 *
+		 ********************************************************/
+		/*
+		 * These methods allow the user to add values to each applicable
+		 * element in this time table. In the first case, it's a constant
+		 * value but in the second it's a table. In this latter case, the
+		 * table's contents are added to each of the tables in this instance
+		 * regardless of the date. The third method allows the point-by-point
+		 * addition of two complete time tables. The values updated in the
+		 * methods are only those that make sense.
+		 */
+		bool add( double anOffset );
+		bool add( CKTable & aTable );
+		bool add( const CKTable & aTable );
+		bool add( CKTimeTable & anOther );
+		bool add( const CKTimeTable & anOther );
+		/*
+		 * These methods allow the user to subtract values from each applicable
+		 * element in this time table. In the first case, it's a constant value
+		 * but in the second it's a table that will be used against all the
+		 * tables in the time table. The third method allows the point-by-point
+		 * subtraction of two complete time tables. The values updated in the
+		 * methods are only those that make sense.
+		 */
+		bool subtract( double anOffset );
+		bool subtract( CKTable & aTable );
+		bool subtract( const CKTable & aTable );
+		bool subtract( CKTimeTable & anOther );
+		bool subtract( const CKTimeTable & anOther );
+		/*
+		 * These method allows the user to multiply a constant value to
+		 * all elements in the time table where such an activity would produce
+		 * reasonable results. The second form of the method allows for the
+		 * element-by-element multiplication of the argument by each table
+		 * in the time table. The third form allows a point-by-point product
+		 * of two time tables.
+		 */
+		bool multiply( double aFactor );
+		bool multiply( CKTable & aTable );
+		bool multiply( const CKTable & aTable );
+		bool multiply( CKTimeTable & anOther );
+		bool multiply( const CKTimeTable & anOther );
+		/*
+		 * These method allows the user to divide each element in this
+		 * table by a constant value where such an activity would produce
+		 * reasonable results. The second form of the method allows for the
+		 * element-by-element division of the argument by each table
+		 * in the time table. The third form allows for a point-by-point
+		 * division of two time tables.
+		 */
+		bool divide( double aDivisor );
+		bool divide( CKTable & aTable );
+		bool divide( const CKTable & aTable );
+		bool divide( CKTimeTable & anOther );
+		bool divide( const CKTimeTable & anOther );
+		/*
+		 * This method simply takes the inverse of each value in the time
+		 * table so that x -> 1/x for all points. This is marginally useful
+		 * I'm thinking, but I added it here to be a little more complete.
+		 */
+		bool inverse();
+
+		/*
+		 * These are the operator equivalents of the simple mathematical
+		 * operations on the time table. They are here as an aid to the
+		 * developer of analytic functions based on these guys.
+		 */
+		CKTimeTable & operator+=( double anOffset );
+		CKTimeTable & operator+=( CKTable & aTable );
+		CKTimeTable & operator+=( const CKTable & aTable );
+		CKTimeTable & operator+=( CKTimeTable & anOther );
+		CKTimeTable & operator+=( const CKTimeTable & anOther );
+		CKTimeTable & operator-=( double anOffset );
+		CKTimeTable & operator-=( CKTable & aTable );
+		CKTimeTable & operator-=( const CKTable & aTable );
+		CKTimeTable & operator-=( CKTimeTable & anOther );
+		CKTimeTable & operator-=( const CKTimeTable & anOther );
+		CKTimeTable & operator*=( double aFactor );
+		CKTimeTable & operator/=( double aDivisor );
+
+		/*
+		 * These are the operators for creating new table data from
+		 * one or two existing time tables. This is nice in the same vein
+		 * as the simpler operators in that it makes writing code for these
+		 * data sets a lot easier.
+		 */
+		friend CKTimeTable operator+( CKTimeTable & aTimeTable, double aValue );
+		friend CKTimeTable operator+( double aValue, CKTimeTable & aTimeTable );
+		friend CKTimeTable operator+( CKTimeTable & aTimeTable, CKTable & aTable );
+		friend CKTimeTable operator+( CKTable & aTable, CKTimeTable & aTimeTable );
+		friend CKTimeTable operator+( CKTimeTable & aTimeTable, CKTimeTable & anotherTimeTable );
+
+		friend CKTimeTable operator-( CKTimeTable & aTimeTable, double aValue );
+		friend CKTimeTable operator-( double aValue, CKTimeTable & aTimeTable );
+		friend CKTimeTable operator-( CKTimeTable & aTimeTable, CKTable & aTable );
+		friend CKTimeTable operator-( CKTable & aTable, CKTimeTable & aTimeTable );
+		friend CKTimeTable operator-( CKTimeTable & aTimeTable, CKTimeTable & anotherTimeTable );
+
+		friend CKTimeTable operator*( CKTimeTable & aTimeTable, double aValue );
+		friend CKTimeTable operator*( double aValue, CKTimeTable & aTimeTable );
+
+		friend CKTimeTable operator/( CKTimeTable & aTimeTable, double aValue );
+		friend CKTimeTable operator/( double aValue, CKTimeTable & aTimeTable );
+
+		/********************************************************
+		 *
 		 *                Utility Methods
 		 *
 		 ********************************************************/
+		/*
+		 * This method returns a copy of the current value as contained in
+		 * a string. This is returned as a CKString as it's easy to use.
+		 */
+		CKString getValueAsString( long aDate, int aRow, int aCol ) const;
+		CKString getValueAsString( long aDate, int aRow, const CKString & aColHeader ) const;
+		CKString getValueAsString( long aDate, const CKString & aRowLabel, int aCol ) const;
+		CKString getValueAsString( long aDate, const CKString & aRowLabel, const CKString & aColHeader ) const;
+
 		/*
 		 * In order to simplify the move of this object from C++ to Java
 		 * it makes sense to encode the point's data into a string that

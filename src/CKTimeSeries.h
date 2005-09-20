@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.19 2005/02/17 14:44:14 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.20 2005/09/20 18:07:14 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -165,6 +165,7 @@ class CKTimeSeries
 		 * use isnan() in <math.h>.
 		 */
 		double get( double aDateTime );
+		double get( double aDateTime ) const;
 		/*
 		 * This method gets a series of values for the timestamp
 		 * series that is supplied. The format of each timestamp in
@@ -177,6 +178,7 @@ class CKTimeSeries
 		 * test these values.
 		 */
 		CKVector<double> get( const CKVector<double> & aDateSeries );
+		CKVector<double> get( const CKVector<double> & aDateSeries ) const;
 		/*
 		 * This method tries to get the value from the timeseries for
 		 * today. This can be tricky as the date being used here is not
@@ -184,6 +186,7 @@ class CKTimeSeries
 		 * in the series is by date.
 		 */
 		double getToday();
+		double getToday() const;
 		/*
 		 * This method takes today's date and marches back in time the
 		 * provided number of days to arrive at the value to return.
@@ -192,30 +195,42 @@ class CKTimeSeries
 		 * ago.
 		 */
 		double getDaysBack( int aDayCnt );
+		double getDaysBack( int aDayCnt ) const;
 		/*
 		 * This method looks at the first point in time in this series
 		 * and returns the value of that point. This is an easy way to
 		 * get the "starting value" of the series.
 		 */
 		double getFirstValue();
+		double getFirstValue() const;
 		/*
 		 * This method looks at the last point in time in this series
 		 * and returns the value of that point. This is an easy way to
 		 * get the "ending value" of the series.
 		 */
 		double getLastValue();
+		double getLastValue() const;
 		/*
 		 * This method looks at the first point in time in this series
 		 * and returns the date of that point in the format YYYYMMDD.hhmmss.
 		 * This is an easy way to get the "starting time" of the series.
 		 */
 		double getFirstDate();
+		double getFirstDate() const;
 		/*
 		 * This method looks at the last point in time in this series
 		 * and returns the date of that point in the format YYYYMMDD.hhmmss.
 		 * This is an easy way to get the "ending time" of the series.
 		 */
 		double getLastDate();
+		double getLastDate() const;
+
+		/*
+		 * This method clears out all the dates and values from this time
+		 * series so that it's as if the time series is empty and ready to
+		 * hold brand new data.
+		 */
+		void clear();
 
 		/*
 		 * This method can be used to add in a single date/value point to
@@ -245,12 +260,14 @@ class CKTimeSeries
 		 * doesn't allow for complete timestamps.
 		 */
 		CKVector<long> getDates();
+		CKVector<long> getDates() const;
 		/*
 		 * This method gets the complete series of timestamps for the
 		 * current timeseries. This is useful if you're interesting in
 		 * knowing the time of each data point.
 		 */
 		CKVector<double> getDateTimes();
+		CKVector<double> getDateTimes() const;
 
 		/*
 		 * These methods do the same thing - they return the number of
@@ -259,7 +276,9 @@ class CKTimeSeries
 		 * such as sizing an array or something.
 		 */
 		int size();
+		int size() const;
 		int length();
+		int length() const;
 
 		/*
 		 * This method takes a timestamp in the format YYYYMMDD.hhmmssss
@@ -271,6 +290,7 @@ class CKTimeSeries
 		 * points are, the more accurate the interpolated value.
 		 */
 		double interpolate( double aDateTime );
+		double interpolate( double aDateTime ) const;
 		/*
 		 * This method takes a series of timestamps each in the format
 		 * YYYYMMDD.hhmmssss where the seconds are to the hundredth of a
@@ -282,6 +302,7 @@ class CKTimeSeries
 		 * interpolated value.
 		 */
 		CKVector<double> interpolate( const CKVector<double> & aDateSeries );
+		CKVector<double> interpolate( const CKVector<double> & aDateSeries ) const;
 		/*
 		 * This method does a simple time-based accumutation of the data in
 		 * the time series modifying the data as it goes. This can be thought
@@ -317,6 +338,7 @@ class CKTimeSeries
 		 * entire series just call sum().
 		 */
 		double sum( double aStartDate = -1, double anEndDate = -1 );
+		double sum( double aStartDate = -1, double anEndDate = -1 ) const;
 
 		/********************************************************
 		 *
@@ -383,6 +405,27 @@ class CKTimeSeries
 		 * I'm thinking, but I added it here to be a little more complete.
 		 */
 		bool inverse();
+		/*
+		 * This method replaces each point in the time series with the
+		 * natural logarithm of that point. If the number in the series
+		 * is less than or equal to zero, the result is NAN for that
+		 * point.
+		 */
+		bool ln();
+		/*
+		 * This method replaces each point in the time series with the
+		 * natural exponentiation (exp) of that point.
+		 */
+		bool exp();
+		/*
+		 * This method replaces each point in the series with the geometric
+		 * mean of the data from the passed-in series of time series.
+		 * Basically, for each point in the group of series passed in we
+		 * take the natural log of each point, compute the sum, count the
+		 * number of non-NANs, divide the sum by the count, and exponentiate
+		 * the result.
+		 */
+		bool calculateGeometricMean( const CKVector<CKTimeSeries> & aList );
 
 		/*
 		 * This method computes the arithmetic mean (a.k.a. average) for all
@@ -485,7 +528,9 @@ class CKTimeSeries
 		 * and what to operate on, for instance.
 		 */
 		double getStartingDate();
+		double getStartingDate() const;
 		double getEndingDate();
+		double getEndingDate() const;
 
 		/*
 		 * In order to simplify the move of this object from C++ to Java

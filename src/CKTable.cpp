@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.22 2005/02/04 10:37:31 drbob Exp $
+ * $Id: CKTable.cpp,v 1.23 2005/09/20 18:07:11 drbob Exp $
  */
 
 //	System Headers
@@ -136,7 +136,7 @@ CKTable::CKTable( const CKString & aCode ) :
 	// first, make sure we have something to do
 	if (aCode.empty()) {
 		std::ostringstream	msg;
-		msg << "CKTable::CKTable(const char *) - the provided argument is "
+		msg << "CKTable::CKTable(const CKString &) - the provided argument is "
 			"empty and that means that nothing can be done. Please make sure "
 			"that the argument is not empty before calling this constructor.";
 		throw CKException(__FILE__, __LINE__, msg.str());
