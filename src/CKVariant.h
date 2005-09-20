@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.15 2005/09/13 15:50:55 drbob Exp $
+ * $Id: CKVariant.h,v 1.16 2005/09/20 18:07:18 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -28,6 +28,7 @@
 class CKTable;
 class CKPrice;
 class CKVariantList;
+class CKTimeTable;
 
 //	Public Constants
 /*
@@ -43,7 +44,8 @@ enum CKVariantTypeEnum {
 	eTableVariant = 3,
 	eTimeSeriesVariant = 4,
 	ePriceVariant = 5,
-	eListVariant = 6
+	eListVariant = 6,
+	eTimeTableVariant = 7
 };
 typedef CKVariantTypeEnum CKVariantType;
 
@@ -139,6 +141,14 @@ class CKVariant
 		 */
 		CKVariant( const CKVariantList *aListValue );
 		/*
+		 * This form of the constructor understands that the value that's
+		 * intended to be stored here is a CKTimeTable, and the value provided
+		 * is what's to be stored. The value argument will not be touched
+		 * in this constructor as we'll be making a copy of the contents
+		 * for local use.
+		 */
+		CKVariant( const CKTimeTable *aTimeTableValue );
+		/*
 		 * This is the standard copy constructor and needs to be in every
 		 * class to make sure that we don't have too many things running
 		 * around.
@@ -173,6 +183,7 @@ class CKVariant
 		CKVariant & operator=( const CKTimeSeries & aTimeSeries );
 		CKVariant & operator=( const CKPrice & aPrice );
 		CKVariant & operator=( const CKVariantList & aList );
+		CKVariant & operator=( const CKTimeTable & aTimeTable );
 
 		/********************************************************
 		 *
@@ -235,6 +246,13 @@ class CKVariant
 		 * is free to delete it.
 		 */
 		void setListValue( const CKVariantList *aListValue );
+		/*
+		 * This sets the value stored in this instance to a copy of the
+		 * time table that's pointed to by the argument. Because we'll
+		 * be making a copy, the caller is still in control of the
+		 * argument.
+		 */
+		void setTimeTableValue( const CKTimeTable *aTimeTableValue );
 
 		/*
 		 * This method returns the enumerated type of the data that this
@@ -295,6 +313,12 @@ class CKVariant
 		 * outside the scope of this class, then they need to make a copy.
 		 */
 		const CKVariantList *getListValue() const;
+		/*
+		 * This method returns the actual time table that this instance is
+		 * holding. If the user wants to use this value outside the scope
+		 * of this class, then they need to make a copy.
+		 */
+		const CKTimeTable *getTimeTableValue() const;
 
 		/*
 		 * This method can be used to clear out any existing value in the
@@ -432,6 +456,7 @@ class CKVariant
 		bool operator==( const CKTimeSeries & aSeries ) const;
 		bool operator==( const CKPrice & aPrice ) const;
 		bool operator==( const CKVariantList & aList ) const;
+		bool operator==( const CKTimeTable & aTimeTable ) const;
 
 		bool operator!=( const char *aCString ) const;
 		bool operator!=( const std::string & anSTLString ) const;
@@ -443,6 +468,7 @@ class CKVariant
 		bool operator!=( const CKTimeSeries & aSeries ) const;
 		bool operator!=( const CKPrice & aPrice ) const;
 		bool operator!=( const CKVariantList & aList ) const;
+		bool operator!=( const CKTimeTable & aTimeTable ) const;
 
 		bool operator<( const char *aCString ) const;
 		bool operator<( const std::string & anSTLString ) const;
@@ -454,6 +480,7 @@ class CKVariant
 		bool operator<( const CKTimeSeries & aSeries ) const;
 		bool operator<( const CKPrice & aPrice ) const;
 		bool operator<( const CKVariantList & aList ) const;
+		bool operator<( const CKTimeTable & aTimeTable ) const;
 
 		bool operator<=( const char *aCString ) const;
 		bool operator<=( const std::string & anSTLString ) const;
@@ -465,6 +492,7 @@ class CKVariant
 		bool operator<=( const CKTimeSeries & aSeries ) const;
 		bool operator<=( const CKPrice & aPrice ) const;
 		bool operator<=( const CKVariantList & aList ) const;
+		bool operator<=( const CKTimeTable & aTimeTable ) const;
 
 		bool operator>( const char *aCString ) const;
 		bool operator>( const std::string & anSTLString ) const;
@@ -476,6 +504,7 @@ class CKVariant
 		bool operator>( const CKTimeSeries & aSeries ) const;
 		bool operator>( const CKPrice & aPrice ) const;
 		bool operator>( const CKVariantList & aList ) const;
+		bool operator>( const CKTimeTable & aTimeTable ) const;
 
 		bool operator>=( const char *aCString ) const;
 		bool operator>=( const std::string & anSTLString ) const;
@@ -487,6 +516,7 @@ class CKVariant
 		bool operator>=( const CKTimeSeries & aSeries ) const;
 		bool operator>=( const CKPrice & aPrice ) const;
 		bool operator>=( const CKVariantList & aList ) const;
+		bool operator>=( const CKTimeTable & aTimeTable ) const;
 
 		/*
 		 * These operators are the convenience assignment operators for
@@ -505,6 +535,7 @@ class CKVariant
 		CKVariant & operator+=( const CKPrice & aPrice );
 		CKVariant & operator+=( const CKVariant & aVar );
 		CKVariant & operator+=( const CKVariantList & aList );
+		CKVariant & operator+=( const CKTimeTable & aTimeTable );
 
 		CKVariant & operator-=( int aValue );
 		CKVariant & operator-=( long aDateValue );
@@ -514,6 +545,7 @@ class CKVariant
 		CKVariant & operator-=( const CKPrice & aPrice );
 		CKVariant & operator-=( const CKVariant & aVar );
 		CKVariant & operator-=( const CKVariantList & aList );
+		CKVariant & operator-=( const CKTimeTable & aTimeTable );
 
 		CKVariant & operator*=( int aValue );
 		CKVariant & operator*=( long aDateValue );
@@ -523,6 +555,7 @@ class CKVariant
 		CKVariant & operator*=( const CKPrice & aPrice );
 		CKVariant & operator*=( const CKVariant & aVar );
 		CKVariant & operator*=( const CKVariantList & aList );
+		CKVariant & operator*=( const CKTimeTable & aTimeTable );
 
 		CKVariant & operator/=( int aValue );
 		CKVariant & operator/=( long aDateValue );
@@ -532,6 +565,7 @@ class CKVariant
 		CKVariant & operator/=( const CKPrice & aPrice );
 		CKVariant & operator/=( const CKVariant & aVar );
 		CKVariant & operator/=( const CKVariantList & aList );
+		CKVariant & operator/=( const CKTimeTable & aTimeTable );
 
 		/*
 		 * There are times that variants will be used in mathematical
@@ -670,6 +704,7 @@ class CKVariant
 			CKTimeSeries	*mTimeSeriesValue;
 			CKPrice			*mPriceValue;
 			CKVariantList	*mListValue;
+			CKTimeTable		*mTimeTableValue;
 		};
 };
 

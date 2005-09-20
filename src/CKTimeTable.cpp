@@ -6,7 +6,7 @@
  *                   will be able to represent a series of tabular results
  *                   - one per day.
  *
- * $Id: CKTimeTable.cpp,v 1.1 2005/09/13 15:55:03 drbob Exp $
+ * $Id: CKTimeTable.cpp,v 1.2 2005/09/20 18:07:14 drbob Exp $
  */
 
 //	System Headers
@@ -91,6 +91,35 @@ CKTimeTable::CKTimeTable( const CKStringList & aRowLabelList,
 	// ...and then set the counts from these
 	mDefaultRowCount = mDefaultRowLabels.size();
 	mDefaultColumnCount = mDefaultColumnHeaders.size();
+}
+
+
+/*
+ * This constructor is interesting in that it takes the data as
+ * it comes from another CKTimeTable's generateCodeFromValues() method
+ * and parses it into a time table of values directly. This is very
+ * useful for serializing the time table's data from one host to
+ * another across a socket, for instance.
+ */
+CKTimeTable::CKTimeTable( const CKString & aCode ) :
+	mTables(),
+	mTablesMutex(),
+	mDefaultRowCount(0),
+	mDefaultColumnCount(0),
+	mDefaultRowLabels(),
+	mDefaultColumnHeaders()
+{
+	// first, make sure we have something to do
+	if (aCode.empty()) {
+		std::ostringstream	msg;
+		msg << "CKTimeTable::CKTimeTable(const CKString &) - the provided argument "
+			"is empty and that means that nothing can be done. Please make sure "
+			"that the argument is not empty before calling this constructor.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		// load in the values from the code
+		takeValuesFromCode(aCode);
+	}
 }
 
 
@@ -1845,6 +1874,12 @@ CKTable *CKTimeTable::getTableForDate( long aDate )
 }
 
 
+CKTable *CKTimeTable::getTableForDate( long aDate ) const
+{
+	return ((CKTimeTable *)this)->getTableForDate(aDate);
+}
+
+
 /*
  * When the user needs to know what dates are in this response, this
  * method is a nice way to get at those values. Each of the entries
@@ -1863,6 +1898,12 @@ const CKVector<long> CKTimeTable::getDateValues()
 	}
 
 	return retval;
+}
+
+
+const CKVector<long> CKTimeTable::getDateValues() const
+{
+	return ((CKTimeTable *)this)->getDateValues();
 }
 
 
@@ -2089,9 +2130,672 @@ void CKTimeTable::clearDefaultColumnHeaders()
 
 /********************************************************
  *
+ *                Simple Math Methods
+ *
+ ********************************************************/
+/*
+ * These methods allow the user to add values to each applicable
+ * element in this time table. In the first case, it's a constant
+ * value but in the second it's a table. In this latter case, the
+ * table's contents are added to each of the tables in this instance
+ * regardless of the date. The third method allows the point-by-point
+ * addition of two complete time tables. The values updated in the
+ * methods are only those that make sense.
+ */
+bool CKTimeTable::add( double anOffset )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.add(anOffset);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::add( CKTable & aTable )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.add(aTable);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::add( const CKTable & aTable )
+{
+	return add((CKTable &)aTable);
+}
+
+
+bool CKTimeTable::add( CKTimeTable & anOther )
+{
+	bool		error = false;
+
+	// I need to lock up both myself and the arg against changes
+	CKStackLocker	lockme(&mTablesMutex);
+	CKStackLocker	lockhim(&anOther.mTablesMutex);
+
+	/*
+	 * This is interesting in that we need to match up the dates as well
+	 * as the data in the tables. So, I need to scan all *my* dates and
+	 * try to find that same date in the *other* guy and add up his table
+	 * to mine.
+	 */
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				// see if the other guy has this date
+				CKTable *his = anOther.getTableForDate(i->first);
+				if (his != NULL) {
+					i->second.add(*his);
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::add( const CKTimeTable & anOther )
+{
+	return add((CKTimeTable &)anOther);
+}
+
+
+/*
+ * These methods allow the user to subtract values from each applicable
+ * element in this time table. In the first case, it's a constant value
+ * but in the second it's a table that will be used against all the
+ * tables in the time table. The third method allows the point-by-point
+ * subtraction of two complete time tables. The values updated in the
+ * methods are only those that make sense.
+ */
+bool CKTimeTable::subtract( double anOffset )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.subtract(anOffset);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::subtract( CKTable & aTable )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.subtract(aTable);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::subtract( const CKTable & aTable )
+{
+	return subtract((CKTable &)aTable);
+}
+
+
+bool CKTimeTable::subtract( CKTimeTable & anOther )
+{
+	bool		error = false;
+
+	// I need to lock up both myself and the arg against changes
+	CKStackLocker	lockme(&mTablesMutex);
+	CKStackLocker	lockhim(&anOther.mTablesMutex);
+
+	/*
+	 * This is interesting in that we need to match up the dates as well
+	 * as the data in the tables. So, I need to scan all *my* dates and
+	 * try to find that same date in the *other* guy and subtract his table
+	 * from mine.
+	 */
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				// see if the other guy has this date
+				CKTable *his = anOther.getTableForDate(i->first);
+				if (his != NULL) {
+					i->second.subtract(*his);
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::subtract( const CKTimeTable & anOther )
+{
+	return subtract((CKTimeTable &)anOther);
+}
+
+
+/*
+ * These method allows the user to multiply a constant value to
+ * all elements in the time table where such an activity would produce
+ * reasonable results. The second form of the method allows for the
+ * element-by-element multiplication of the argument by each table
+ * in the time table. The third form allows a point-by-point product
+ * of two time tables.
+ */
+bool CKTimeTable::multiply( double aFactor )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.multiply(aFactor);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::multiply( CKTable & aTable )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.multiply(aTable);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::multiply( const CKTable & aTable )
+{
+	return multiply((CKTable &)aTable);
+}
+
+
+bool CKTimeTable::multiply( CKTimeTable & anOther )
+{
+	bool		error = false;
+
+	// I need to lock up both myself and the arg against changes
+	CKStackLocker	lockme(&mTablesMutex);
+	CKStackLocker	lockhim(&anOther.mTablesMutex);
+
+	/*
+	 * This is interesting in that we need to match up the dates as well
+	 * as the data in the tables. So, I need to scan all *my* dates and
+	 * try to find that same date in the *other* guy and multiply his table
+	 * to mine.
+	 */
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				// see if the other guy has this date
+				CKTable *his = anOther.getTableForDate(i->first);
+				if (his != NULL) {
+					i->second.multiply(*his);
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::multiply( const CKTimeTable & anOther )
+{
+	return multiply((CKTimeTable &)anOther);
+}
+
+
+/*
+ * These method allows the user to divide each element in this
+ * table by a constant value where such an activity would produce
+ * reasonable results. The second form of the method allows for the
+ * element-by-element division of the argument by each table
+ * in the time table. The third form allows for a point-by-point
+ * division of two time tables.
+ */
+bool CKTimeTable::divide( double aDivisor )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.divide(aDivisor);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::divide( CKTable & aTable )
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.divide(aTable);
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::divide( const CKTable & aTable )
+{
+	return divide((CKTable &)aTable);
+}
+
+
+bool CKTimeTable::divide( CKTimeTable & anOther )
+{
+	bool		error = false;
+
+	// I need to lock up both myself and the arg against changes
+	CKStackLocker	lockme(&mTablesMutex);
+	CKStackLocker	lockhim(&anOther.mTablesMutex);
+
+	/*
+	 * This is interesting in that we need to match up the dates as well
+	 * as the data in the tables. So, I need to scan all *my* dates and
+	 * try to find that same date in the *other* guy and divide his table
+	 * into mine.
+	 */
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				// see if the other guy has this date
+				CKTable *his = anOther.getTableForDate(i->first);
+				if (his != NULL) {
+					i->second.divide(*his);
+				}
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+bool CKTimeTable::divide( const CKTimeTable & anOther )
+{
+	return divide((CKTimeTable &)anOther);
+}
+
+
+/*
+ * This method simply takes the inverse of each value in the time
+ * table so that x -> 1/x for all points. This is marginally useful
+ * I'm thinking, but I added it here to be a little more complete.
+ */
+bool CKTimeTable::inverse()
+{
+	bool		error = false;
+
+	// lock up the map against change
+	CKStackLocker	lockem(&mTablesMutex);
+
+	// now do the math a table at a time
+	if (!error) {
+		if (!mTables.empty()) {
+			for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
+				i->second.inverse();
+			}
+		}
+	}
+
+	return !error;
+}
+
+
+/*
+ * These are the operator equivalents of the simple mathematical
+ * operations on the time table. They are here as an aid to the
+ * developer of analytic functions based on these guys.
+ */
+CKTimeTable & CKTimeTable::operator+=( double anOffset )
+{
+	add(anOffset);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator+=( CKTable & aTable )
+{
+	add(aTable);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator+=( const CKTable & aTable )
+{
+	add((CKTable &)aTable);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator+=( CKTimeTable & anOther )
+{
+	add(anOther);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator+=( const CKTimeTable & anOther )
+{
+	add((CKTimeTable &)anOther);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator-=( double anOffset )
+{
+	subtract(anOffset);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator-=( CKTable & aTable )
+{
+	subtract(aTable);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator-=( const CKTable & aTable )
+{
+	subtract((CKTable &)aTable);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator-=( CKTimeTable & anOther )
+{
+	subtract(anOther);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator-=( const CKTimeTable & anOther )
+{
+	subtract((CKTimeTable &)anOther);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator*=( double aFactor )
+{
+	multiply(aFactor);
+	return *this;
+}
+
+
+CKTimeTable & CKTimeTable::operator/=( double aDivisor )
+{
+	divide(aDivisor);
+	return *this;
+}
+
+
+/*
+ * These are the operators for creating new table data from
+ * one or two existing time tables. This is nice in the same vein
+ * as the simpler operators in that it makes writing code for these
+ * data sets a lot easier.
+ */
+CKTimeTable operator+( CKTimeTable & aTimeTable, double aValue )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval += aValue;
+	return retval;
+}
+
+
+CKTimeTable operator+( double aValue, CKTimeTable & aTimeTable )
+{
+	return operator+(aTimeTable, aValue);
+}
+
+
+CKTimeTable operator+( CKTimeTable & aTimeTable, CKTable & aTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval += aTable;
+	return retval;
+}
+
+
+CKTimeTable operator+( CKTable & aTable, CKTimeTable & aTimeTable )
+{
+	return operator+(aTimeTable, aTable);
+}
+
+
+CKTimeTable operator+( CKTimeTable & aTimeTable, CKTimeTable & anotherTimeTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval += anotherTimeTable;
+	return retval;
+}
+
+
+CKTimeTable operator-( CKTimeTable & aTimeTable, double aValue )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval -= aValue;
+	return retval;
+}
+
+
+CKTimeTable operator-( double aValue, CKTimeTable & aTimeTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval *= -1.0;
+	retval += aValue;
+	return retval;
+}
+
+
+CKTimeTable operator-( CKTimeTable & aTimeTable, CKTable & aTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval -= aTable;
+	return retval;
+}
+
+
+CKTimeTable operator-( CKTable & aTable, CKTimeTable & aTimeTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval *= -1.0;
+	retval += aTable;
+	return retval;
+}
+
+
+CKTimeTable operator-( CKTimeTable & aTimeTable, CKTimeTable & anotherTimeTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval -= anotherTimeTable;
+	return retval;
+}
+
+
+CKTimeTable operator*( CKTimeTable & aTimeTable, double aValue )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval *= aValue;
+	return retval;
+}
+
+
+CKTimeTable operator*( double aValue, CKTimeTable & aTimeTable )
+{
+	return operator*(aTimeTable, aValue);
+}
+
+
+CKTimeTable operator/( CKTimeTable & aTimeTable, double aValue )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval /= aValue;
+	return retval;
+}
+
+
+CKTimeTable operator/( double aValue, CKTimeTable & aTimeTable )
+{
+	CKTimeTable		retval(aTimeTable);
+	retval.inverse();
+	retval *= aValue;
+	return retval;
+}
+
+
+/********************************************************
+ *
  *                Utility Methods
  *
  ********************************************************/
+/*
+ * This method returns a copy of the current value as contained in
+ * a string. This is returned as a CKString as it's easy to use.
+ */
+CKString CKTimeTable::getValueAsString( long aDate, int aRow, int aCol ) const
+{
+	CKTable		*tbl = getTableForDate(aDate);
+	if (tbl == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTimeTable::getValueAsString(long, int, int) - there is no "
+			"currently defined date: " << aDate << " (YYYYMMDD) in the current "
+			"instance. This is a serious error as you can only 'get' data that's "
+			"already been 'set'.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return tbl->getValueAsString(aRow, aCol);
+}
+
+
+CKString CKTimeTable::getValueAsString( long aDate, int aRow, const CKString & aColHeader ) const
+{
+	CKTable		*tbl = getTableForDate(aDate);
+	if (tbl == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTimeTable::getValueAsString(long, int, const CKString &) - "
+			"there is no currently defined date: " << aDate << " (YYYYMMDD) in "
+			"the current instance. This is a serious error as you can only 'get' "
+			"data that's already been 'set'.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return tbl->getValueAsString(aRow, aColHeader);
+}
+
+
+CKString CKTimeTable::getValueAsString( long aDate, const CKString & aRowLabel, int aCol ) const
+{
+	CKTable		*tbl = getTableForDate(aDate);
+	if (tbl == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTimeTable::getValueAsString(long, const CKString &, int) - "
+			"there is no currently defined date: " << aDate << " (YYYYMMDD) in "
+			"the current instance. This is a serious error as you can only 'get' "
+			"data that's already been 'set'.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return tbl->getValueAsString(aRowLabel, aCol);
+}
+
+
+CKString CKTimeTable::getValueAsString( long aDate, const CKString & aRowLabel, const CKString & aColHeader ) const
+{
+	CKTable		*tbl = getTableForDate(aDate);
+	if (tbl == NULL) {
+		std::ostringstream	msg;
+		msg << "CKTimeTable::getValueAsString(long, const CKString &, const CKString &) - "
+			"there is no currently defined date: " << aDate << " (YYYYMMDD) in "
+			"the current instance. This is a serious error as you can only 'get' "
+			"data that's already been 'set'.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	}
+
+	return tbl->getValueAsString(aRowLabel, aColHeader);
+}
+
+
 /*
  * In order to simplify the move of this object from C++ to Java
  * it makes sense to encode the point's data into a string that

@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.24 2005/02/17 14:44:12 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.25 2005/09/20 18:07:13 drbob Exp $
  */
 
 //	System Headers
@@ -16,6 +16,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <strings.h>
+#include <math.h>
 
 //	Third-Party Headers
 
@@ -255,6 +256,12 @@ double CKTimeSeries::get( double aDateTime )
 }
 
 
+double CKTimeSeries::get( double aDateTime ) const
+{
+	return ((CKTimeSeries *)this)->get(aDateTime);
+}
+
+
 /*
  * This method gets a series of values for the timestamp
  * series that is supplied. The format of each timestamp in
@@ -299,6 +306,12 @@ CKVector<double> CKTimeSeries::get( const CKVector<double> & aDateSeries )
 }
 
 
+CKVector<double> CKTimeSeries::get( const CKVector<double> & aDateSeries ) const
+{
+	return ((CKTimeSeries *)this)->get(aDateSeries);
+}
+
+
 /*
  * This method tries to get the value from the timeseries for
  * today. This can be tricky as the date being used here is not
@@ -308,6 +321,12 @@ CKVector<double> CKTimeSeries::get( const CKVector<double> & aDateSeries )
 double CKTimeSeries::getToday()
 {
 	return get(getCurrentDate());
+}
+
+
+double CKTimeSeries::getToday() const
+{
+	return ((CKTimeSeries *)this)->getToday();
 }
 
 
@@ -327,6 +346,12 @@ double CKTimeSeries::getDaysBack( int aDayCnt )
 	retval = get(date);
 
 	return retval;
+}
+
+
+double CKTimeSeries::getDaysBack( int aDayCnt ) const
+{
+	return ((CKTimeSeries *)this)->getDaysBack(aDayCnt);
 }
 
 
@@ -353,6 +378,12 @@ double CKTimeSeries::getFirstValue()
 }
 
 
+double CKTimeSeries::getFirstValue() const
+{
+	return ((CKTimeSeries *)this)->getFirstValue();
+}
+
+
 /*
  * This method looks at the last point in time in this series
  * and returns the value of that point. This is an easy way to
@@ -373,6 +404,12 @@ double CKTimeSeries::getLastValue()
 	mTimeseriesMutex.unlock();
 
 	return retval;
+}
+
+
+double CKTimeSeries::getLastValue() const
+{
+	return ((CKTimeSeries *)this)->getLastValue();
 }
 
 
@@ -399,6 +436,12 @@ double CKTimeSeries::getFirstDate()
 }
 
 
+double CKTimeSeries::getFirstDate() const
+{
+	return ((CKTimeSeries *)this)->getFirstDate();
+}
+
+
 /*
  * This method looks at the last point in time in this series
  * and returns the date of that point in the format YYYYMMDD.hhmmss.
@@ -419,6 +462,30 @@ double CKTimeSeries::getLastDate()
 	mTimeseriesMutex.unlock();
 
 	return retval;
+}
+
+
+double CKTimeSeries::getLastDate() const
+{
+	return ((CKTimeSeries *)this)->getLastDate();
+}
+
+
+/*
+ * This method clears out all the dates and values from this time
+ * series so that it's as if the time series is empty and ready to
+ * hold brand new data.
+ */
+void CKTimeSeries::clear()
+{
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// clear it out if it's not empty
+	if (!mTimeseries.empty()) {
+		mTimeseries.clear();
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
 }
 
 
@@ -522,6 +589,12 @@ CKVector<long> CKTimeSeries::getDates()
 }
 
 
+CKVector<long> CKTimeSeries::getDates() const
+{
+	return ((CKTimeSeries *)this)->getDates();
+}
+
+
 /*
  * This method gets the complete series of timestamps for the
  * current timeseries. This is useful if you're interesting in
@@ -547,6 +620,12 @@ CKVector<double> CKTimeSeries::getDateTimes()
 }
 
 
+CKVector<double> CKTimeSeries::getDateTimes() const
+{
+	return ((CKTimeSeries *)this)->getDateTimes();
+}
+
+
 /*
  * These methods do the same thing - they return the number of
  * time/value pairs in the timeseries. This is nice when you need
@@ -568,9 +647,21 @@ int CKTimeSeries::size()
 }
 
 
+int CKTimeSeries::size() const
+{
+	return ((CKTimeSeries *)this)->size();
+}
+
+
 int CKTimeSeries::length()
 {
 	return size();
+}
+
+
+int CKTimeSeries::length() const
+{
+	return ((CKTimeSeries *)this)->length();
 }
 
 
@@ -697,6 +788,12 @@ double CKTimeSeries::interpolate( double aDateTime )
 }
 
 
+double CKTimeSeries::interpolate( double aDateTime ) const
+{
+	return ((CKTimeSeries *)this)->interpolate(aDateTime);
+}
+
+
 /*
  * This method takes a series of timestamps each in the format
  * YYYYMMDD.hhmmssss where the seconds are to the hundredth of a
@@ -720,6 +817,12 @@ CKVector<double> CKTimeSeries::interpolate( const CKVector<double> & aDateSeries
 	}
 
 	return retval;
+}
+
+
+CKVector<double> CKTimeSeries::interpolate( const CKVector<double> & aDateSeries ) const
+{
+	return ((CKTimeSeries *)this)->interpolate(aDateSeries);
 }
 
 
@@ -944,6 +1047,12 @@ double CKTimeSeries::sum( double aStartDate, double anEndDate )
 	}
 
 	return retval;
+}
+
+
+double CKTimeSeries::sum( double aStartDate, double anEndDate ) const
+{
+	return ((CKTimeSeries *)this)->sum(aStartDate, anEndDate);
 }
 
 
@@ -1309,6 +1418,141 @@ bool CKTimeSeries::inverse()
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
+
+	return !error;
+}
+
+
+/*
+ * This method replaces each point in the time series with the
+ * natural logarithm of that point. If the number in the series
+ * is less than or equal to zero, the result is NAN for that
+ * point.
+ */
+bool CKTimeSeries::ln()
+{
+	bool		error = false;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// for each value in the series, take the log of it
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if ((*i).second > 0) {
+			(*i).second = log((*i).second);
+		} else {
+			(*i).second = NAN;
+		}
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return !error;
+}
+
+
+/*
+ * This method replaces each point in the time series with the
+ * natural exponentiation (exp) of that point.
+ */
+bool CKTimeSeries::exp()
+{
+	bool		error = false;
+
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// for each value in the series, take the log of it
+	std::map<double, double>::iterator	i;
+	for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+		if (!isnan((*i).second)) {
+			(*i).second = ::exp((*i).second);
+		}
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+
+	return !error;
+}
+
+
+/*
+ * This method replaces each point in the series with the geometric
+ * mean of the data from the passed-in series of time series.
+ * Basically, for each point in the group of series passed in we
+ * take the natural log of each point, compute the sum, count the
+ * number of non-NANs, divide the sum by the count, and exponentiate
+ * the result.
+ */
+bool CKTimeSeries::calculateGeometricMean( const CKVector<CKTimeSeries> & aList )
+{
+	bool		error = false;
+
+	/*
+	 * We need to have a 'master' list of all the dates that exist in all
+	 * the passed-in time series. This master list will be what we then
+	 * use as the date basis for the calculation. This allows some values
+	 * to 'fade in and out' as the time progresses, and is a really nice
+	 * feature.
+	 */
+	CKVector<long>		allDates;
+	if (!error) {
+		for (int i = 0; i < aList.size(); i++) {
+			// get the next time series in the vector of series
+			const CKTimeSeries	& series = aList[i];
+			// now get the list of all dates in this series
+			const CKVector<long> group = series.getDates();
+			for (int j = 0; j < group.size(); j++) {
+				long	when = group[j];
+				// add it only if it's unique in the total set
+				if (!allDates.contains(when)) {
+					allDates.addToEnd(when);
+				}
+			}
+		}
+	}
+
+	/*
+	 * Now it's time to get interesting! We need to get a list of the
+	 * dates for all series and then get what data we can from each
+	 * time series and compute the geometric mean for the dataset.
+	 */
+	if (!error) {
+		// lock up this guy against changes
+		mTimeseriesMutex.lock();
+
+		// now clear out all the old data in favor of the new data
+		mTimeseries.clear();
+
+		// get the list of all the Dates for this resultant series
+		double	sum = 0.0;
+		double	hits = 0.0;
+		int		cnt = allDates.size();
+		for (int i = 0; i < cnt; i++) {
+			// get the next date to be in the final result
+			double	d = (double)allDates[i];
+
+			// reset the stats for this point in the series
+			sum = 0.0;
+			hits = 0.0;
+			// now get all the component values from the group
+			for (int s = 0; s < aList.size(); s++) {
+				double	val = aList[s].get(d);
+				if (!isnan(val)) {
+					// accumulate the log value and hit count
+					sum += log(val);
+					hits++;
+				}
+			}
+
+			// now compute the final value and save it
+			if (hits > 0) {
+				mTimeseries[d] = ::exp(sum/hits);
+			}
+		}
+
+		// unlock up this guy for changes
+		mTimeseriesMutex.unlock();
+	}
 
 	return !error;
 }
@@ -1714,6 +1958,12 @@ double CKTimeSeries::getStartingDate()
 }
 
 
+double CKTimeSeries::getStartingDate() const
+{
+	return ((CKTimeSeries *)this)->getStartingDate();
+}
+
+
 double CKTimeSeries::getEndingDate()
 {
 	double		retval;
@@ -1728,6 +1978,12 @@ double CKTimeSeries::getEndingDate()
 	mTimeseriesMutex.unlock();
 
 	return retval;
+}
+
+
+double CKTimeSeries::getEndingDate() const
+{
+	return ((CKTimeSeries *)this)->getEndingDate();
 }
 
 
