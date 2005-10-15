@@ -5,7 +5,7 @@
  *                 nicely into the CKVariant scheme and will be able to
  *                 represent a series of tabular results - one per day.
  *
- * $Id: CKTimeTable.h,v 1.2 2005/09/20 18:07:16 drbob Exp $
+ * $Id: CKTimeTable.h,v 1.3 2005/10/15 16:10:55 drbob Exp $
  */
 #ifndef __CKTIMETABLE_H
 #define __CKTIMETABLE_H
@@ -25,6 +25,7 @@
 #include "CKTable.h"
 #include "CKTimeSeries.h"
 #include "CKString.h"
+#include "muParser.h"
 
 //	Forward Declarations
 
@@ -613,6 +614,8 @@ class CKTimeTable
 		virtual CKString toTableString() const;
 
 	protected:
+		friend class MathUtils::Parser;
+
 		/*
 		 * This method sets the list of default row labels to be equivalent
 		 * to the passed in list. This first clears out the existing list and
