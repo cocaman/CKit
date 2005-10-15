@@ -21,6 +21,7 @@
 #include "CKTable.h"
 #include "CKTimeSeries.h"
 #include "CKPrice.h"
+#include "CKTimeTable.h"
 
 #include <cmath>
 #include <algorithm>
@@ -101,6 +102,53 @@ Parser::value_type Parser::Sin(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Sin(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Sin(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -166,6 +214,53 @@ Parser::value_type Parser::Cos(Parser::value_type & v)
 					work.setNative(cos(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Cos(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Cos(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -237,6 +332,53 @@ Parser::value_type Parser::Tan(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Tan(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Tan(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -302,6 +444,53 @@ Parser::value_type Parser::ASin(Parser::value_type & v)
 					work.setNative(asin(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ASin(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ASin(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -373,6 +562,53 @@ Parser::value_type Parser::ACos(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ACos(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ACos(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -438,6 +674,53 @@ Parser::value_type Parser::ATan(Parser::value_type & v)
 					work.setNative(atan(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ATan(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ATan(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -509,6 +792,53 @@ Parser::value_type Parser::Sinh(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Sinh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Sinh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -577,6 +907,53 @@ Parser::value_type Parser::Cosh(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Cosh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Cosh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -642,6 +1019,53 @@ Parser::value_type Parser::Tanh(Parser::value_type & v)
 					work.setNative(tanh(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Tanh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Tanh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -719,6 +1143,53 @@ Parser::value_type Parser::ASinh(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ASinh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ASinh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -793,6 +1264,53 @@ Parser::value_type Parser::ACosh(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ACosh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ACosh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -864,6 +1382,53 @@ Parser::value_type Parser::ATanh(Parser::value_type & v)
 					work.setNative((double)0.5 * log((1.0 + x)/(1.0 - x)));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(ATanh(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, ATanh(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -943,6 +1508,53 @@ Parser::value_type Parser::Log2(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Log2(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Log2(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1009,6 +1621,53 @@ Parser::value_type Parser::Log10(Parser::value_type & v)
 					work.setNative(log10(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Log10(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Log10(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -1081,6 +1740,53 @@ Parser::value_type Parser::Ln(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Ln(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Ln(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1147,6 +1853,53 @@ Parser::value_type Parser::Exp(Parser::value_type & v)
 					work.setNative(exp(work.getNative()));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Exp(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Exp(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -1218,6 +1971,53 @@ Parser::value_type Parser::Abs(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Abs(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Abs(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1286,6 +2086,53 @@ Parser::value_type Parser::Sqrt(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Sqrt(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Sqrt(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1351,6 +2198,53 @@ Parser::value_type Parser::Rint(Parser::value_type & v)
 					work.setNative(floor(work.getNative() + (double)0.5));
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Rint(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Rint(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -1428,6 +2322,53 @@ Parser::value_type Parser::Sign(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Sign(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Sign(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1480,6 +2421,53 @@ Parser::value_type Parser::UpperStr(value_type & arg)
 			break;
 		case ePriceVariant:
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(UpperStr(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, UpperStr(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1530,6 +2518,53 @@ Parser::value_type Parser::LowerStr(value_type & arg)
 		case eTimeSeriesVariant:
 			break;
 		case ePriceVariant:
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(LowerStr(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, LowerStr(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
 			break;
 	}
 	return retval;
@@ -1582,6 +2617,53 @@ Parser::value_type Parser::TrimStr(value_type & arg)
 			break;
 		case ePriceVariant:
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(TrimStr(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, TrimStr(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1630,6 +2712,53 @@ Parser::value_type Parser::RightStr(value_type & arg, value_type & num)
 		case eTimeSeriesVariant:
 			break;
 		case ePriceVariant:
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(RightStr(*n, num));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, RightStr(tbl.getValue(r,c), num));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
 			break;
 	}
 	return retval;
@@ -1680,6 +2809,53 @@ Parser::value_type Parser::LeftStr(value_type & arg, value_type & num)
 			break;
 		case ePriceVariant:
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(LeftStr(*n, num));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, LeftStr(tbl.getValue(r,c), num));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1729,6 +2905,53 @@ Parser::value_type Parser::MidStr(value_type & arg, value_type & start, value_ty
 			break;
 		case ePriceVariant:
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(MidStr(*n, start, end));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, MidStr(tbl.getValue(r,c), start, end));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1774,6 +2997,53 @@ Parser::value_type Parser::LenStr(value_type & arg)
 		case eTimeSeriesVariant:
 			break;
 		case ePriceVariant:
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = arg.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(LenStr(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = arg.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, LenStr(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
 			break;
 	}
 	return retval;
@@ -1848,6 +3118,53 @@ Parser::value_type Parser::Milli(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Milli(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Milli(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -1911,6 +3228,53 @@ Parser::value_type Parser::Nano(Parser::value_type & v)
 					work *= 1.0e-9;
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Nano(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Nano(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
@@ -1980,6 +3344,53 @@ Parser::value_type Parser::Micro(Parser::value_type & v)
 				}
 			}
 			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(Micro(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, Micro(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
+				}
+			}
+			break;
 	}
 	return retval;
 }
@@ -2041,6 +3452,53 @@ Parser::value_type Parser::UnaryMinus(Parser::value_type & v)
 					work *= -1.0;
 					// finally, save this as the result
 					retval.setPriceValue(&work);
+				}
+			}
+			break;
+		case eListVariant:
+			{
+				const CKVariantList	*list = v.getListValue();
+				if (list != NULL) {
+					// make a new list for copy into
+					CKVariantList	work;
+					// now process the source a node at a time
+					for (CKVariantNode *n = list->getHead(); n != NULL; n = n->getNext()) {
+						work.addToEnd(UnaryMinus(*n));
+					}
+					// finally, save this as the result
+					retval.setListValue(&work);
+				}
+			}
+			break;
+		case eTimeTableVariant:
+			{
+				const CKTimeTable	*timeTbl = v.getTimeTableValue();
+				if (timeTbl != NULL) {
+					// make a new list for copy into
+					CKTimeTable	work;
+					// get the list of dates in the source table
+					CKVector<long>	dates = timeTbl->getDateValues();
+					for (int d = 0; d < dates.size(); d++) {
+						// get the next date in the series for the table
+						long	when = dates[d];
+						CKTable	*what = timeTbl->getTableForDate(when);
+						if (what != NULL) {
+							// first, copy the table
+							CKTable		tbl = *what;
+							// now operate on each element in the table
+							int	rows = tbl.getNumRows();
+							int	cols = tbl.getNumColumns();
+							for (int r = 0; r < rows; r++) {
+								for (int c = 0; c < cols; c++) {
+									tbl.setValue(r, c, UnaryMinus(tbl.getValue(r,c)));
+								}
+							}
+							// finally, save this as the result
+							work.setTableForDate(when, tbl);
+						}
+					}
+					// finally, save this as the result
+					retval.setTimeTableValue(&work);
 				}
 			}
 			break;
