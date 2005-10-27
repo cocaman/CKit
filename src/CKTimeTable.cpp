@@ -6,7 +6,7 @@
  *                   will be able to represent a series of tabular results
  *                   - one per day.
  *
- * $Id: CKTimeTable.cpp,v 1.2 2005/09/20 18:07:14 drbob Exp $
+ * $Id: CKTimeTable.cpp,v 1.3 2005/10/27 19:24:28 drbob Exp $
  */
 
 //	System Headers
@@ -1991,7 +1991,9 @@ CKTimeSeries CKTimeTable::getTimeSeries( int aRow, int aCol )
 	CKStackLocker	lockem(&mTablesMutex);
 	// now zoom through the list adding in all the values that are numbers
 	for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
-		retval.put((double)i->first, i->second.getDoubleValue(aRow, aCol));
+		if (i->second.getType(aRow, aCol) == eNumberVariant) {
+			retval.put((double)i->first, i->second.getDoubleValue(aRow, aCol));
+		}
 	}
 
 	return retval;
@@ -2006,7 +2008,9 @@ CKTimeSeries CKTimeTable::getTimeSeries( int aRow, const CKString & aColHeader )
 	CKStackLocker	lockem(&mTablesMutex);
 	// now zoom through the list adding in all the values that are numbers
 	for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
-		retval.put((double)i->first, i->second.getDoubleValue(aRow, aColHeader));
+		if (i->second.getType(aRow, aColHeader) == eNumberVariant) {
+			retval.put((double)i->first, i->second.getDoubleValue(aRow, aColHeader));
+		}
 	}
 
 	return retval;
@@ -2021,7 +2025,9 @@ CKTimeSeries CKTimeTable::getTimeSeries( const CKString & aRowLabel, int aCol )
 	CKStackLocker	lockem(&mTablesMutex);
 	// now zoom through the list adding in all the values that are numbers
 	for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
-		retval.put((double)i->first, i->second.getDoubleValue(aRowLabel, aCol));
+		if (i->second.getType(aRowLabel, aCol) == eNumberVariant) {
+			retval.put((double)i->first, i->second.getDoubleValue(aRowLabel, aCol));
+		}
 	}
 
 	return retval;
@@ -2036,7 +2042,9 @@ CKTimeSeries CKTimeTable::getTimeSeries( const CKString & aRowLabel, const CKStr
 	CKStackLocker	lockem(&mTablesMutex);
 	// now zoom through the list adding in all the values that are numbers
 	for (CKDateTableMap::iterator i = mTables.begin(); i != mTables.end(); ++i) {
-		retval.put((double)i->first, i->second.getDoubleValue(aRowLabel, aColHeader));
+		if (i->second.getType(aRowLabel, aColHeader) == eNumberVariant) {
+			retval.put((double)i->first, i->second.getDoubleValue(aRowLabel, aColHeader));
+		}
 	}
 
 	return retval;
