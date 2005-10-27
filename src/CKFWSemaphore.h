@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple semaphore that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWSemaphore.h,v 1.8 2004/09/20 16:19:30 drbob Exp $
+ * $Id: CKFWSemaphore.h,v 1.9 2005/10/27 19:25:33 drbob Exp $
  */
 #ifndef __CKFW_SEMAPHORE_H
 #define __CKFW_SEMAPHORE_H
@@ -33,22 +33,20 @@
 //
 
 class CKFWSemaphore {
-public :
-  CKFWSemaphore( void );
-  CKFWSemaphore( unsigned int aMaxCnt );
-  virtual ~CKFWSemaphore( void );
+	public :
+		CKFWSemaphore();
+		CKFWSemaphore( unsigned int aMaxCnt );
+		virtual ~CKFWSemaphore();
 
-  int tryWait( void );
-  void wait( void );
-  void post( void );
+		int tryWait();
+		void wait();
+		void post();
+		int count();
 
-private :
-  sem_t mSemaphore;
+	private :
+		sem_t mSemaphore;
 
-  friend int
-  CKFWSemaphoreTest( char * argv[] = 0, int argc = 0 );
-
+		friend int CKFWSemaphoreTest( char * argv[] = 0, int argc = 0 );
 };
 
 #endif	// __CKFW_SEMAPHORE_H
-// vim: set ts=2:

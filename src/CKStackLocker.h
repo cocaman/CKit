@@ -14,7 +14,7 @@
  *                   no matter how the scope is exited - normally or by an
  *                   exception being thrown, the mutex will be unlocked.
  *
- * $Id: CKStackLocker.h,v 1.6 2004/12/01 18:28:20 drbob Exp $
+ * $Id: CKStackLocker.h,v 1.7 2005/10/27 19:25:33 drbob Exp $
  */
 #ifndef __CKSTACKLOCKER_H
 #define __CKSTACKLOCKER_H
@@ -26,6 +26,7 @@
 //	Other Headers
 #include "CKFWMutex.h"
 #include "CKFWRWMutex.h"
+#include "CKFWSemaphore.h"
 
 //	Forward Declarations
 
@@ -61,6 +62,13 @@ class CKStackLocker
 		 */
 		CKStackLocker( CKFWRWMutex *aRWMutex, bool aReadLock = true );
 		/*
+		 * This form of the constructor takes a semaphore and will immediately
+		 * do a 'wait()' on it to make sure that we're one of the chosen few.
+		 * Then, when this object goes out of scope, we'll do a 'post()' and
+		 * everything will be back the way it should be.
+		 */
+		CKStackLocker( CKFWSemaphore *aSemaphore );
+		/*
 		 * This is the standard destructor and needs to be virtual to make
 		 * sure that if we subclass off this the right destructor will be
 		 * called. This guy will simply unlock the mutex and that's it.
@@ -84,6 +92,8 @@ class CKStackLocker
 		CKFWMutex		*mMutex;
 		// ...and this is the pointer to the read/write mutex
 		CKFWRWMutex		*mRWMutex;
+		// ...and this is the pointer to the semaphore
+		CKFWSemaphore	*mSemaphore;
 };
 
 #endif	// __CKSTACKLOCKER_H

@@ -2,7 +2,7 @@
  * CKFWMutex.h - this file defines the simple semaphore that can
  *               be used in a large number of applications.
  *
- * $Id: CKFWSemaphore.cpp,v 1.8 2004/09/20 16:19:30 drbob Exp $
+ * $Id: CKFWSemaphore.cpp,v 1.9 2005/10/27 19:25:33 drbob Exp $
  */
 
 //	System Headers
@@ -23,48 +23,51 @@
 //	Private Data Constants
 
 
-CKFWSemaphore::CKFWSemaphore( void ) {
-  int lError = 0;
-  if ( (lError = sem_init( &mSemaphore, 0, 0 ) ) == -1 )
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  return ;
+CKFWSemaphore::CKFWSemaphore() {
+	int lError = 0;
+	if ( (lError = sem_init( &mSemaphore, 0, 0 ) ) == -1 ) {
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 }
 
 CKFWSemaphore::CKFWSemaphore( unsigned int aMaxCnt ) {
-  int lError = 0;
-  if ( (lError = sem_init( &mSemaphore, 0, aMaxCnt ) ) == -1 )
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  return ;
+	int lError = 0;
+	if ( (lError = sem_init( &mSemaphore, 0, aMaxCnt ) ) == -1 ) {
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 }
 
-CKFWSemaphore::~CKFWSemaphore( void ) {
-  sem_destroy( &mSemaphore );
-
-  return ;
+CKFWSemaphore::~CKFWSemaphore() {
+	sem_destroy( &mSemaphore );
 }
 
-int CKFWSemaphore::tryWait( void ) {
-  int lError;
-  if ( (lError =  sem_trywait( &mSemaphore ) ) == -1 ) {
-   if ( lError == EAGAIN ) {
-      return 0;
-    }
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
-  return 1;
+int CKFWSemaphore::tryWait() {
+	int lError;
+	if ( (lError =  sem_trywait( &mSemaphore ) ) == -1 ) {
+		if ( lError == EAGAIN ) {
+			return 0;
+		}
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
+	return 1;
 }
 
-void CKFWSemaphore::wait( void ) {
-  if ( sem_wait( &mSemaphore ) == -1 ) {
-    throw CKErrNoException( __FILE__, __LINE__ );
-  }
-  return ;
+void CKFWSemaphore::wait() {
+	if ( sem_wait( &mSemaphore ) == -1 ) {
+		throw CKErrNoException( __FILE__, __LINE__ );
+	}
 }
 
-void CKFWSemaphore::post( void ) {
-  if ( sem_post( &mSemaphore ) ) {
-    throw CKErrNoException( __FILE__, __LINE__ );
-  }
-  return ;
+void CKFWSemaphore::post() {
+	if ( sem_post( &mSemaphore ) ) {
+		throw CKErrNoException( __FILE__, __LINE__ );
+	}
 }
-// vim: set ts=2:
+
+int CKFWSemaphore::count() {
+	int		cnt;
+	if ( sem_getvalue( &mSemaphore, &cnt ) ) {
+		throw CKErrNoException( __FILE__, __LINE__ );
+	}
+	return cnt;
+}

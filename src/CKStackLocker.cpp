@@ -14,7 +14,7 @@
  *                     no matter how the scope is exited - normally or by an
  *                     exception being thrown, the mutex will be unlocked.
  *
- * $Id: CKStackLocker.cpp,v 1.6 2004/12/01 18:28:20 drbob Exp $
+ * $Id: CKStackLocker.cpp,v 1.7 2005/10/27 19:25:33 drbob Exp $
  */
 
 //	System Headers
@@ -47,7 +47,8 @@
  */
 CKStackLocker::CKStackLocker( CKFWMutex *aMutex ) :
 	mMutex(NULL),
-	mRWMutex(NULL)
+	mRWMutex(NULL),
+	mSemaphore(NULL)
 {
 	if (aMutex == NULL) {
 		std::ostringstream	msg;
@@ -70,7 +71,8 @@ CKStackLocker::CKStackLocker( CKFWMutex *aMutex ) :
  */
 CKStackLocker::CKStackLocker( CKFWRWMutex *aRWMutex, bool aReadLock ) :
 	mMutex(NULL),
-	mRWMutex(NULL)
+	mRWMutex(NULL),
+	mSemaphore(NULL)
 {
 	if (aRWMutex == NULL) {
 		std::ostringstream	msg;
@@ -91,13 +93,37 @@ CKStackLocker::CKStackLocker( CKFWRWMutex *aRWMutex, bool aReadLock ) :
 
 
 /*
+ * This form of the constructor takes a semaphore and will immediately
+ * do a 'wait()' on it to make sure that we're one of the chosen few.
+ * Then, when this object goes out of scope, we'll do a 'post()' and
+ * everything will be back the way it should be.
+ */
+CKStackLocker::CKStackLocker( CKFWSemaphore *aSemaphore ) :
+	mMutex(NULL),
+	mRWMutex(NULL),
+	mSemaphore(NULL)
+{
+	if (aSemaphore == NULL) {
+		std::ostringstream	msg;
+		msg << "CKStackLocker::CKStackLocker(CKFWSemaphore *) - the passed-in semaphore "
+			"is NULL and that means that there's nothing I can do. Please make "
+			"sure that the argument is not NULL before calling this constructor.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		mSemaphore = aSemaphore;
+		mSemaphore->wait();
+	}
+}
+
+
+/*
  * This is the standard destructor and needs to be virtual to make
  * sure that if we subclass off this the right destructor will be
  * called. This guy will simply unlock the mutex and that's it.
  */
 CKStackLocker::~CKStackLocker()
 {
-	if ((mMutex == NULL) && (mRWMutex == NULL)) {
+	if ((mMutex == NULL) && (mRWMutex == NULL) && (mSemaphore == NULL)) {
 		std::ostringstream	msg;
 		msg << "CKStackLocker::~CKStackLocker() - the mutex is now NULL and it "
 			"had to be non-NULL in the constructor. Please check on this data "
@@ -110,6 +136,9 @@ CKStackLocker::~CKStackLocker()
 		} else if (mRWMutex != NULL) {
 			mRWMutex->unlock();
 			mRWMutex = NULL;
+		} else if (mSemaphore != NULL) {
+			mSemaphore->post();
+			mSemaphore = NULL;
 		}
 	}
 }
