@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.22 2005/09/13 15:47:00 drbob Exp $
+ * $Id: CKString.cpp,v 1.23 2005/11/18 16:48:20 drbob Exp $
  */
 
 //	System Headers
@@ -3105,6 +3105,266 @@ CKString & CKString::trim() const
 
 /********************************************************
  *
+ *                Codec Methods
+ *
+ ********************************************************/
+/*
+ * A very useful coding of binary data is the Base64 encoding where
+ * each group of 6 bits is encoded to one of 64 ASCII-printable
+ * characters. This is nice in that no matter what the form of the
+ * data, it can be sent on an ASCII-only pipe and not encounter any
+ * loss from the transmission. This method takes the data in this
+ * instance and converts it to Base64 ASCII data based on the rules
+ * for that encoding. This includes the 76-character line limit where
+ * the line will be broken by a '\n'.
+ */
+CKString & CKString::convertToBase64()
+{
+	bool		error = false;
+
+	// first, see if we have anything to do
+	char		*byteData = NULL;
+	int			byteCnt = 0;
+	int			byteCapacity = 0;
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::convertToBase64() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// get everything we need
+			byteData = mString;
+			byteCnt = mSize;
+			byteCapacity = mCapacity;
+			// see if there's anything to do
+			if (byteCnt <= 0) {
+				error = true;
+				// not really an error, but there's no data so do nothing.
+			}
+			// ...and clean out the buffer for this instance
+			mString = NULL;
+			mSize = 0;
+			mCapacity = 0;
+		}
+	}
+
+	// let's resize the buffer for *this* guy to hold the encoded data
+	if (!error) {
+		if (!resize((int) (byteCnt * 1.25))) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::convertToBase64() - the storage for the encoded "
+				"date could not be created and that's a serious allocation "
+				"problem. Please check on it as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	/*
+	 * Now we need to go through the 'old' data three bytes at a time
+	 * and convert each set of three into four Base64 characters and add
+	 * those converted characters to the 'new' string.
+	 */
+	if (!error) {
+		char	src1;
+		char	src2;
+		char	src3;
+		char	dest1;
+		char	dest2;
+		char	dest3;
+		char	dest4;
+		for (int i = 0; i < byteCnt; i += 3) {
+			// get the (up to) three source bytes
+			src1 = byteData[i];
+			src2 = 0x0;
+			src3 = 0x0;
+			if (i+1 < byteCnt) {
+				src2 = byteData[i+1];
+			}
+			if (i+2 < byteCnt) {
+				src3 = byteData[i+2];
+			}
+
+			// mask these into the four 6-bit chunks
+			dest1 = src1 >> 2;
+			dest2 = ((src1 & 0x3) << 4) | (src2 >> 4);
+			dest3 = ((src2 & 0xf) << 2) | (src3 >> 6);
+			dest4 = src3 & 0x3f;
+
+			// now add the encoded values for these 4 chunks
+			append(encodeBase64(dest1));
+			append(encodeBase64(dest2));
+			if (i+1 < byteCnt) {
+				append(encodeBase64(dest3));
+			} else {
+				append('=');
+			}
+			if (i+2 < byteCnt) {
+				append(encodeBase64(dest4));
+			} else {
+				append('=');
+			}
+
+			// if we've reached the line length limit, put a CRLF in there
+			if ((i > 0) && (i % (76/4*3) == 0)) {
+				append("\r\n");
+			}
+		}
+	}
+
+	// delete the old data that we have converted
+	if (byteData != NULL) {
+		delete [] byteData;
+		byteData = NULL;
+	}
+
+	return *this;
+}
+
+
+/*
+ * When data is received in Base64 encoding it can be placed in
+ * this instance and then this method can be run to convert it to
+ * the correct binary equivalence. It's simply an inversion method
+ * for the Base64 encoding so that we can easily serialize this
+ * data on ASCII channels.
+ */
+CKString & CKString::convertFromBase64()
+{
+	bool		error = false;
+
+	// first, see if we have anything to do
+	char		*charData = NULL;
+	int			charCnt = 0;
+	int			charCapacity = 0;
+	if (!error) {
+		if (mString == NULL) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::convertFromBase64() - the CKString's storage is NULL "
+				"and that means that there's been a terrible data corruption "
+				"problem. Please check into this as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			// get everything we need
+			charData = mString;
+			charCnt = mSize;
+			charCapacity = mCapacity;
+			// see if there's anything to do
+			if (charCnt <= 0) {
+				error = true;
+				// not really an error, but there's no data so do nothing.
+			}
+			// ...and clean out the buffer for this instance
+			mString = NULL;
+			mSize = 0;
+			mCapacity = 0;
+		}
+	}
+
+	// let's resize the buffer for *this* guy to hold the decoded data
+	if (!error) {
+		if (!resize(charCnt)) {
+			error = true;
+			std::ostringstream	msg;
+			msg << "CKString::convertFromBase64() - the storage for the decoded "
+				"date could not be created and that's a serious allocation "
+				"problem. Please check on it as soon as possible.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		}
+	}
+
+	/*
+	 * Now we need to go through the Base64 array of characters and
+	 * filter out all those that aren't Base64 characters. This
+	 * is because it's quite possible that CRLFs are in the byte stream
+	 * and they need to be out of there before we do the decoding.
+	 */
+	if (!error) {
+		for (int i = 0; i < charCnt; i++) {
+			char	b = charData[i];
+			if (isBase64Char(b)) {
+				append(b);
+			}
+		}
+		// switch the filtered data back to the source vector
+		char	*tmp = charData;
+		int		tmpSize = charCnt;
+		int		tmpCapacity = charCapacity;
+		charData = mString;
+		charCnt = mSize;
+		charCapacity = mCapacity;
+		mString = tmp;
+		mSize = tmpSize;
+		mCapacity = tmpCapacity;
+		// ...and clear out the char data
+		clear();
+		// ...also update the count of characters we have
+		charCnt = strlen(charData);
+	}
+
+	/*
+	 * Now we need to go through the 'old' data four characters at a
+	 * time and convert each set of four into three bytes and add
+	 * those converted characters to the 'new' string.
+	 */
+	if (!error) {
+		char		char1;
+		char		char2;
+		char		char3;
+		char		char4;
+		char		byte1;
+		char		byte2;
+		char		byte3;
+		char		byte4;
+		for (int i = 0; i < charCnt; i += 4) {
+			// get the (up to) four base64 characters
+			char1 = charData[i];
+			char2 = 'A';
+			char3 = 'A';
+			char4 = 'A';
+			if (i+1 < charCnt) {
+				char2 = charData[i+1];
+			}
+			if (i+2 < charCnt) {
+				char3 = charData[i+2];
+			}
+			if (i+3 < charCnt) {
+				char4 = charData[i+3];
+			}
+
+			// now decode them into the 6-bit binary chunks
+			byte1 = decodeBase64(char1);
+			byte2 = decodeBase64(char2);
+			byte3 = decodeBase64(char3);
+			byte4 = decodeBase64(char4);
+
+			// now add in all the complete bytes that we got
+			append((char) ((byte1 << 2) | (byte2 >> 4)));
+			if (char3 != '=') {
+				append((char) (((byte2 & 0xf) << 4) | (byte3 >> 2)));
+			}
+			if (char4 != '=') {
+				append((char) (((byte3 & 0x3) << 6) | byte4));
+			}
+		}
+	}
+
+	// delete the old data that we have converted
+	if (charData != NULL) {
+		delete [] charData;
+		charData = NULL;
+	}
+
+	return *this;
+}
+
+
+/********************************************************
+ *
  *                Utility Methods
  *
  ********************************************************/
@@ -3908,6 +4168,76 @@ bool CKString::resize( int aSize )
 	}
 
 	return !error;
+}
+
+
+/*
+ * This method takes the lower 6 bits of the passed-in byte and uses
+ * the Based64 encoding map to convert it to an ASCII-printable
+ * character expressed as a byte.
+ */
+char CKString::encodeBase64( char aByte )
+{
+	static char encoded[] = {
+			0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
+			0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54,
+			0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
+			0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a,
+			0x6b, 0x6c, 0x6d, 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74,
+			0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+			0x2b, 0x2f
+	};
+	return encoded[0x3f & aByte];
+}
+
+
+/*
+ * This method takes the Base64 character stored in the passed-in
+ * byte and converts it to the proper lower-6-bits of the return
+ * value.
+ */
+char CKString::decodeBase64( char aChar )
+{
+	char		retval = 0x00;
+	if ((aChar >= 0x41) && (aChar <= 0x5a)) {
+		retval = (char) (aChar - 0x41);
+	} else if ((aChar >= 0x61) && (aChar <= 0x7a)) {
+		retval = (char) (aChar - 0x61 + 26);
+	} else if ((aChar >= 0x30) && (aChar <= 0x39)) {
+		retval = (char) (aChar - 0x30 + 52);
+	} else if (aChar == 0x2b) {
+		retval = 62;
+	} else {
+		retval = 63;
+	}
+	return retval;
+}
+
+
+/*
+ * This method looks at the Base64 character contained in the passed-in
+ * byte and returns true if it's a valid Base64 character and
+ * false if it's not. This is nice because the decoding has to
+ * filter out all the non-Base64 characters during the decoding.
+ */
+bool CKString::isBase64Char( char aChar )
+{
+	bool		retval = false;
+	if ((aChar >= 0x41) && (aChar <= 0x5a)) {
+		retval = true;
+	} else if ((aChar >= 0x61) && (aChar <= 0x7a)) {
+		retval = true;
+	} else if ((aChar >= 0x30) && (aChar <= 0x39)) {
+		retval = true;
+	} else if (aChar == 0x2b) {
+		retval = true;
+	} else if (aChar == 0x2f) {
+		retval = true;
+	} else if (aChar == 0x3d) {
+		retval = true;
+	}
+	return retval;
 }
 
 
