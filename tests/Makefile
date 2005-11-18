@@ -106,4 +106,7 @@ ParserTest: ParserTest.cpp $(LIB_FILE)
 series: series.cpp $(LIB_FILE)
 	$(CXX) $(CXXFLAGS) $(DEBUG) series.cpp -o series $(LIBS) $(LDFLAGS)
 
+base64: base64.cpp $(LIB_FILE)
+	$(CXX) $(CXXFLAGS) $(DEBUG) base64.cpp -o base64 $(LIBS) $(LDFLAGS)
+
 # DO NOT DELETE
