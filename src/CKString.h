@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.14 2005/09/13 15:46:59 drbob Exp $
+ * $Id: CKString.h,v 1.15 2005/11/18 16:48:21 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -702,6 +702,31 @@ class CKString
 
 		/********************************************************
 		 *
+		 *                Codec Methods
+		 *
+		 ********************************************************/
+		/*
+		 * A very useful coding of binary data is the Base64 encoding where
+		 * each group of 6 bits is encoded to one of 64 ASCII-printable
+		 * characters. This is nice in that no matter what the form of the
+		 * data, it can be sent on an ASCII-only pipe and not encounter any
+		 * loss from the transmission. This method takes the data in this
+		 * instance and converts it to Base64 ASCII data based on the rules
+		 * for that encoding. This includes the 76-character line limit where
+		 * the line will be broken by a '\n'.
+		 */
+		CKString & convertToBase64();
+		/*
+		 * When data is received in Base64 encoding it can be placed in
+		 * this instance and then this method can be run to convert it to
+		 * the correct binary equivalence. It's simply an inversion method
+		 * for the Base64 encoding so that we can easily serialize this
+		 * data on ASCII channels.
+		 */
+		CKString & convertFromBase64();
+
+		/********************************************************
+		 *
 		 *                Utility Methods
 		 *
 		 ********************************************************/
@@ -924,6 +949,26 @@ class CKString
 		 * tenet of the data structure.
 		 */
 		bool resize( int aSize );
+
+		/*
+		 * This method takes the lower 6 bits of the passed-in byte and uses
+		 * the Based64 encoding map to convert it to an ASCII-printable
+		 * character expressed as a byte.
+		 */
+		char encodeBase64( char aByte );
+		/*
+		 * This method takes the Base64 character stored in the passed-in
+		 * byte and converts it to the proper lower-6-bits of the return
+		 * value.
+		 */
+		char decodeBase64( char aChar );
+		/*
+		 * This method looks at the Base64 character contained in the passed-in
+		 * byte and returns true if it's a valid Base64 character and
+		 * false if it's not. This is nice because the decoding has to
+		 * filter out all the non-Base64 characters during the decoding.
+		 */
+		bool isBase64Char( char aChar );
 
 	private:
 		friend class CKStringNode;
