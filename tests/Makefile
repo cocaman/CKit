@@ -61,7 +61,7 @@ LDFLAGS = -fPIC
 #
 # These are the main targets that we'll be making
 #
-APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest series
+APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest series base64
 all: $(APPS)
 
 clean:
