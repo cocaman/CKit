@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.26 2006/02/24 15:57:55 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.27 2006/02/24 19:31:42 drbob Exp $
  */
 
 //	System Headers
@@ -483,6 +483,48 @@ void CKTimeSeries::clear()
 	// clear it out if it's not empty
 	if (!mTimeseries.empty()) {
 		mTimeseries.clear();
+	}
+	// unlock up this guy for changes
+	mTimeseriesMutex.unlock();
+}
+
+
+/*
+ * This method removes those points in the series that have date
+ * values between the provided start date and end date - inclusive.
+ * If an end date is no specified it's assumed to be to the end
+ * of the time series.
+ */
+void CKTimeSeries::eraseDates( long aStartDate, long anEndDate )
+{
+	eraseDateTimes((double)aStartDate, (double)anEndDate);
+}
+
+
+/*
+ * This method removes those points in the series that have date
+ * time values between the provided start date and end date -
+ * inclusive. If an end date is no specified it's assumed to be
+ * to the end of the time series.
+ */
+void CKTimeSeries::eraseDateTimes( double aStartDate, double anEndDate )
+{
+	// lock up this guy against changes
+	mTimeseriesMutex.lock();
+	// make sure there's something a little interesting to do
+	if (!mTimeseries.empty()) {
+		std::map<double, double>::iterator	i;
+		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+			// see if the user wants to delete this guy
+			if ((aStartDate > 0) && ((*i).first < aStartDate)) {
+				continue;
+			}
+			if ((anEndDate > 0) && ((*i).first > anEndDate)) {
+				continue;
+			}
+			// what's left needs to be removed from the map
+			mTimeseries.erase(i--);
+		}
 	}
 	// unlock up this guy for changes
 	mTimeseriesMutex.unlock();
