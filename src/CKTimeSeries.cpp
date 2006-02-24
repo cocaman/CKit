@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.25 2005/09/20 18:07:13 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.26 2006/02/24 15:57:55 drbob Exp $
  */
 
 //	System Headers
@@ -569,7 +569,7 @@ double CKTimeSeries::swap( double aDateTime, double aValue )
  * functions on the integer portion of the date and therefore
  * doesn't allow for complete timestamps.
  */
-CKVector<long> CKTimeSeries::getDates()
+CKVector<long> CKTimeSeries::getDates( long aStartDate, long anEndDate )
 {
 	CKVector<long>		retval;
 
@@ -579,6 +579,14 @@ CKVector<long> CKTimeSeries::getDates()
 	if (!mTimeseries.empty()) {
 		std::map<double, double>::iterator	i;
 		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+			// see if the user wants it in the list
+			if ((aStartDate > 0) && ((*i).first < aStartDate)) {
+				continue;
+			}
+			if ((anEndDate > 0) && ((*i).first > anEndDate)) {
+				continue;
+			}
+			// add what's left to the list for the user
 			retval.addToEnd((long) (*i).first);
 		}
 	}
@@ -589,9 +597,9 @@ CKVector<long> CKTimeSeries::getDates()
 }
 
 
-CKVector<long> CKTimeSeries::getDates() const
+CKVector<long> CKTimeSeries::getDates( long aStartDate, long anEndDate ) const
 {
-	return ((CKTimeSeries *)this)->getDates();
+	return ((CKTimeSeries *)this)->getDates(aStartDate, anEndDate);
 }
 
 
@@ -600,7 +608,7 @@ CKVector<long> CKTimeSeries::getDates() const
  * current timeseries. This is useful if you're interesting in
  * knowing the time of each data point.
  */
-CKVector<double> CKTimeSeries::getDateTimes()
+CKVector<double> CKTimeSeries::getDateTimes( double aStartDate, double anEndDate )
 {
 	CKVector<double>		retval;
 
@@ -610,6 +618,14 @@ CKVector<double> CKTimeSeries::getDateTimes()
 	if (!mTimeseries.empty()) {
 		std::map<double, double>::iterator	i;
 		for (i = mTimeseries.begin(); i != mTimeseries.end(); ++i) {
+			// see if the user wants it in the list
+			if ((aStartDate > 0) && ((*i).first < aStartDate)) {
+				continue;
+			}
+			if ((anEndDate > 0) && ((*i).first > anEndDate)) {
+				continue;
+			}
+			// add what's left to the list for the user
 			retval.addToEnd((*i).first);
 		}
 	}
@@ -620,9 +636,9 @@ CKVector<double> CKTimeSeries::getDateTimes()
 }
 
 
-CKVector<double> CKTimeSeries::getDateTimes() const
+CKVector<double> CKTimeSeries::getDateTimes( double aStartDate, double anEndDate ) const
 {
-	return ((CKTimeSeries *)this)->getDateTimes();
+	return ((CKTimeSeries *)this)->getDateTimes(aStartDate, anEndDate);
 }
 
 
