@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.20 2005/09/20 18:07:14 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.21 2006/02/24 15:57:57 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -258,16 +258,22 @@ class CKTimeSeries
 		 * interested in feeding this data into another system that
 		 * functions on the integer portion of the date and therefore
 		 * doesn't allow for complete timestamps.
+		 *
+		 * If the start and end dates are specified, then only the dates
+		 * that are *inclusive* of these dates will be returned.
 		 */
-		CKVector<long> getDates();
-		CKVector<long> getDates() const;
+		CKVector<long> getDates( long aStartDate = -1, long anEndDate = -1 );
+		CKVector<long> getDates( long aStartDate = -1, long anEndDate = -1 ) const;
 		/*
 		 * This method gets the complete series of timestamps for the
 		 * current timeseries. This is useful if you're interesting in
 		 * knowing the time of each data point.
+		 *
+		 * If the start and end dates are specified, then only the dates
+		 * that are *inclusive* of these dates will be returned.
 		 */
-		CKVector<double> getDateTimes();
-		CKVector<double> getDateTimes() const;
+		CKVector<double> getDateTimes( double aStartDate = -1, double anEndDate = -1 );
+		CKVector<double> getDateTimes( double aStartDate = -1, double anEndDate = -1 ) const;
 
 		/*
 		 * These methods do the same thing - they return the number of
