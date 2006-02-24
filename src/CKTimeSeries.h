@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.21 2006/02/24 15:57:57 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.22 2006/02/24 19:31:43 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -231,6 +231,21 @@ class CKTimeSeries
 		 * hold brand new data.
 		 */
 		void clear();
+
+		/*
+		 * This method removes those points in the series that have date
+		 * values between the provided start date and end date - inclusive.
+		 * If an end date is no specified it's assumed to be to the end
+		 * of the time series.
+		 */
+		void eraseDates( long aStartDate = -1, long anEndDate = -1 );
+		/*
+		 * This method removes those points in the series that have date
+		 * time values between the provided start date and end date -
+		 * inclusive. If an end date is no specified it's assumed to be
+		 * to the end of the time series.
+		 */
+		void eraseDateTimes( double aStartDate = -1, double anEndDate = -1 );
 
 		/*
 		 * This method can be used to add in a single date/value point to
