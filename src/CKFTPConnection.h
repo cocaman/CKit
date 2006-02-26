@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.9 2004/09/25 16:14:38 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.10 2006/02/26 17:13:04 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H
@@ -147,6 +147,21 @@ typedef struct CKFilePermissionsBlock {
 	bool		othersReadable;
 	bool		othersWritable;
 	bool		othersExecutable;
+	
+	// this is a simple constructor that initializes the values
+	CKFilePermissionsBlock() :
+		type('\0'),
+		userReadable(false),
+		userWritable(false),
+		userExecutable(false),
+		groupReadable(false),
+		groupWritable(false),
+		groupExecutable(false),
+		othersReadable(false),
+		othersWritable(false),
+		othersExecutable(false)
+	{
+	}
 } CKFilePermissions;
 
 
