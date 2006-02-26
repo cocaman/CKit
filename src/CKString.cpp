@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.23 2005/11/18 16:48:20 drbob Exp $
+ * $Id: CKString.cpp,v 1.24 2006/02/26 15:56:42 drbob Exp $
  */
 
 //	System Headers
@@ -631,7 +631,7 @@ CKString & CKString::append( void *anAddress )
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
-	snprintf(c, 79, "%x", (unsigned int)anAddress);
+	snprintf(c, 79, "%lx", (unsigned long)anAddress);
 	return append(c);
 }
 
@@ -813,7 +813,7 @@ CKString & CKString::prepend( void *anAddress )
 	// make a simple buffer for this guy too
 	char	c[80];
 	bzero(c, 80);
-	snprintf(c, 79, "%x", (unsigned int)anAddress);
+	snprintf(c, 79, "%lx", (unsigned long)anAddress);
 	return prepend(c);
 }
 
@@ -4528,8 +4528,8 @@ CKString CKStringNode::toString() const
 	retval.append(mString).append("', ");
 	char	buff[80];
 	bzero(buff, 80);
-	snprintf(buff, 79, "Prev=%x, Next=%x>", (unsigned int)mPrev,
-			(unsigned int)mNext);
+	snprintf(buff, 79, "Prev=%lx, Next=%lx>", (unsigned long)mPrev,
+			(unsigned long)mNext);
 	retval.append(buff);
 
 	return retval;

@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.24 2005/02/14 17:07:48 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.25 2006/02/26 15:56:42 drbob Exp $
  */
 
 //	System Headers
@@ -2203,8 +2203,8 @@ CKString CKDataNodeListElem::toString() const
 	retval.append(CKDataNode::toString()).append(", ");
 	char	buff[80];
 	bzero(buff, 80);
-	snprintf(buff, 79, "Prev=%x, Next=%x>", (unsigned int)mPrev,
-			(unsigned int)mNext);
+	snprintf(buff, 79, "Prev=%lx, Next=%lx>", (unsigned long)mPrev,
+			(unsigned long)mNext);
 	retval.append(buff);
 
 	return retval;
