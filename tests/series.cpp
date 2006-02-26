@@ -21,4 +21,6 @@ int main(int argc, char *argv[]) {
 	std::cout << a << std::endl;
 	std::cout << "sum()=" << a.sum() << std::endl;
 	std::cout << "sum(20050101, 20050105)=" << a.sum((double)20050101, (double)20050105) << std::endl;
+	a.eraseDates(20050101, 20050105);
+	std::cout << "delete (20050101, 20050105)=" << a << std::endl;
 }
