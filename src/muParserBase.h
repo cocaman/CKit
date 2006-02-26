@@ -298,7 +298,7 @@ class ParserBase
 		*/
 		mutable ParseFunction m_pParseFormula;
 		mutable int	m_iPos;	               ///< Global index within bytecode.
-		mutable const int *m_pCmdCode;     ///< Formula converted to bytecode, points to the data of the bytecode class.
+		mutable const long *m_pCmdCode;     ///< Formula converted to bytecode, points to the data of the bytecode class.
 		mutable bytecode_type m_vByteCode; ///< The Bytecode class.
 		mutable varmap_type m_UsedVar;     ///< Map holding the variable found in the current expression.
 		

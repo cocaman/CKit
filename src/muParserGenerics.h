@@ -367,17 +367,13 @@ class ParserToken
 		*/
 		ParserToken& SetVar(TBase *a_pVar, const TString &a_strTok)
 		{
-			if (m_pTok == NULL) {
-				throw ParserException("argument error:  SetVal() cannot be called with a NULL pointer for the variable value.");
-			} else {
-				m_iType = cmVAR;
-				m_fVal = 0;
-				m_pTok = (void*)a_pVar;
-				m_iFlags = 0;
-				m_strTok = a_strTok;
-	
-				AddFlags(ParserToken::flVOLATILE);
-			}
+			m_iType = cmVAR;
+			m_fVal = 0;
+			m_pTok = (void*)a_pVar;
+			m_iFlags = 0;
+			m_strTok = a_strTok;
+
+			AddFlags(ParserToken::flVOLATILE);
 			return *this;
 		}
 
@@ -520,7 +516,7 @@ class ParserToken
 
   \author (C) 2004 Ingo Berg
 */
-template<typename TBaseData, typename TMapType = int>
+template<typename TBaseData, typename TMapType = long>
 class ParserByteCode
 {
 	private:
