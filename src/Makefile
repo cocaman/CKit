@@ -121,7 +121,8 @@ clean:
 	rm -f $(OBJS) $(LIB_FILE) $(OBJS64) $(LIB64_FILE)
 
 depend:
-	makedepend -- $(CXXFLAGS) -- $(SRCS)
+	makedepend -o.o -- $(CXXFLAGS) -- $(SRCS)
+	makedepend -o.o64 -a -- $(CXXFLAGS) -- $(SRCS)
 
 .cpp.o:
 	$(CXX) -m32 -DUSE_32BIT=1 -c $(CXXFLAGS) $(DEBUG) $< -o $@

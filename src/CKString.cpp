@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.24 2006/02/26 15:56:42 drbob Exp $
+ * $Id: CKString.cpp,v 1.25 2006/03/13 10:38:55 drbob Exp $
  */
 
 //	System Headers
@@ -618,7 +618,7 @@ CKString & CKString::append( double aDouble, int aNumDecPlaces )
 	char	c[80];
 	bzero(c, 80);
 	if (aNumDecPlaces > 0) {
-		snprintf(c, 79, "%.*g", aNumDecPlaces, aDouble);
+		snprintf(c, 79, "%.*f", aNumDecPlaces, aDouble);
 	} else {
 		snprintf(c, 79, "%.16g", aDouble);
 	}
