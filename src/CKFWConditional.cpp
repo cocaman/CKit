@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.10 2006/05/19 19:34:07 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.11 2006/05/19 19:45:27 drbob Exp $
  */
 
 //	System Headers
@@ -83,24 +83,30 @@ int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
 								  int aTimeoutInMillis )
 {
 	int lResult = FWCOND_LOCK_SUCCESS;
-	mMutex.lock();
+	
+	/*
+	 * If we are going to have a positive (real) timeout, then we need
+	 * to calculate when that timeout will occur.
+	 */
+	timeval		lCurrentTimeval;
+	timespec	lTimeSpec;
+	if (aTimeoutInMillis > 0) {
+		gettimeofday(&lCurrentTimeval, NULL);
+		// now populate when the timeout will occur based on the duration
+		lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis/1000; 
+		lTimeSpec.tv_nsec = ((aTimeoutInMillis % 1000)*1000
+							 + lCurrentTimeval.tv_usec) * 1000;
+		// if we crossed the second boundary correctly update the values
+		if (lTimeSpec.tv_nsec > 1000000000) {
+			lTimeSpec.tv_sec++;
+			lTimeSpec.tv_nsec -= 1000000000;
+		}
+	}
 
+	// now lock and test - but use the right wait function
+	mMutex.lock();
 	while(aTest.test()) {
 		if (aTimeoutInMillis >= 0) {
-			// get the current time of day in sec and nsec.
-			timeval		lCurrentTimeval;
-			gettimeofday(&lCurrentTimeval, NULL);
-			// now populate when the timeout will occur based on the duration
-			timespec	lTimeSpec; 
-			lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis/1000; 
-			lTimeSpec.tv_nsec = ((aTimeoutInMillis % 1000)*1000
-								 + lCurrentTimeval.tv_usec) * 1000;
-			// if we crossed the second boundary correctly update the values
-			if (lTimeSpec.tv_nsec > 1000000000) {
-				lTimeSpec.tv_sec++;
-				lTimeSpec.tv_nsec -= 1000000000;
-			}
-
 			// now wait just that long and no longer			
 			int rc = pthread_cond_timedwait(&mConditional, &mMutex.mMutex, &lTimeSpec);
 			if (rc == ETIMEDOUT) { 
