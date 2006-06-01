@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.11 2006/05/19 19:45:27 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.12 2006/06/01 11:19:20 drbob Exp $
  */
 
 //	System Headers
@@ -63,11 +63,11 @@ int CKFWConditionalDefaultTest::test()
 //
 //
 
-CKFWConditional::CKFWConditional( CKFWMutex & aMutex ) : 
+CKFWConditional::CKFWConditional( CKFWMutex & aMutex ) :
 	mMutex(aMutex),
 	mConditional()
-{  
-	int lResults = 0;   
+{
+	int lResults = 0;
 	if ((lResults = pthread_cond_init(&mConditional, 0)) != 0) {
 		throw CKErrNoException(__FILE__, __LINE__, lResults);
 	}
@@ -83,7 +83,7 @@ int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
 								  int aTimeoutInMillis )
 {
 	int lResult = FWCOND_LOCK_SUCCESS;
-	
+
 	/*
 	 * If we are going to have a positive (real) timeout, then we need
 	 * to calculate when that timeout will occur.
@@ -93,7 +93,7 @@ int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
 	if (aTimeoutInMillis > 0) {
 		gettimeofday(&lCurrentTimeval, NULL);
 		// now populate when the timeout will occur based on the duration
-		lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis/1000; 
+		lTimeSpec.tv_sec = lCurrentTimeval.tv_sec + aTimeoutInMillis/1000;
 		lTimeSpec.tv_nsec = ((aTimeoutInMillis % 1000)*1000
 							 + lCurrentTimeval.tv_usec) * 1000;
 		// if we crossed the second boundary correctly update the values
@@ -107,9 +107,9 @@ int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
 	mMutex.lock();
 	while(aTest.test()) {
 		if (aTimeoutInMillis >= 0) {
-			// now wait just that long and no longer			
+			// now wait just that long and no longer
 			int rc = pthread_cond_timedwait(&mConditional, &mMutex.mMutex, &lTimeSpec);
-			if (rc == ETIMEDOUT) { 
+			if (rc == ETIMEDOUT) {
 				mMutex.unlock();
 				lResult = FWCOND_LOCK_ERROR;
 				break;
@@ -133,7 +133,7 @@ void CKFWConditional::wakeWaiter()
 	int lError;
 	if ((lError = pthread_cond_signal(&mConditional))) {
 		throw CKErrNoException(__FILE__, __LINE__, lError);
-	}  
+	}
 }
 
 void CKFWConditional::wakeWaiters()
