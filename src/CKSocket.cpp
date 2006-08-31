@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.20 2005/04/07 21:20:39 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.21 2006/08/31 12:48:33 drbob Exp $
  */
 
 //	System Headers
@@ -530,6 +530,9 @@ bool CKSocket::isActivelyListening() const
  */
 bool CKSocket::isConnectionEstablished() const
 {
+	if (getSocketHandle() == INVALID_SOCKET) {
+		((CKSocket *) this)->mConnectionEstablished = false;
+	}
 	return mConnectionEstablished;
 }
 
