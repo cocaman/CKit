@@ -110,6 +110,9 @@ OBJS64 = $(SRCS:%.cpp=%.o64)
 ifeq ($(shell uname),SunOS)
 all: $(LIB_FILE) $(LIB64_FILE)
 else
+ifeq ($(shell uname),Darwin)
+all: $(LIB_FILE) $(LIB64_FILE)
+else
 ifeq ($(shell uname),Linux)
 ifeq ($(shell uname -m),x86_64)
 all: $(LIB_FILE) $(LIB64_FILE)
@@ -118,6 +121,7 @@ all: $(LIB_FILE)
 endif
 else
 all: $(LIB_FILE)
+endif
 endif
 endif
 
