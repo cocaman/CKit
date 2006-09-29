@@ -10,7 +10,6 @@ CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
-DO64BIT = YES
 endif
 ifeq ($(shell uname),Linux)
 ifeq ($(shell gcc --version),2.96)
@@ -21,16 +20,12 @@ endif
 CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = so
 SO_FLAG = -shared
-ifeq ($(shell uname -m),x86_64)
-DO64BIT = YES
-endif
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
 SO_EXT = dylib
 SO_FLAG = -dynamiclib
-DO64BIT = YES
 endif
 
 #
@@ -80,6 +75,7 @@ OBJS = CKUUID.o \
 	CKIRCProtocolListener.o \
 	CKIRCProtocolExec.o \
 	CKIRCResponder.o \
+	CKMindAlignProtocol.o \
 	CKFWConditional.o \
 	CKFWMutex.o \
 	CKFWRWMutex.o \
@@ -111,10 +107,18 @@ OBJS64 = $(SRCS:%.cpp=%.o64)
 #
 # These are the main targets that we'll be making
 #
-ifdef DO64BIT
+ifeq ($(shell uname),SunOS)
+all: $(LIB_FILE) $(LIB64_FILE)
+else
+ifeq ($(shell uname),Linux)
+ifeq ($(shell uname -m),x86_64)
 all: $(LIB_FILE) $(LIB64_FILE)
 else
 all: $(LIB_FILE)
+endif
+else
+all: $(LIB_FILE)
+endif
 endif
 
 clean:
@@ -137,7 +141,7 @@ $(LIB64_DIR):
 	mkdir -p $(LIB64_DIR)
 
 $(LIB_FILE): $(LIB_DIR) $(OBJS)
-	$(CXX) $(SO_FLAG) $(OBJS) -o $(LIB_FILE) $(LDFLAGS)
+	$(CXX) -m32 $(SO_FLAG) $(OBJS) -o $(LIB_FILE) $(LDFLAGS)
 
 $(LIB64_FILE): $(LIB64_DIR) $(OBJS64)
 	$(CXX) -m64 $(SO_FLAG) $(OBJS64) -o $(LIB64_FILE) $(LD64FLAGS)
@@ -184,6 +188,12 @@ CKIRCResponder.o: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
 CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
 CKIRCResponder.o: CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCResponder.o: CKFWRWMutex.h CKFWSemaphore.h CKException.h
+CKMindAlignProtocol.o: CKIRCProtocol.h CKMindAlignProtocol.h
+CKMindAlignProtocol.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
+CKMindAlignProtocol.o: CKSocket.h CKString.h CKFWMutex.h CKVector.h
+CKMindAlignProtocol.o: CKStackLocker.h CKStopwatch.h
+CKMindAlignProtocol.o: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h
+CKMindAlignProtocol.o: CKException.h CKIRCProtocolListener.h CKFWThread.h
 CKFWConditional.o: CKFWConditional.h CKFWMutex.h CKErrNoException.h 
 CKFWConditional.o: CKException.h CKString.h
 CKFWMutex.o: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
@@ -287,6 +297,12 @@ CKIRCResponder.o64: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
 CKIRCResponder.o64: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
 CKIRCResponder.o64: CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCResponder.o64: CKFWRWMutex.h CKFWSemaphore.h CKException.h
+CKMindAlignProtocol.o64: CKIRCProtocol.h CKMindAlignProtocol.h
+CKMindAlignProtocol.o64: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
+CKMindAlignProtocol.o64: CKSocket.h CKString.h CKFWMutex.h CKVector.h
+CKMindAlignProtocol.o64: CKStackLocker.h CKStopwatch.h
+CKMindAlignProtocol.o64: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h
+CKMindAlignProtocol.o64: CKException.h CKIRCProtocolListener.h CKFWThread.h
 CKFWConditional.o64: CKFWConditional.h CKFWMutex.h CKErrNoException.h 
 CKFWConditional.o64: CKException.h CKString.h
 CKFWMutex.o64: CKFWMutex.h CKErrNoException.h CKException.h CKString.h

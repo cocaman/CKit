@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.17 2004/12/06 20:41:40 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.18 2006/09/29 17:46:36 drbob Exp $
  */
 
 //	System Headers
@@ -25,6 +25,7 @@
 #include "CKIRCResponder.h"
 #include "CKException.h"
 #include "CKStopwatch.h"
+#include "CKStackLocker.h"
 
 //	Forward Declarations
 
@@ -141,12 +142,12 @@ CKIRCProtocol::CKIRCProtocol( const CKString & aHost, int aPort,
 		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 
-	// finally, send the NICK and USER commands to get things going
-	doNICK(aNick);
-	doUSER(aNick, mUserHost, mUserServer, aNick);
-	// ...and set them accordingly
+	// set the nick and real names to the nick we're using
 	mNickname = aNick;
 	mRealName = aNick;
+	// finally, send the NICK and USER commands to get things going
+	doUSER(mNickname, mUserHost, mUserServer, mRealName);
+	doNICK(mNickname);
 }
 
 
@@ -230,13 +231,15 @@ CKIRCProtocol & CKIRCProtocol::operator=( const CKIRCProtocol & anOther )
 	 * I'm going to break encapsulation on these lists as they are better
 	 * done as the ivars themselves.
 	 */
-	mChannelListMutex.lock();
-	mChannelList = anOther.mChannelList;
-	mChannelListMutex.unlock();
+	{
+		CKStackLocker	lockem(&mChannelListMutex);
+		mChannelList = anOther.mChannelList;
+	}
 
-	mRespondersMutex.lock();
-	mResponders = anOther.mResponders;
-	mRespondersMutex.unlock();
+	{
+		CKStackLocker	lockem(&mRespondersMutex);
+		mResponders = anOther.mResponders;
+	}
 
 	return *this;
 }
@@ -353,7 +356,7 @@ void CKIRCProtocol::setRealName( const CKString & aName )
  * standard getter accessor method for the host name that
  * will be used in all subsequent connections.
  */
-const CKString CKIRCProtocol::getHostname() const
+const CKString & CKIRCProtocol::getHostname() const
 {
 	return mHostname;
 }
@@ -403,7 +406,7 @@ bool CKIRCProtocol::isLoggedIn() const
  * This method returns the password we'll be using in all
  * communications with the IRC server.
  */
-const CKString CKIRCProtocol::getPassword() const
+const CKString & CKIRCProtocol::getPassword() const
 {
 	return mPassword;
 }
@@ -413,7 +416,7 @@ const CKString CKIRCProtocol::getPassword() const
  * This method returns the nickname we'll be using in all
  * communications with the IRC server.
  */
-const CKString CKIRCProtocol::getNickname() const
+const CKString & CKIRCProtocol::getNickname() const
 {
 	return mNickname;
 }
@@ -423,7 +426,7 @@ const CKString CKIRCProtocol::getNickname() const
  * This method returns the USER host we'll be using in all
  * communications with the IRC server.
  */
-const CKString CKIRCProtocol::getUserHost() const
+const CKString & CKIRCProtocol::getUserHost() const
 {
 	return mUserHost;
 }
@@ -433,7 +436,7 @@ const CKString CKIRCProtocol::getUserHost() const
  * This method returns the USER server we'll be using in all
  * communications with the IRC server.
  */
-const CKString CKIRCProtocol::getUserServer() const
+const CKString & CKIRCProtocol::getUserServer() const
 {
 	return mUserServer;
 }
@@ -443,7 +446,7 @@ const CKString CKIRCProtocol::getUserServer() const
  * This method returns the real name we'll be using in all
  * communications with the IRC server.
  */
-const CKString CKIRCProtocol::getRealName() const
+const CKString & CKIRCProtocol::getRealName() const
 {
 	return mRealName;
 }
@@ -488,7 +491,7 @@ bool CKIRCProtocol::isChannelInChannelList( const CKString & aChannel )
 	bool	retval = false;
 
 	// first, lock the list against any changes
-	mChannelListMutex.lock();
+	CKStackLocker	lockem(&mChannelListMutex);
 
 	// try to find the channel in the list
 	CKStringNode		*i = NULL;
@@ -499,9 +502,6 @@ bool CKIRCProtocol::isChannelInChannelList( const CKString & aChannel )
 			break;
 		}
 	}
-
-	// finally, unlock the list to allow changes
-	mChannelListMutex.unlock();
 
 	return retval;
 }
@@ -563,12 +563,9 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 	// now, tell the connection object to connect to the right host and port
 	if (!error) {
 		// lock up the port
-		mCommPortMutex.lock();
+		CKStackLocker	lockem(&mCommPortMutex);
 		// try to make the connection
 		if (!mCommPort.connect(aHost, aPort)) {
-			// unlock the port because of the error
-			mCommPortMutex.unlock();
-			// now we can flag the error and throw the exception
 			error = true;
 			std::ostringstream	msg;
 			msg << "CKIRCProtocol::connect(const CKString & , int) - the "
@@ -587,8 +584,6 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 			 */
 			mCommPort.setReadTimeout(DEFAULT_IRC_READ_TIMEOUT);
 		}
-		// unlock the port for use
-		mCommPortMutex.unlock();
 	}
 
 	// if we're good, then save all the parts and start the listener
@@ -621,9 +616,8 @@ bool CKIRCProtocol::connect( const CKString & aHost, int aPort )
 bool CKIRCProtocol::isConnected()
 {
 	bool	conn = false;
-	mCommPortMutex.lock();
+	CKStackLocker	lockem(&mCommPortMutex);
 	conn = mCommPort.isConnected();
-	mCommPortMutex.unlock();
 	return conn;
 }
 
@@ -645,9 +639,10 @@ void CKIRCProtocol::disconnect()
 			doQUIT("bye");
 			setIsLoggedIn(false);
 		}
-		mCommPortMutex.lock();
-		mCommPort.disconnect();
-		mCommPortMutex.unlock();
+		{
+			CKStackLocker	lockem(&mCommPortMutex);
+			mCommPort.disconnect();
+		}
 		// clear out all the channels we joined
 		clearChannelList();
 	}
@@ -656,9 +651,9 @@ void CKIRCProtocol::disconnect()
 
 /*
  * This method can be used as often as the user wants to verify
- * that the connection to the IRC server is solid and ready to
+ * that the connection to thr IRC server is solid and ready to
  * both receive and send messages. This is nice because we can
- * put this in a loop and make sure that even if the IRC server
+ * put this in a loop and make sure that even if the IRC Server
  * goes down, we'll re-establish the connection as necessary.
  */
 bool CKIRCProtocol::verifyConnection()
@@ -666,23 +661,23 @@ bool CKIRCProtocol::verifyConnection()
 	bool		error = false;
 
 	/*
-	 * Make sure we have a connection to this IRC server, if not, then
-	 * see if we did, and if we did, then reconnect.
+	 * Make sure we have a connection to the server, if not, then see if
+	 * we did, and if we did, then reconnect.
 	 */
 	if (!error) {
 		if (!isConnected() && !mHostname.empty() && !mNickname.empty()) {
 			if (!connect()) {
 				error = true;
 				std::ostringstream	msg;
-				msg << "CKIRCProtocol::verifyCOnnection() - the connection to the "
+				msg << "CKIRCProtocol::verifyConnection() - the connection to the "
 					"IRC server at " << mHostname << ":" << mPort << " seemed to "
 					"be down, and trying to re-establish it was not possible. "
 					"Please check into this as soon as possible.";
 				throw CKException(__FILE__, __LINE__, msg.str());
 			} else {
 				// send the NICK and USER commands to get things going
+				doUSER(mNickname, mUserHost, mUserServer, mRealName);
 				doNICK(mNickname);
-				doUSER(mNickname, mUserHost, mUserServer, mNickname);
 			}
 		}
 	}
@@ -729,8 +724,8 @@ void CKIRCProtocol::sendMessage( const CKString & aDest, const CKString & aMsg )
 	}
 
 	/*
-	 * Make sure we have a connection to this IRC server, if not, then
-	 * see if we did, and if we did, then reconnect.
+	 * Make sure we have a connection to the server, if not, then see if
+	 * we did, and if we did, then reconnect.
 	 */
 	if (!error) {
 		if (!verifyConnection()) {
@@ -889,16 +884,13 @@ void CKIRCProtocol::addToResponders( CKIRCResponder *anObj )
 	// now see if it already exists in the list
 	if (!error) {
 		// lock it down so it doesn't change
-		mRespondersMutex.lock();
+		CKStackLocker	lockem(&mRespondersMutex);
 
 		// now try to find it
 		if (!mResponders.contains(anObj)) {
 			// not found, so it's safe to add it
 			mResponders.addToEnd(anObj);
 		}
-
-		// unlock it regardless of the outcome
-		mRespondersMutex.unlock();
 	}
 }
 
@@ -928,11 +920,9 @@ void CKIRCProtocol::removeFromResponders( CKIRCResponder *anObj )
 	// now see if it exists in the list
 	if (!error) {
 		// lock it down so it doesn't change
-		mRespondersMutex.lock();
+		CKStackLocker	lockem(&mRespondersMutex);
 		// now try to remove it
 		mResponders.remove(anObj);
-		// unlock it regardless of the outcome
-		mRespondersMutex.unlock();
 	}
 }
 
@@ -943,9 +933,8 @@ void CKIRCProtocol::removeFromResponders( CKIRCResponder *anObj )
  */
 void CKIRCProtocol::removeAllResponders()
 {
-	mRespondersMutex.lock();
+	CKStackLocker	lockem(&mRespondersMutex);
 	mResponders.clear();
-	mRespondersMutex.unlock();
 }
 
 
@@ -1086,11 +1075,9 @@ void CKIRCProtocol::setIsLoggedIn( bool aFlag )
 void CKIRCProtocol::setChannelList( const CKStringList & aList )
 {
 	// first, lock the list for changes
-	mChannelListMutex.lock();
+	CKStackLocker	lockem(&mChannelListMutex);
 	// ...and then copy in all the elements of the passed-in list
 	mChannelList = aList;
-	// finally, unlock it
-	mChannelListMutex.unlock();
 }
 
 
@@ -1128,15 +1115,12 @@ void CKIRCProtocol::setListener( CKIRCProtocolListener *aListener )
 void CKIRCProtocol::addToChannelList( const CKString & aChannel )
 {
 	// first, lock the list against any changes
-	mChannelListMutex.lock();
+	CKStackLocker	lockem(&mChannelListMutex);
 
 	// try to find the channel in the list
 	if (!mChannelList.contains(aChannel)) {
 		mChannelList.addToEnd(aChannel);
 	}
-
-	// finally, unlock the list to allow changes
-	mChannelListMutex.unlock();
 }
 
 
@@ -1147,9 +1131,8 @@ void CKIRCProtocol::addToChannelList( const CKString & aChannel )
  */
 void CKIRCProtocol::clearChannelList()
 {
-	mChannelListMutex.lock();
+	CKStackLocker	lockem(&mChannelListMutex);
 	mChannelList.clear();
-	mChannelListMutex.unlock();
 }
 
 
@@ -1341,9 +1324,11 @@ bool CKIRCProtocol::alertAllResponders( CKIRCIncomingMessage & aMsg )
 	 */
 	if (!error) {
 		// we need to make a thread-safe local copy of the responder list
-		mRespondersMutex.lock();
-		CKVector<CKIRCResponder*>	copy = mResponders;
-		mRespondersMutex.unlock();
+		CKVector<CKIRCResponder*>	copy;
+		{
+			CKStackLocker	lockem(&mRespondersMutex);
+			copy = mResponders;
+		}
 
 		// now go through the list, calling each with the message
 		for (int i = 0; i < copy.size(); i++) {
@@ -1401,9 +1386,10 @@ void CKIRCProtocol::executeCommand( const CKString & aCmd )
 	if (!error) {
 		CKString		cmd = aCmd;
 		cmd += "\n";
-		mCommPortMutex.lock();
-		error = !mCommPort.send(cmd);
-		mCommPortMutex.unlock();
+		{
+			CKStackLocker	lockem(&mCommPortMutex);
+			error = !mCommPort.send(cmd);
+		}
 		if (error) {
 			std::ostringstream	msg;
 			msg << "CKIRCProtocol::executeCommand(const CKString &) - while "
@@ -1519,7 +1505,7 @@ void CKIRCProtocol::doPRIVMSG( const CKString & aDest, const CKString & aMsg )
  */
 void CKIRCProtocol::doNOTICE( const CKString & aDest, const CKString & aMsg )
 {
-	CKString		cmd = "MOTICE ";
+	CKString		cmd = "NOTICE ";
 	cmd += aDest;
 	cmd += " :";
 	cmd += aMsg;
