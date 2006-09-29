@@ -7,7 +7,7 @@ queueTest
 series
 smtp
 stringTest
-table
 uuid
 vectorTest
 base64
+mindalign

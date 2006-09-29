@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.11 2004/12/06 20:41:42 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.12 2006/09/29 17:46:36 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -209,7 +209,7 @@ class CKIRCProtocol
 		 * standard getter accessor method for the host name that
 		 * will be used in all subsequent connections.
 		 */
-		const CKString getHostname() const;
+		const CKString & getHostname() const;
 		/*
 		 * This method is the getter for the port number that will
 		 * be used to establish a communication port with
@@ -239,27 +239,27 @@ class CKIRCProtocol
 		 * This method returns the password we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const CKString getPassword() const;
+		const CKString & getPassword() const;
 		/*
 		 * This method returns the nickname we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const CKString getNickname() const;
+		const CKString & getNickname() const;
 		/*
 		 * This method returns the USER host we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const CKString getUserHost() const;
+		const CKString & getUserHost() const;
 		/*
 		 * This method returns the USER server we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const CKString getUserServer() const;
+		const CKString & getUserServer() const;
 		/*
 		 * This method returns the real name we'll be using in all
 		 * communications with the IRC server.
 		 */
-		const CKString getRealName() const;
+		const CKString & getRealName() const;
 		/*
 		 * This method returns a pointer to a CKStringList that
 		 * is the list of Channels that this IRC Connection has JOINed. Note
@@ -298,7 +298,7 @@ class CKIRCProtocol
 		 * method returns true, othersize it returns false. If there is
 		 * an unusual condition, a CKException is thrown.
 		 */
-		bool connect();
+		virtual bool connect();
 		/*
 		 * This method uses the instance's port number, and the host name
 		 * provided to establish a connection for this IRC session.
@@ -306,34 +306,34 @@ class CKIRCProtocol
 		 * IRC protocol port and so the user really only needs to
 		 * specify the host and most connections will be made.
 		 */
-		bool connect( const CKString & aHost );
+		virtual bool connect( const CKString & aHost );
 		/*
 		 * This method allows both the host name and port number to
 		 * be specified for making the connection. This is used by
 		 * the other connection mathods as it is the most general
 		 * form of the function.
 		 */
-		bool connect( const CKString & aHost, int aPort );
+		virtual bool connect( const CKString & aHost, int aPort );
 		/*
 		 * This method simply returns the state of the IRC
 		 * communications port - in so far as it's establishment.
 		 */
-		bool isConnected();
+		virtual bool isConnected();
 		/*
 		 * This method will log out any logged in user and break the
 		 * established connection to the IRC host. This is useful
 		 * when "shutting down" as it takes care of all the
 		 * possibilities in one fell swoop.
 		 */
-		void disconnect();
+		virtual void disconnect();
 		/*
 		 * This method can be used as often as the user wants to verify
-		 * that the connection to the IRC server is solid and ready to
+		 * that the connection to thr IRC server is solid and ready to
 		 * both receive and send messages. This is nice because we can
-		 * put this in a loop and make sure that even if the IRC server
+		 * put this in a loop and make sure that even if the IRC Server
 		 * goes down, we'll re-establish the connection as necessary.
 		 */
-		bool verifyConnection();
+		virtual bool verifyConnection();
 
 		/********************************************************
 		 *
@@ -533,7 +533,7 @@ class CKIRCProtocol
 		 * IRC functions are all available and waiting without
 		 * circumventing the designed flow.
 		 */
-		void executeCommand( const CKString & aCmd );
+		virtual void executeCommand( const CKString & aCmd );
 		/*
 		 * This executes the standard IRC 'PASS' command on the communication
 		 * channel to the remote host. This is meant to supply a password

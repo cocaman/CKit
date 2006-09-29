@@ -61,7 +61,9 @@ LDFLAGS = -fPIC
 #
 # These are the main targets that we'll be making
 #
-APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest series base64
+APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
+		series base64 mindalign
+
 all: $(APPS)
 
 clean:
@@ -74,39 +76,42 @@ depend:
 	$(CXX) -c $(CXXFLAGS) $(DEBUG) $< -o $@
 
 uuid: uuid.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) uuid.cpp -o uuid $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) uuid.cpp -o uuid $(LIBS) $(LDFLAGS)
 
 smtp: smtp.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) smtp.cpp -o smtp $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) smtp.cpp -o smtp $(LIBS) $(LDFLAGS)
 
 ftp: ftp.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) ftp.cpp -o ftp $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) ftp.cpp -o ftp $(LIBS) $(LDFLAGS)
 
 chat: chat.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) chat.cpp -o chat $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) chat.cpp -o chat $(LIBS) $(LDFLAGS)
+
+mindalign: mindalign.cpp $(LIB_FILE)
+	$(CXX) $(CXXFLAGS) $(DEBUG) mindalign.cpp -o mindalign $(LIBS) $(LDFLAGS)
 
 nan: nan.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) nan.cpp -o nan $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) nan.cpp -o nan $(LIBS) $(LDFLAGS)
 
 node: node.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) node.cpp -o node $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) node.cpp -o node $(LIBS) $(LDFLAGS)
 
 stringTest: stringTest.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) stringTest.cpp -o stringTest $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) stringTest.cpp -o stringTest $(LIBS) $(LDFLAGS)
 
 vectorTest: vectorTest.cpp ../src/CKVector.h $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) vectorTest.cpp -o vectorTest $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) vectorTest.cpp -o vectorTest $(LIBS) $(LDFLAGS)
 
 queueTest: queueTest.cpp ../src/CKFIFOQueue.h $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) queueTest.cpp -o queueTest $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) queueTest.cpp -o queueTest $(LIBS) $(LDFLAGS)
 
 ParserTest: ParserTest.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) ParserTest.cpp -o ParserTest $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) ParserTest.cpp -o ParserTest $(LIBS) $(LDFLAGS)
 
 series: series.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) series.cpp -o series $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) series.cpp -o series $(LIBS) $(LDFLAGS)
 
 base64: base64.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) base64.cpp -o base64 $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) base64.cpp -o base64 $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE
