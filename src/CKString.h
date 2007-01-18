@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.15 2005/11/18 16:48:21 drbob Exp $
+ * $Id: CKString.h,v 1.16 2007/01/18 10:02:37 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -40,16 +40,17 @@
 #endif
 /*
  * This is most odd, but it seems that at least on Darwin (Mac OS X)
- * there's a problem with the definition of isnan(). So... to make it
- * easier on all parties, I'm simply going to repeat the definition
- * that's in Linux and Darwin here, and it should get picked up even
- * if the headers fail us.
+ * with gcc 4.0 - they have left the C99 defines in math.h but in cmath
+ * they have #undef-ed all these and replaced them with the std:: templates
+ * so that isnan() becomes std::isnan(). I can see the logic, but it's
+ * not obvious at all. Thank goodness for Google.
  */
 #ifdef __MACH__
-#ifndef isnan
-#define	isnan(x)	((sizeof(x) == sizeof(double)) ? __isnand(x) : \
-					(sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#include <cmath>
+#ifdef isnan
+#undef isnan
 #endif
+#define isnan(x)	std::isnan(x)
 #endif
 
 //	Third-Party Headers
