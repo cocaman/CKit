@@ -8,6 +8,10 @@
 ifeq ($(shell uname),SunOS)
 CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
+CXX_32 = 
+CXX_64 = 
+LDD_32 = 
+LDD_64 = 
 SO_EXT = so
 SO_FLAG = -shared
 endif
@@ -18,12 +22,20 @@ else
 CXX = g++
 endif
 CXX_DEFS = -D_REENTRANT -O2
+CXX_32 = 
+CXX_64 = 
+LDD_32 = 
+LDD_64 = 
 SO_EXT = so
 SO_FLAG = -shared
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
+CXX_32 = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+CXX_64 = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc
+LDD_32 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+LDD_64 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc
 SO_EXT = dylib
 SO_FLAG = -dynamiclib
 endif
@@ -53,8 +65,8 @@ DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi
 LIBS64 = -L$(LIB64_DIR) -lstdc++ -lsqlapi
-LDFLAGS = -fPIC $(LIBS)
-LD64FLAGS = -fPIC $(LIBS64)
+LDFLAGS = -fPIC $(LIBS) $(LDD_32)
+LD64FLAGS = -fPIC $(LIBS64) $(LDD_64)
 
 #
 # These are all the components of CKit
@@ -133,10 +145,10 @@ depend:
 	makedepend -o.o64 -a -- $(CXXFLAGS) -- $(SRCS)
 
 .cpp.o:
-	$(CXX) -m32 -DUSE_32BIT=1 -c $(CXXFLAGS) $(DEBUG) $< -o $@
+	$(CXX) -m32 -DUSE_32BIT=1 $(CXX_32) -c $(CXXFLAGS) $(DEBUG) $< -o $@
 
 .cpp.o64:
-	$(CXX) -m64 -DUSE_64BIT=1 -c $(CXXFLAGS) $(DEBUG) $< -o $@
+	$(CXX) -m64 -DUSE_64BIT=1 $(CXX_64) -c $(CXXFLAGS) $(DEBUG) $< -o $@
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)

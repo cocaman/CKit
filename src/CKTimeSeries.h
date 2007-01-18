@@ -7,7 +7,7 @@
  *                  nice little class that is used in the CKVariant as yet
  *                  another form of data that that class can represent.
  *
- * $Id: CKTimeSeries.h,v 1.22 2006/02/24 19:31:43 drbob Exp $
+ * $Id: CKTimeSeries.h,v 1.23 2007/01/18 10:02:37 drbob Exp $
  */
 #ifndef __CKTIMESERIES_H
 #define __CKTIMESERIES_H
@@ -41,16 +41,17 @@
 #endif
 /*
  * This is most odd, but it seems that at least on Darwin (Mac OS X)
- * there's a problem with the definition of isnan(). So... to make it
- * easier on all parties, I'm simply going to repeat the definition
- * that's in Linux and Darwin here, and it should get picked up even
- * if the headers fail us.
+ * with gcc 4.0 - they have left the C99 defines in math.h but in cmath
+ * they have #undef-ed all these and replaced them with the std:: templates
+ * so that isnan() becomes std::isnan(). I can see the logic, but it's
+ * not obvious at all. Thank goodness for Google.
  */
 #ifdef __MACH__
-#ifndef isnan
-#define	isnan(x)	((sizeof(x) == sizeof(double)) ? __isnand(x) : \
-					(sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#include <cmath>
+#ifdef isnan
+#undef isnan
 #endif
+#define isnan(x)	std::isnan(x)
 #endif
 
 //	Third-Party Headers

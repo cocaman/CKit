@@ -5,7 +5,7 @@
  *             the important prices and values. This object makes it easy
  *             to get at these guys.
  *
- * $Id: CKPrice.h,v 1.3 2005/08/17 13:56:54 drbob Exp $
+ * $Id: CKPrice.h,v 1.4 2007/01/18 10:02:36 drbob Exp $
  */
 #ifndef __CKPRICE_H
 #define __CKPRICE_H
@@ -38,16 +38,17 @@
 #endif
 /*
  * This is most odd, but it seems that at least on Darwin (Mac OS X)
- * there's a problem with the definition of isnan(). So... to make it
- * easier on all parties, I'm simply going to repeat the definition
- * that's in Linux and Darwin here, and it should get picked up even
- * if the headers fail us.
+ * with gcc 4.0 - they have left the C99 defines in math.h but in cmath
+ * they have #undef-ed all these and replaced them with the std:: templates
+ * so that isnan() becomes std::isnan(). I can see the logic, but it's
+ * not obvious at all. Thank goodness for Google.
  */
 #ifdef __MACH__
-#ifndef isnan
-#define	isnan(x)	((sizeof(x) == sizeof(double)) ? __isnand(x) : \
-					(sizeof(x) == sizeof(float)) ? __isnanf(x) : __isnan(x))
+#include <cmath>
+#ifdef isnan
+#undef isnan
 #endif
+#define isnan(x)	std::isnan(x)
 #endif
 
 //	Third-Party Headers
