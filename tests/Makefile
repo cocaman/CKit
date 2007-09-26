@@ -88,7 +88,7 @@ chat: chat.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) chat.cpp -o chat $(LIBS) $(LDFLAGS)
 
 mindalign: mindalign.cpp $(LIB_FILE)
-	$(CXX) $(CXXFLAGS) $(DEBUG) mindalign.cpp -o mindalign $(LIBS) $(LDFLAGS)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) mindalign.cpp -o mindalign $(LIBS) $(LDFLAGS)
 
 nan: nan.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) nan.cpp -o nan $(LIBS) $(LDFLAGS)
