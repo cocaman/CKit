@@ -6,7 +6,7 @@
  *                      user really only needs to subclass off this class and
  *                      then write that one method.
  *
- * $Id: CKIRCResponder.cpp,v 1.7 2004/09/20 16:19:35 drbob Exp $
+ * $Id: CKIRCResponder.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -150,6 +150,6 @@ CKString CKIRCResponder::toString() const
 std::ostream & operator<<( std::ostream & aStream, const CKIRCResponder & aResponder )
 {
 	aStream << aResponder.toString();
-	
+
 	return aStream;
 }

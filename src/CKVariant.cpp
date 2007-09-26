@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.26 2005/09/29 15:43:40 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.27 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -5446,12 +5446,14 @@ CKVariantList::~CKVariantList()
  */
 CKVariantList & CKVariantList::operator=( CKVariantList & anOther )
 {
-	// first, clear out anything we might have right now
-	clear();
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// first, clear out anything we might have right now
+		clear();
 
-	// now, do a deep copy of the source list
-	copyToEnd(anOther);
-
+		// now, do a deep copy of the source list
+		copyToEnd(anOther);
+	}
 	return *this;
 }
 

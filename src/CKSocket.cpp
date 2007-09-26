@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.21 2006/08/31 12:48:33 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.22 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -368,18 +368,20 @@ CKSocket::~CKSocket()
  */
 CKSocket & CKSocket::operator=( const CKSocket & anOther )
 {
-	// we need to copy over all the variables
-	setHostname(anOther.getHostname());
-	setPort(anOther.getPort());
-	setSocketHandle(anOther.getSocketHandle());
-	setReadBufferSize(anOther.getReadBufferSize());
-	setWaitForIncomingConnectionTimeout(anOther.getWaitForIncomingConnectionTimeout());
-	setActivelyListening(anOther.isActivelyListening());
-	setConnectionEstablished(anOther.isConnectionEstablished());
-	setTraceOutgoingData(anOther.traceOutgoingData());
-	setTraceIncomingData(anOther.traceIncomingData());
-	setIsBlockingForTransferredData(anOther.isBlockingForTransferredData());
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// we need to copy over all the variables
+		setHostname(anOther.getHostname());
+		setPort(anOther.getPort());
+		setSocketHandle(anOther.getSocketHandle());
+		setReadBufferSize(anOther.getReadBufferSize());
+		setWaitForIncomingConnectionTimeout(anOther.getWaitForIncomingConnectionTimeout());
+		setActivelyListening(anOther.isActivelyListening());
+		setConnectionEstablished(anOther.isConnectionEstablished());
+		setTraceOutgoingData(anOther.traceOutgoingData());
+		setTraceIncomingData(anOther.traceIncomingData());
+		setIsBlockingForTransferredData(anOther.isBlockingForTransferredData());
+	}
 	// finally, return this guy
 	return *this;
 }
@@ -1464,12 +1466,12 @@ CKString CKSocket::readAvailableData()
 bool CKSocket::waitForData( float aTimeoutInSec )
 {
 	bool	retval = false;
-	
+
 	if (poll(getSocketHandle(), (int)(1000 * aTimeoutInSec)) == POLL_OK) {
 		// something is there *before* the timeout
 		retval = true;
 	}
-	
+
 	return retval;
 }
 

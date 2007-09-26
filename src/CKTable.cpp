@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.23 2005/09/20 18:07:11 drbob Exp $
+ * $Id: CKTable.cpp,v 1.24 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -194,26 +194,28 @@ CKTable::~CKTable()
  */
 CKTable & CKTable::operator=( const CKTable & anOther )
 {
-	// now see if the requested size makes any sense to copy
-	if ((anOther.mNumRows > 0) && (anOther.mNumColumns > 0)) {
-		// create the data table structure
-		createTable(anOther.mNumRows, anOther.mNumColumns);
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// now see if the requested size makes any sense to copy
+		if ((anOther.mNumRows > 0) && (anOther.mNumColumns > 0)) {
+			// create the data table structure
+			createTable(anOther.mNumRows, anOther.mNumColumns);
 
-		// now, copy over the row labels and column headers
-		for (int r = 0; r < mNumRows; r++) {
-			mRowLabels[r] = anOther.mRowLabels[r];
-		}
-		for (int c = 0; c < mNumColumns; c++) {
-			mColumnHeaders[c] = anOther.mColumnHeaders[c];
-		}
+			// now, copy over the row labels and column headers
+			for (int r = 0; r < mNumRows; r++) {
+				mRowLabels[r] = anOther.mRowLabels[r];
+			}
+			for (int c = 0; c < mNumColumns; c++) {
+				mColumnHeaders[c] = anOther.mColumnHeaders[c];
+			}
 
-		// finally we need to copy all the values from the table to us
-		int		cnt = mNumRows * mNumColumns;
-		for (int i = 0; i < cnt; i++) {
-			mTable[i] = anOther.mTable[i];
+			// finally we need to copy all the values from the table to us
+			int		cnt = mNumRows * mNumColumns;
+			for (int i = 0; i < cnt; i++) {
+				mTable[i] = anOther.mTable[i];
+			}
 		}
 	}
-
 	return *this;
 }
 
@@ -2503,7 +2505,7 @@ bool CKTable::add( CKTable & anOther )
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
-	
+
 	// see if the sizes are the same - they have to be for this
 	if (!error) {
 		if ((mNumRows != anOther.mNumRows) ||
@@ -2605,7 +2607,7 @@ bool CKTable::subtract( CKTable & anOther )
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
-	
+
 	// see if the sizes are the same - they have to be for this
 	if (!error) {
 		if ((mNumRows != anOther.mNumRows) ||
@@ -2707,7 +2709,7 @@ bool CKTable::multiply( CKTable & anOther )
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
-	
+
 	// see if the sizes are the same - they have to be for this
 	if (!error) {
 		if ((mNumRows != anOther.mNumRows) ||
@@ -2809,7 +2811,7 @@ bool CKTable::divide( CKTable & anOther )
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
 	}
-	
+
 	// see if the sizes are the same - they have to be for this
 	if (!error) {
 		if ((mNumRows != anOther.mNumRows) ||

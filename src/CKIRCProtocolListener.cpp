@@ -6,7 +6,7 @@
  *                             user the protocol is presenting are interpreted
  *                             and passed to the listeners properly.
  *
- * $Id: CKIRCProtocolListener.cpp,v 1.12 2004/09/20 16:19:34 drbob Exp $
+ * $Id: CKIRCProtocolListener.cpp,v 1.13 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -91,11 +91,13 @@ CKIRCProtocolListener::~CKIRCProtocolListener()
  */
 CKIRCProtocolListener & CKIRCProtocolListener::operator=( const CKIRCProtocolListener & anOther )
 {
-	// set everything that the other one has
-	mProtocol = anOther.mProtocol;
-	mIsRunning = anOther.mIsRunning;
-	mTimeToDie = anOther.mTimeToDie;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// set everything that the other one has
+		mProtocol = anOther.mProtocol;
+		mIsRunning = anOther.mIsRunning;
+		mTimeToDie = anOther.mTimeToDie;
+	}
 	return *this;
 }
 

@@ -2,7 +2,7 @@
  * CKFWRWMutex.cpp - this file implements the simple read/write mutex that can
  *                   be used in a large number of applications.
  *
- * $Id: CKFWRWMutex.cpp,v 1.1 2004/12/01 18:28:19 drbob Exp $
+ * $Id: CKFWRWMutex.cpp,v 1.2 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -117,7 +117,7 @@ bool CKFWRWMutex::tryWriteLock()
 	return true;
 }
 
-  
+
 /**
  * Attempts to unlock this mutex.  Throws a CKErrNoException if there is
  * some problem. See man pthread_mutex_unlock
@@ -128,7 +128,7 @@ void CKFWRWMutex::unlock()
 	if ( lError != 0 ) {
 		throw CKErrNoException( __FILE__, __LINE__, lError );
 	}
-  
+
 	if ( pthread_self( ) == mLockingThread ) {
 		mLockingThread = ( pthread_t )-1;
 	}

@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.25 2006/02/26 15:56:42 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.26 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -2293,12 +2293,14 @@ CKDataNodeList::~CKDataNodeList()
  */
 CKDataNodeList & CKDataNodeList::operator=( CKDataNodeList & anOther )
 {
-	// first, clear out anything we might have right now
-	clear();
-
-	// now, do a deep copy of the source list
-	copyToEnd(anOther);
-
+	// make sure that we don't do this to ourselves
+	if (this != & anOther) {
+		// first, clear out anything we might have right now
+		clear();
+	
+		// now, do a deep copy of the source list
+		copyToEnd(anOther);
+	}
 	return *this;
 }
 

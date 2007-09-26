@@ -13,7 +13,7 @@
  *                       not shell out to have the file copied and then have
  *                       to the read it in.
  *
- * $Id: CKFTPConnection.cpp,v 1.12 2005/01/04 20:12:51 drbob Exp $
+ * $Id: CKFTPConnection.cpp,v 1.13 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -174,16 +174,18 @@ CKFTPConnection::~CKFTPConnection()
  */
 CKFTPConnection & CKFTPConnection::operator=( const CKFTPConnection & anOther )
 {
-	// set everything that the other one has
-	mHostname = anOther.mHostname;
-	mUsername = anOther.mUsername;
-	mPassword = anOther.mPassword;
-	mState = anOther.mState;
-	mControlPort = anOther.mControlPort;
-	mServerReplyLines = anOther.mServerReplyLines;
-	mIsLoggedIn = anOther.mIsLoggedIn;
-	mIncomingDataTimeout = anOther.mIncomingDataTimeout;
-
+	// make sure we don't to this to ourselves
+	if (this != & anOther) {
+		// set everything that the other one has
+		mHostname = anOther.mHostname;
+		mUsername = anOther.mUsername;
+		mPassword = anOther.mPassword;
+		mState = anOther.mState;
+		mControlPort = anOther.mControlPort;
+		mServerReplyLines = anOther.mServerReplyLines;
+		mIsLoggedIn = anOther.mIsLoggedIn;
+		mIncomingDataTimeout = anOther.mIncomingDataTimeout;
+	}
 	return *this;
 }
 

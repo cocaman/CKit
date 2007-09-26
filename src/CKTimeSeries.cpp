@@ -8,7 +8,7 @@
  *                    in the CKVariant as yet another form of data that that
  *                    class can represent.
  *
- * $Id: CKTimeSeries.cpp,v 1.27 2006/02/24 19:31:42 drbob Exp $
+ * $Id: CKTimeSeries.cpp,v 1.28 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -145,9 +145,11 @@ CKTimeSeries::~CKTimeSeries()
  */
 CKTimeSeries & CKTimeSeries::operator=( const CKTimeSeries & anOther )
 {
-	// copy over the map as that's all that matters
-	mTimeseries = anOther.mTimeseries;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// copy over the map as that's all that matters
+		mTimeseries = anOther.mTimeseries;
+	}
 	return *this;
 }
 

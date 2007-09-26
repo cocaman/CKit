@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.25 2006/03/13 10:38:55 drbob Exp $
+ * $Id: CKString.cpp,v 1.26 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -327,38 +327,47 @@ CKString::~CKString()
 CKString & CKString::operator=( CKString & anOther )
 {
 	/*
-	 * First, let's see if what we need to take can already fit in what
-	 * we have allocated. If so, then let's just copy it in, but if not,
-	 * then we need to make a bigger buffer and copy it in.
+	 * We have to watch out for someone setting this string equal
+	 * to itself. If they did, we'd wipe out what is in us for what's
+	 * in the other, but since the other *is* us, we'd have nothing
+	 * to put back in. So we have to make sure we're not doing this
+	 * to ourselves.
 	 */
-	mSize = anOther.mSize;
-	if (mSize >= mCapacity) {
-		// make the new capacity just enough to hold this guy
-		mCapacity = mSize + 1;
-
-		// drop the old buffer, if we had one
-		if (mString != NULL) {
-			delete [] mString;
-			mString = NULL;
+	if (this != & anOther) {
+		/*
+		 * Next, let's see if what we need to take can already fit in what
+		 * we have allocated. If so, then let's just copy it in, but if not,
+		 * then we need to make a bigger buffer and copy it in.
+		 */
+		mSize = anOther.mSize;
+		if (mSize >= mCapacity) {
+			// make the new capacity just enough to hold this guy
+			mCapacity = mSize + 1;
+	
+			// drop the old buffer, if we had one
+			if (mString != NULL) {
+				delete [] mString;
+				mString = NULL;
+			}
+	
+			// create the new one
+			mString = new char[mCapacity];
+			if (mString == NULL) {
+				std::ostringstream	msg;
+				msg << "CKString::operator=(CKString &) - the storage needed for "
+					"this string is " << mCapacity << " chars, but the creation "
+					"failed. Please look into this allocation error as soon as "
+					"possible.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
 		}
-
-		// create the new one
-		mString = new char[mCapacity];
-		if (mString == NULL) {
-			std::ostringstream	msg;
-			msg << "CKString::operator=(CKString &) - the storage needed for "
-				"this string is " << mCapacity << " chars, but the creation "
-				"failed. Please look into this allocation error as soon as "
-				"possible.";
-			throw CKException(__FILE__, __LINE__, msg.str());
+	
+		// now let's clear out what we have and copy in the string
+		bzero(mString, mCapacity);
+		// now see if we need to copy anything into this buffer
+		if (anOther.mString != NULL) {
+			memcpy(mString, anOther.mString, mSize);
 		}
-	}
-
-	// now let's clear out what we have and copy in the string
-	bzero(mString, mCapacity);
-	// now see if we need to copy anything into this buffer
-	if (anOther.mString != NULL) {
-		memcpy(mString, anOther.mString, mSize);
 	}
 
 	return *this;
