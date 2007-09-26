@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.22 2007/09/26 19:33:46 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.23 2007/09/26 20:14:22 drbob Exp $
  */
 
 //	System Headers
@@ -1445,7 +1445,7 @@ CKString CKSocket::readAvailableData()
 				 std::endl;
 		}
 		// make the returned string the right size
-		retval.fill('\0', (bytesRead + 1));
+		retval.fill('\0', bytesRead);
 		// now put the data from the buffer into the string
 		memcpy((void *)retval.c_str(), incomingPtr, bytesRead);
 	}

@@ -2,11 +2,12 @@
  * CKFWRWMutex.cpp - this file implements the simple read/write mutex that can
  *                   be used in a large number of applications.
  *
- * $Id: CKFWRWMutex.cpp,v 1.2 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKFWRWMutex.cpp,v 1.3 2007/09/26 20:14:22 drbob Exp $
  */
 
 //	System Headers
 #include <sys/errno.h>
+#include <sstream>
 
 //	Third-Party Headers
 
@@ -32,7 +33,10 @@ CKFWRWMutex::CKFWRWMutex() :
 {
 	int lError = pthread_rwlock_init( &mMutex, 0 );
 	if ( lError != 0 ) {
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::CKFWRWMutex() - while trying to initialize the read/write "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 }
 
@@ -58,7 +62,10 @@ void CKFWRWMutex::readLock()
 {
 	int lError = pthread_rwlock_rdlock( &mMutex );
 	if ( lError != 0 ) {
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::readLock() - while trying to place a read lock on the "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 }
 
@@ -75,7 +82,10 @@ bool CKFWRWMutex::tryReadLock()
 		if ( lError == EBUSY ) {
 			return false;
 		}
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::tryReadLock() - while trying to place a read lock on the "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 
 	return true;
@@ -91,7 +101,10 @@ void CKFWRWMutex::writeLock()
 {
 	int lError = pthread_rwlock_wrlock( &mMutex );
 	if ( lError != 0 ) {
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::writeLock() - while trying to place a write lock on the "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 
 	mLockingThread = pthread_self( );
@@ -110,7 +123,10 @@ bool CKFWRWMutex::tryWriteLock()
 		if ( lError == EBUSY ) {
 			return false;
 		}
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::tryWriteLock() - while trying to place a write lock on the "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 
 	mLockingThread = pthread_self( );
@@ -126,7 +142,10 @@ void CKFWRWMutex::unlock()
 {
 	int lError = pthread_rwlock_unlock( &mMutex );
 	if ( lError != 0 ) {
-		throw CKErrNoException( __FILE__, __LINE__, lError );
+		std::ostringstream		msg;
+		msg << "CKFWRWMutex::unlock() - while trying to remove all locks on the "
+			   "mutex an error occured: (" << lError << ") " << strerror(lError);
+		throw CKException(__FILE__, __LINE__, msg.str());
 	}
 
 	if ( pthread_self( ) == mLockingThread ) {

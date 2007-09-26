@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.17 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.18 2007/09/26 20:14:22 drbob Exp $
  */
 
 //	System Headers
@@ -116,7 +116,7 @@ CKBufferedSocket::CKBufferedSocket( const CKBufferedSocket & anOther ) :
  */
 CKBufferedSocket::~CKBufferedSocket()
 {
-	// the sure does everything we need here...
+	// the super does everything we need here...
 }
 
 
@@ -244,7 +244,7 @@ CKString CKBufferedSocket::readChars( int aCharCount )
 		}
 
 		/*
-		 * Step 2 - see if a sufficient number of characters is in the
+		 * Step 2 - see if a sufficient number of characters are in the
 		 *          pending data buffer (break encapsulation here because
 		 *          we need to work on the buffer itself and not a copy
 		 *          which will be returned by the getPendingData() method.)
