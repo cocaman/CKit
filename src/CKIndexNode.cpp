@@ -15,7 +15,7 @@
  *                   grouping, we don't want this tree to manage the memory of
  *                   the leaf nodes, as the main CKDataTree does all that.
  *
- * $Id: CKIndexNode.cpp,v 1.3 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKIndexNode.cpp,v 1.4 2007/09/26 20:14:22 drbob Exp $
  */
 
 //	System Headers
@@ -513,7 +513,7 @@ CKIndexNode *CKIndexNode::newNodeByDeepCopy( const CKIndexNode *aNode,
 		}
 	}
 
-	return (CKIndexNode*) retval;
+	return (CKIndexNode *) retval;
 }
 
 

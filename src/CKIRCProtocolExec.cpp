@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  *
- * $Id: CKIRCProtocolExec.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.9 2007/09/26 20:14:22 drbob Exp $
  */
 
 //	System Headers
@@ -269,7 +269,7 @@ CKIRCProtocolExec::CKIRCProtocolExec() :
 	mMessage(),
 	mProtocol(NULL)
 {
-	// set the tag so that these threads are easy to track down
+	// set the tag for this thread so they are easier to track down
 	setTag("CKIRCProtocolExec");
 }
 
