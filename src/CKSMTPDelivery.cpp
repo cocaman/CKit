@@ -6,7 +6,7 @@
  *                      communications. It's used in the Mail Delivery system
  *                      as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.cpp,v 1.9 2004/09/22 12:08:33 drbob Exp $
+ * $Id: CKSMTPDelivery.cpp,v 1.10 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -118,10 +118,12 @@ CKSMTPDelivery::~CKSMTPDelivery()
  */
 CKSMTPDelivery & CKSMTPDelivery::operator=( const CKSMTPDelivery & anOther )
 {
-	mHostname = anOther.mHostname;
-	mFromEMailAddress = anOther.mFromEMailAddress;
-	mHostConnection = anOther.mHostConnection;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		mHostname = anOther.mHostname;
+		mFromEMailAddress = anOther.mFromEMailAddress;
+		mHostConnection = anOther.mHostConnection;
+	}
 	return *this;
 }
 

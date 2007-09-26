@@ -9,7 +9,7 @@
  *                           and the other work is left to the super to deal
  *                           with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.cpp,v 1.1 2006/09/29 17:46:36 drbob Exp $
+ * $Id: CKMindAlignProtocol.cpp,v 1.2 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -166,15 +166,17 @@ CKMindAlignProtocol::~CKMindAlignProtocol()
  */
 CKMindAlignProtocol & CKMindAlignProtocol::operator=( const CKMindAlignProtocol & anOther )
 {
-	// let the super equate it's stuff
-	CKIRCProtocol::operator=(anOther);
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// let the super equate it's stuff
+		CKIRCProtocol::operator=(anOther);
 
-	// set everything that the other one has
-	mAuthHostname = anOther.mAuthHostname;
-	mAuthPort = anOther.mAuthPort;
-	mAuthComm = anOther.mAuthComm;
-	mToken = anOther.mToken;
-
+		// set everything that the other one has
+		mAuthHostname = anOther.mAuthHostname;
+		mAuthPort = anOther.mAuthPort;
+		mAuthComm = anOther.mAuthComm;
+		mToken = anOther.mToken;
+	}
 	return *this;
 }
 

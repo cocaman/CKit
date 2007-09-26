@@ -6,7 +6,7 @@
  *                     all delivery mechanisms will use this one message
  *                     structure.
  *
- * $Id: CKMailMessage.cpp,v 1.9 2004/09/22 12:08:32 drbob Exp $
+ * $Id: CKMailMessage.cpp,v 1.10 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -99,11 +99,13 @@ CKMailMessage::~CKMailMessage()
  */
 CKMailMessage & CKMailMessage::operator=( const CKMailMessage & anOther )
 {
-	// copy over all the data this guy has (skip making the copies)
-	mRecipients = anOther.mRecipients;
-	mSubject = anOther.mSubject;
-	mMessageBody = anOther.mMessageBody;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// copy over all the data this guy has (skip making the copies)
+		mRecipients = anOther.mRecipients;
+		mSubject = anOther.mSubject;
+		mMessageBody = anOther.mMessageBody;
+	}
 	return *this;
 }
 

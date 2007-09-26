@@ -6,7 +6,7 @@
  *                   will be able to represent a series of tabular results
  *                   - one per day.
  *
- * $Id: CKTimeTable.cpp,v 1.3 2005/10/27 19:24:28 drbob Exp $
+ * $Id: CKTimeTable.cpp,v 1.4 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -159,21 +159,23 @@ CKTimeTable::~CKTimeTable()
  */
 CKTimeTable & CKTimeTable::operator=( const CKTimeTable & anOther )
 {
-	// first, let's lock up both against change
-	((CKTimeTable &)anOther).mTablesMutex.lock();
-	mTablesMutex.lock();
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// first, let's lock up both against change
+		((CKTimeTable &)anOther).mTablesMutex.lock();
+		mTablesMutex.lock();
 
-	// now we can set the ivars from him to me
-	mTables = anOther.mTables;
-	mDefaultRowCount = anOther.mDefaultRowCount;
-	mDefaultColumnCount = anOther.mDefaultColumnCount;
-	mDefaultRowLabels = anOther.mDefaultRowLabels;
-	mDefaultColumnHeaders = anOther.mDefaultColumnHeaders;
+		// now we can set the ivars from him to me
+		mTables = anOther.mTables;
+		mDefaultRowCount = anOther.mDefaultRowCount;
+		mDefaultColumnCount = anOther.mDefaultColumnCount;
+		mDefaultRowLabels = anOther.mDefaultRowLabels;
+		mDefaultColumnHeaders = anOther.mDefaultColumnHeaders;
 
-	// finally, let's unlock them in the right order
-	mTablesMutex.unlock();
-	((CKTimeTable &)anOther).mTablesMutex.unlock();
-
+		// finally, let's unlock them in the right order
+		mTablesMutex.unlock();
+		((CKTimeTable &)anOther).mTablesMutex.unlock();
+	}
 	return *this;
 }
 

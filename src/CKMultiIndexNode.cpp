@@ -22,7 +22,7 @@
  *                        the referencing. For those times, this multi-index
  *                        node is quite useful.
  *
- * $Id: CKMultiIndexNode.cpp,v 1.1 2005/02/14 15:43:59 drbob Exp $
+ * $Id: CKMultiIndexNode.cpp,v 1.2 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -142,12 +142,14 @@ CKMultiIndexNode::~CKMultiIndexNode()
  */
 CKMultiIndexNode & CKMultiIndexNode::operator=( const CKMultiIndexNode & anOther )
 {
-	// let the super do it's thing
-	CKDataNode::operator=(anOther);
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// let the super do it's thing
+		CKDataNode::operator=(anOther);
 
-	// now we can set our list of references
-	mReferences = anOther.mReferences;
-
+		// now we can set our list of references
+		mReferences = anOther.mReferences;
+	}
 	return *this;
 }
 
@@ -272,7 +274,7 @@ CKVector<CKDataNode*> *CKMultiIndexNode::getReferencesAtPath( const CKStringList
 bool CKMultiIndexNode::addReference( CKDataNode *aNode )
 {
 	bool		error = false;
-	
+
 	// first, make sure we have something to do
 	if (!error) {
 		if (aNode == NULL) {
@@ -407,7 +409,7 @@ bool CKMultiIndexNode::addReferenceAtPath( const CKStringList & aSteps, CKDataNo
 void CKMultiIndexNode::removeReference( CKDataNode *aNode )
 {
 	bool		error = false;
-	
+
 	// first, make sure we have something to do
 	if (!error) {
 		if (aNode == NULL) {

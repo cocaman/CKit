@@ -3,7 +3,7 @@
  *                          a certain period of time before giving up and
  *                          returning to the caller.
  *
- * $Id: CKFWTimedSemaphore.cpp,v 1.7 2004/09/20 16:19:31 drbob Exp $
+ * $Id: CKFWTimedSemaphore.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -72,7 +72,7 @@ int CKFWTimedSemaphore::tryWait()
 		-- mCount;
 		mMutex.unlock();
 	}
-	
+
 	return lResult;
 }
 

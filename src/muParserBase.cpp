@@ -109,7 +109,10 @@ ParserBase::ParserBase(const ParserBase &a_Parser) :
 */
 ParserBase& ParserBase::operator=(const ParserBase &a_Parser)
 {
-	Assign(a_Parser);
+	// make sure we don't do this to ourselves
+	if (this != & a_Parser) {
+		Assign(a_Parser);
+	}
 	return *this;
 }
 

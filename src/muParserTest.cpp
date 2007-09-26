@@ -49,7 +49,7 @@ namespace Test
 		AddTest(&ParserTester::TestFormula);
 		AddTest(&ParserTester::TestInterface);
 	}
-	
+
 	//---------------------------------------------------------------------------
 	bool ParserTester::TestInterface()
 	{
@@ -73,7 +73,7 @@ namespace Test
 		try {
 			p.RemoveVar("c");
 			p.Calc();
-			
+
 			// not supposed to reach this, variable "c" deleted...
 			result = false;
 		} catch(...) {
@@ -84,7 +84,7 @@ namespace Test
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -94,7 +94,7 @@ namespace Test
 		bool result = true;
 		bool bStat = false;
 		*m_stream << "testing name restriction enforcement...";
-		
+
 		Parser p;
 
 #define PARSER_THROWCHECK(DOMAIN, FAIL, EXPR, ARG) \
@@ -171,7 +171,7 @@ namespace Test
 
 		if (result) *m_stream << "passed" << endl;
 			else *m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -208,7 +208,7 @@ namespace Test
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -217,7 +217,7 @@ namespace Test
 	{
 		bool result = true;
 		*m_stream << "testing variables / constants name recognition...";
-		
+
 		// distinguish constants with same basename
 		result = result & EqnTest("const", 1, true);
 		result = result & EqnTest("const1", 2, true);
@@ -231,7 +231,7 @@ namespace Test
 		result = result & EqnTest("const", 0, false);
 		result = result & EqnTest("const1", 0, false);
 		result = result & EqnTest("const2", 0, false);
-		
+
 		// distinguish variables with same basename
 		result = result & EqnTest("a", 1, true);
 		result = result & EqnTest("aa", 2, true);
@@ -249,14 +249,14 @@ namespace Test
 			p.AddVar("c", &vVarVal[2]);
 			p.AddVar("d", &vVarVal[3]);
 			p.AddVar("e", &vVarVal[4]);
-			
+
 			// Test lookup of defined variables
 			// 4 used variables
 			p.SetFormula("a+b+c+d");
 			MathUtils::Parser::varmap_type UsedVar = p.GetUsedVar();
 			int iCount = (int)UsedVar.size();
 			if (iCount!=4) throw false;
-			
+
 			MathUtils::Parser::varmap_type::const_iterator item = UsedVar.begin();
 			for (int idx=0; item!=UsedVar.end(); ++item) {
 				if (&vVarVal[idx++]!=item->second)
@@ -268,7 +268,7 @@ namespace Test
 			UsedVar = p.GetUsedVar();
 			iCount = (int)UsedVar.size();
 			if (iCount!=3) throw false;
-			
+
 			for (item=UsedVar.begin(); item!=UsedVar.end(); ++item) {
 				if (item->second!=0)
 					throw false; // all pointers to undefined variables must be null
@@ -329,7 +329,7 @@ namespace Test
 		result = result & EqnTest("1,2,3", 0, false);
 		result = result & EqnTest("(1*a,2,3)", 0, false);
 		result = result & EqnTest("1,2*a,3", 0, false);
-		
+
 		// correct calculation of arguments
 		result = result & EqnTest("min(a, 1)",  1, true);
 		result = result & EqnTest("min(3*2, 1)",  1, true);
@@ -339,7 +339,7 @@ namespace Test
 		result = result & EqnTest("max(3*a+1, 1)",  4, true);
 		result = result & EqnTest("max(3*a+1, 1)*2",  8, true);
 		result = result & EqnTest("2*max(3*a+1, 1)+2",  10, true);
-		
+
 		// functions with Variable argument count
 		result = result & EqnTest("sum(1,2,3)",  6, true);
 		result = result & EqnTest("2*sum(1,2,3)",  12, true);
@@ -352,18 +352,18 @@ namespace Test
 		result = result & EqnTest("sum(1*3, 4, a+2)",  10, true);
 		result = result & EqnTest("sum(1*3, 2*sum(1,2,2), a+2)",  16, true);
 		result = result & EqnTest("sum(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2)", 24, true);
-		
+
 		// some failures
 		result = result & EqnTest("sum()",  0, false);
 		result = result & EqnTest("sum(,)",  0, false);
 		result = result & EqnTest("sum(1,2,)",  0, false);
 		result = result & EqnTest("sum(,1,2)",  0, false);
-		
+
 		if (result)
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -390,12 +390,12 @@ namespace Test
 		result = result & EqnTest("-sin(8)", -0.989358, true);
 		result = result & EqnTest("3-(-a)", 4, true);
 		result = result & EqnTest("3--a", 4, true);
-		
+
 		if (result)
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -432,12 +432,12 @@ namespace Test
 		result = result & EqnTest("-m", 0, false);
 		result = result & EqnTest("2(-m)", 0, false);
 		result = result & EqnTest("2(m)", 0, false);
-		
+
 		if (result)
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -452,11 +452,11 @@ namespace Test
 		try {
 			MathUtils::Parser p;
 			p.AddFun("rnd", Rnd, false);
-			
+
 			// 1st test, compare results from sucessive calculations
 			p.SetFormula("3+rnd(8)");
 			if (p.Calc()==p.Calc()) result = false;
-			
+
 			// 2nd test, force bytecode creation, compare two results both
 			// calculated from bytecode
 			p.SetFormula("3+rnd(8)");
@@ -466,11 +466,11 @@ namespace Test
 			p.SetFormula("3*rnd(8)+3");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()==p.Calc()) result = false;
-			
+
 			p.SetFormula("10+3*sin(rnd(8))-1");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()==p.Calc()) result = false;
-			
+
 			p.SetFormula("3+rnd(rnd(8))*2");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()==p.Calc()) result = false;
@@ -483,23 +483,23 @@ namespace Test
 		try {
 			MathUtils::Parser p;
 			p.AddFun("rnd", Rnd);
-			
+
 			// compare string parsing with bytecode
 			p.SetFormula("3+rnd(8)");
 			if (p.Calc()!=p.Calc()) result = false;
-			
+
 			p.SetFormula("3+rnd(8)");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()!=p.Calc()) result = false;
-			
+
 			p.SetFormula("3*rnd(8)+3");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()!=p.Calc()) result = false;
-			
+
 			p.SetFormula("10+3*sin(rnd(8))-1");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()!=p.Calc()) result = false;
-			
+
 			p.SetFormula("3+rnd(rnd(8))*2");
 			p.Calc(); //<- Force bytecode creation
 			if (p.Calc()!=p.Calc()) result = false;
@@ -530,7 +530,7 @@ namespace Test
 		result = result & EqnTest("(1+2)*3", 9, true);
 		result = result & EqnTest("(1+2)*(-3)", -9, true);
 		result = result & EqnTest("2/4", 0.5, true);
-		
+
 		result = result & EqnTest("exp(ln(7))", 7, true);
 		result = result & EqnTest("e^ln(7)", 7, true);
 		result = result & EqnTest("e^(ln(7))", 7, true);
@@ -542,7 +542,7 @@ namespace Test
 		result = result & EqnTest("2^log2(4)", 4, true);
 		result = result & EqnTest("-(sin(0)+1)", -1, true);
 		result = result & EqnTest("-(2^1.1)", -2.14354692, true);
-		
+
 		result = result & EqnTest("(cos(2.41)/b)", -0.372056, true);
 
 		// long formula (Reference result: Matlab)
@@ -553,15 +553,15 @@ namespace Test
 			"e)*(-e)))-8))*(-5)/((-e)))*(-6)-((((((-2)-(-9)-(-e)-1)/3))))/(sqrt((8+(e-((-6))+(9*(-9))))*(((3+2-8))*(7+6"
 			"+(-5))+((0/(-e)*(-pi))+7)))+(((((-e)/e/e)+((-6)*5)*e+(3+(-5)/pi))))+pi))/sqrt((((9))+((((pi))-8+2))+pi))/e"
 			"*4)*((-5)/(((-pi))*(sqrt(e)))))-(((((((-e)*(e)-pi))/4+(pi)*(-9)))))))+(-pi)", -12.23016549, true);
-		
+
 		// long formula (Reference result: Matlab)
 		result = result & EqnTest("1+2-3*4/5^6*(2*(1-5+(3*7^9)*(4+6*7-3)))+12", -7995810.09926, true);
-		
+
 		if (result)
 			*m_stream << "passed" << endl;
 		else
 			*m_stream << "failed" << endl;
-		
+
 		return result;
 	}
 
@@ -578,7 +578,7 @@ namespace Test
 	void ParserTester::SetStream(std::ostream *a_stream)
 	{
 		assert(a_stream);
-		
+
 		m_stream = a_stream;
 	}
 
@@ -615,7 +615,7 @@ namespace Test
 			Parser p;
 			p.AddConst("pi", mu::Parser::value_type(PARSER_CONST_PI));
 			p.AddConst("e", mu::Parser::value_type(PARSER_CONST_E));
-			
+
 			  // variables
 			mu::Parser::value_type vVarVal[] = { 1, 2, 3, -2};
 			p.AddVar("a", &vVarVal[0]);
@@ -627,10 +627,10 @@ namespace Test
 			p.AddConst("const", mu::Parser::value_type(1));
 			p.AddConst("const1", mu::Parser::value_type(2));
 			p.AddConst("const2", mu::Parser::value_type(3));
-			
+
 			// Add a volatile function
 			p.AddFun("rnd", Rnd, false);  // a function that is not optimizeable
-			
+
 			// functions
 			// one parameter
 			p.AddFun("f1of1", f1of1);
@@ -659,11 +659,11 @@ namespace Test
 			// postfix operator
 			p.AddPostfixOp("m", Milli);
 			p.SetFormula(a_str);
-			
+
 			mu::Parser::value_type fVal[4] = {1,2,3,4}; // initially should be different
 			fVal[0] = p.Calc(); // result from string parsing
 			fVal[1] = p.Calc(); // result from bytecode
-			
+
 			if (fVal[0]!=fVal[1])
 				throw ParserException("Bytecode corrupt.");
 
@@ -673,7 +673,7 @@ namespace Test
 				vParser.push_back(p);
 				MathUtils::Parser p2 = vParser[0];
 				fVal[2] = p2.Calc();
-				
+
 				// Test assignement operator
 				// additionally  disable Optimizer this time
 				MathUtils::Parser p3;
@@ -689,7 +689,7 @@ namespace Test
 			for (int i=0; i<4; ++i) {
 				bCloseEnough &= (fabs(a_fRes-fVal[i].getDoubleValue()) < fabs(fVal[i].getDoubleValue()*0.0001));
 			}
-			
+
 			return (bCloseEnough && a_fPass) || (!bCloseEnough && !a_fPass);
 		} catch(ParserException &e) {
 			if (a_fPass)

@@ -15,7 +15,7 @@
  *                   grouping, we don't want this tree to manage the memory of
  *                   the leaf nodes, as the main CKDataTree does all that.
  *
- * $Id: CKIndexNode.cpp,v 1.2 2004/12/22 13:06:35 drbob Exp $
+ * $Id: CKIndexNode.cpp,v 1.3 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -135,12 +135,14 @@ CKIndexNode::~CKIndexNode()
  */
 CKIndexNode & CKIndexNode::operator=( const CKIndexNode & anOther )
 {
-	// let the super do it's thing
-	CKDataNode::operator=(anOther);
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// let the super do it's thing
+		CKDataNode::operator=(anOther);
 
-	// now we can set our reference
-	mReference = anOther.mReference;
-
+		// now we can set our reference
+		mReference = anOther.mReference;
+	}
 	return *this;
 }
 

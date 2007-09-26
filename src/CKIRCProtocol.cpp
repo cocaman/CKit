@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.18 2006/09/29 17:46:36 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.19 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -205,42 +205,44 @@ CKIRCProtocol::~CKIRCProtocol()
  */
 CKIRCProtocol & CKIRCProtocol::operator=( const CKIRCProtocol & anOther )
 {
-	// create a listener for this guy
-	CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
-	if (buddy == NULL) {
-		std::ostringstream	msg;
-		msg << "CKIRCProtocol::operator=(const CKIRCProtocol &) - the Listener "
-			"for this instance could not be created. This is a serious allocation "
-			"problem.";
-		throw CKException(__FILE__, __LINE__, msg.str());
-	} else {
-		setListener(buddy);
-	}
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// create a listener for this guy
+		CKIRCProtocolListener	*buddy = new CKIRCProtocolListener(this);
+		if (buddy == NULL) {
+			std::ostringstream	msg;
+			msg << "CKIRCProtocol::operator=(const CKIRCProtocol &) - the Listener "
+				"for this instance could not be created. This is a serious allocation "
+				"problem.";
+			throw CKException(__FILE__, __LINE__, msg.str());
+		} else {
+			setListener(buddy);
+		}
 
-	// set everything that the other one has
-	mHostname = anOther.mHostname;
-	mPort = anOther.mPort;
-	mCommPort = anOther.mCommPort;
-	mIsLoggedIn = anOther.mIsLoggedIn;
-	mPassword = anOther.mPassword;
-	mNickname = anOther.mNickname;
-	mUserHost = anOther.mUserHost;
-	mUserServer = anOther.mUserServer;
-	mRealName = anOther.mRealName;
-	/*
-	 * I'm going to break encapsulation on these lists as they are better
-	 * done as the ivars themselves.
-	 */
-	{
-		CKStackLocker	lockem(&mChannelListMutex);
-		mChannelList = anOther.mChannelList;
-	}
+		// set everything that the other one has
+		mHostname = anOther.mHostname;
+		mPort = anOther.mPort;
+		mCommPort = anOther.mCommPort;
+		mIsLoggedIn = anOther.mIsLoggedIn;
+		mPassword = anOther.mPassword;
+		mNickname = anOther.mNickname;
+		mUserHost = anOther.mUserHost;
+		mUserServer = anOther.mUserServer;
+		mRealName = anOther.mRealName;
+		/*
+		 * I'm going to break encapsulation on these lists as they are better
+		 * done as the ivars themselves.
+		 */
+		{
+			CKStackLocker	lockem(&mChannelListMutex);
+			mChannelList = anOther.mChannelList;
+		}
 
-	{
-		CKStackLocker	lockem(&mRespondersMutex);
-		mResponders = anOther.mResponders;
+		{
+			CKStackLocker	lockem(&mRespondersMutex);
+			mResponders = anOther.mResponders;
+		}
 	}
-
 	return *this;
 }
 

@@ -5,7 +5,7 @@
  *               the important prices and values. This object makes it easy
  *               to get at these guys.
  *
- * $Id: CKPrice.cpp,v 1.3 2005/08/17 13:56:54 drbob Exp $
+ * $Id: CKPrice.cpp,v 1.4 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -118,10 +118,12 @@ CKPrice::~CKPrice()
  */
 CKPrice & CKPrice::operator=( const CKPrice & anOther )
 {
-	// copy over the values
-	mUSD = anOther.mUSD;
-	mNative = anOther.mNative;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// copy over the values
+		mUSD = anOther.mUSD;
+		mNative = anOther.mNative;
+	}
 	return *this;
 }
 

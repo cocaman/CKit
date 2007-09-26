@@ -4,8 +4,8 @@
  *                   projects are going to need. It's also a simplified
  *                   version of the base exception class used in the MarketMash
  *                   Server.
- * 
- * $Id: CKException.cpp,v 1.7 2004/09/20 16:19:23 drbob Exp $
+ *
+ * $Id: CKException.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -133,11 +133,13 @@ CKException::~CKException( )
  */
 const CKException & CKException::operator=( const CKException & anException )
 {
-	mExceptionName = anException.mExceptionName;
-	mFileName = anException.mFileName;
-	mLineNumber = anException.mLineNumber;
-	mMessage = anException.mMessage;
-
+	// make sure that we don't do this to ourselves
+	if (this != & anException) {
+		mExceptionName = anException.mExceptionName;
+		mFileName = anException.mFileName;
+		mLineNumber = anException.mLineNumber;
+		mMessage = anException.mMessage;
+	}
 	return *this;
 }
 
@@ -162,7 +164,7 @@ CKString CKException::getMessage() const
  *                Utility Methods
  *
  ********************************************************/
- 
+
 /*
  * This method writes out the relavent details from the exception
  * to the provided stream. This is nice in that it writes out only

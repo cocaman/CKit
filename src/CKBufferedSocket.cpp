@@ -8,7 +8,7 @@
  *                        basis of the CKTCPConnection class which in turn is
  *                        used in other higher-level classes in CKit.
  *
- * $Id: CKBufferedSocket.cpp,v 1.16 2005/04/07 21:20:38 drbob Exp $
+ * $Id: CKBufferedSocket.cpp,v 1.17 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -127,13 +127,15 @@ CKBufferedSocket::~CKBufferedSocket()
  */
 CKBufferedSocket & CKBufferedSocket::operator=( const CKBufferedSocket & anOther )
 {
-	// first, do the stuff that the superclass can do
-	CKSocket::operator=(anOther);
+	// make sure that we don't do this to ourselves
+	if (this != & anOther) {
+		// first, do the stuff that the superclass can do
+		CKSocket::operator=(anOther);
 
-	// now fill in the stuff we have
-	mReadTimeout = anOther.mReadTimeout;
-	mPendingData = anOther.mPendingData;
-
+		// now fill in the stuff we have
+		mReadTimeout = anOther.mReadTimeout;
+		mPendingData = anOther.mPendingData;
+	}
 	return *this;
 }
 

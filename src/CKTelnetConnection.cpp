@@ -9,7 +9,7 @@
  *                          and writing. Rather, this class focuses on the
  *                          higher-level features.
  *
- * $Id: CKTelnetConnection.cpp,v 1.7 2004/09/20 16:19:52 drbob Exp $
+ * $Id: CKTelnetConnection.cpp,v 1.8 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -96,9 +96,11 @@ CKTelnetConnection::~CKTelnetConnection()
  */
 CKTelnetConnection & CKTelnetConnection::operator=( const CKTelnetConnection & anOther )
 {
-	// the sure does a fine job of this for me
-	CKTCPConnection::operator=(anOther);
-	
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// the sure does a fine job of this for me
+		CKTCPConnection::operator=(anOther);
+	}
 	return *this;
 }
 

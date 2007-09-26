@@ -12,7 +12,7 @@
  *                        takes place during a connection. So, if you can, scan
  *                        the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.cpp,v 1.7 2004/09/20 16:19:37 drbob Exp $
+ * $Id: CKSMTPConnection.cpp,v 1.8 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -124,11 +124,13 @@ CKSMTPConnection::~CKSMTPConnection()
  */
 CKSMTPConnection & CKSMTPConnection::operator=( const CKSMTPConnection & anOther )
 {
-	// the super's '=' operator is good start for me
-	CKTCPConnection::operator=(anOther);
-	// ...and then add what I have
-	setState(anOther.getState());
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// the super's '=' operator is good start for me
+		CKTCPConnection::operator=(anOther);
+		// ...and then add what I have
+		setState(anOther.getState());
+	}
 	return *this;
 }
 

@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWThread.cpp,v 1.12 2007/03/21 20:01:21 drbob Exp $
+ * $Id: CKFWThread.cpp,v 1.13 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -59,12 +59,14 @@ CKFWThread::~CKFWThread( )
 
 CKFWThread & CKFWThread::operator=( CKFWThread & anOther )
 {
-	mPolicy = anOther.mPolicy;
-	mPriority = anOther.mPriority;
-	mScope = anOther.mScope;
-	mIsDetachable = anOther.mIsDetachable;
-	setTag(anOther.mTag);
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		mPolicy = anOther.mPolicy;
+		mPriority = anOther.mPriority;
+		mScope = anOther.mScope;
+		mIsDetachable = anOther.mIsDetachable;
+		setTag(anOther.mTag);
+	}
 	return *this;
 }
 

@@ -9,7 +9,7 @@
  *              possibility of including a hashed class name so that the UUID
  *              can be 'tagged' for a particular class.
  *
- * $Id: CKUUID.cpp,v 1.8 2005/01/04 20:12:59 drbob Exp $
+ * $Id: CKUUID.cpp,v 1.9 2007/09/26 19:33:46 drbob Exp $
  */
 
 //	System Headers
@@ -103,12 +103,14 @@ CKUUID::~CKUUID()
  */
 CKUUID & CKUUID::operator=( const CKUUID & anOther )
 {
-	// copy over all the instance variables
-	for (int i = 0; i < 4; i++) {
-		mUUID.words[i] = anOther.mUUID.words[i];
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		// copy over all the instance variables
+		for (int i = 0; i < 4; i++) {
+			mUUID.words[i] = anOther.mUUID.words[i];
+		}
+		mHashedClassName = anOther.mHashedClassName;
 	}
-	mHashedClassName = anOther.mHashedClassName;
-
 	return *this;
 }
 

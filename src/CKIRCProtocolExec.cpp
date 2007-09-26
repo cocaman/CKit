@@ -16,7 +16,7 @@
  *                         itself up when it's done and there will be no
  *                         long-lasting effects of the spawned processing thread.
  *
- * $Id: CKIRCProtocolExec.cpp,v 1.7 2005/01/23 18:55:57 drbob Exp $
+ * $Id: CKIRCProtocolExec.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
  */
 
 //	System Headers
@@ -66,10 +66,12 @@ CKIRCProtocolExec::CKIRCProtocolExec( CKIRCProtocolExec & anOther ) :
  */
 CKIRCProtocolExec & CKIRCProtocolExec::operator=( CKIRCProtocolExec & anOther )
 {
-	CKFWThread::operator=(anOther);
-	mMessage = anOther.mMessage;
-	mProtocol = anOther.mProtocol;
-
+	// make sure we don't do this to ourselves
+	if (this != & anOther) {
+		CKFWThread::operator=(anOther);
+		mMessage = anOther.mMessage;
+		mProtocol = anOther.mProtocol;
+	}
 	return *this;
 }
 
