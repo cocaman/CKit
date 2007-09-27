@@ -5,7 +5,7 @@
  *                order to be more generally useful, we need more advanced
  *                features and more object-oriented behaviors.
  *
- * $Id: CKSocket.cpp,v 1.23 2007/09/26 20:14:22 drbob Exp $
+ * $Id: CKSocket.cpp,v 1.24 2007/09/27 21:28:43 drbob Exp $
  */
 
 //	System Headers
@@ -20,6 +20,7 @@
 #ifdef __sun__
 #include <stropts.h>
 #include <sys/filio.h>
+#include <strings.h>
 #endif
 
 //	Third-Party Headers
@@ -1391,6 +1392,7 @@ bool CKSocket::send( const CKString & aString )
 CKString CKSocket::readAvailableData()
 {
 	bool			error = false;
+	CKString		retval;
 	int				incomingSize = getReadBufferSize();
 	char			incomingPtr[incomingSize];
 	int				bytesRead = 0;
@@ -1406,9 +1408,21 @@ CKString CKSocket::readAvailableData()
 		}
 	}
 
-	// Now read what we can from the socket
-	if (!error) {
+	/*
+	 * The trick here is that *if* there is data on the socket, we need
+	 * to read *all* of it that is available. This makes the reading more
+	 * efficient as we're not calling this method hundreds of times for
+	 * a very large data packet.
+	 */
+	while (!error) {
+		/*
+		 * See if there are bytes to be read - we'll get a 0 if nothing
+		 * is there to read. But we will NOT block.
+		 */
 		bytesRead = recv(getSocketHandle(), incomingPtr, (incomingSize - 1), 0);
+		if (bytesRead == 0) {
+			break;
+		}
 		/*
 		 * If we had an error, see if it was just a possible blocking
 		 * error that really isn't an error at all, only an indicator
@@ -1416,9 +1430,11 @@ CKString CKSocket::readAvailableData()
 		if ((bytesRead == SOCKET_ERROR) && (errno == EWOULDBLOCK)) {
 			// treat it as nothing was read
 			bytesRead = 0;
+			break;
 		} else if ((bytesRead == SOCKET_ERROR) && (errno == ECONNRESET)) {
 			// treat it as nothing was read
 			bytesRead = 0;
+			break;
 		} else if (bytesRead == SOCKET_ERROR)	{
 			// ...then check for other general errors
 			error = true;
@@ -1429,25 +1445,21 @@ CKString CKSocket::readAvailableData()
 				errno << ".";
 			throw CKException(__FILE__, __LINE__, msg.str());
 		}
-	}
-
-	/*
-	 * Now that I have the character data from the socket, I need to
-	 * NULL terminate it and then create a CKString out of it.
-	 */
-	CKString	retval;
-	if (!error) {
+		/*
+		 * Now that I have the character data from the socket, I need to
+		 * NULL terminate it and then create a CKString out of it.
+		 */
 		// we thankfully left room at the very end
 		incomingPtr[bytesRead] = '\0';
 		// now log this out if we're supposed to be doing this
-		if (traceIncomingData() && (bytesRead > 0)) {
+		if (traceIncomingData()) {
 			std::cout << "Received " << bytesRead << " bytes: " << incomingPtr <<
 				 std::endl;
 		}
-		// make the returned string the right size
-		retval.fill('\0', bytesRead);
-		// now put the data from the buffer into the string
-		memcpy((void *)retval.c_str(), incomingPtr, bytesRead);
+		// append this data to the return value
+		retval.append(incomingPtr, bytesRead);
+		// clear out the buffer for the next time around
+		bzero(incomingPtr, incomingSize);
 	}
 
     return retval;
