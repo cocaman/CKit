@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.16 2007/01/18 10:02:37 drbob Exp $
+ * $Id: CKString.h,v 1.17 2007/10/10 13:18:31 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -482,6 +482,26 @@ class CKString
 		CKString & toLower() const;
 
 		/*
+		 * This method first copies the string and then goes through all
+		 * the characters in the string and makes sure that they are all
+		 * uppercase. It's really pretty simple, but it's awfully handy
+		 * not to have to implement this in all the projects. This is
+		 * nice in that it doesn't change the original string.
+		 */
+		CKString copyUpper();
+		CKString copyUpper() const;
+
+		/*
+		 * This method first copies the string and then goes through all
+		 * the characters in the string and makes sure that they are all
+		 * lowercase. It's really pretty simple, but it's awfully handy
+		 * not to have to implement this in all the projects. This is
+		 * nice in that it doesn't change the original string.
+		 */
+		CKString copyLower();
+		CKString copyLower() const;
+
+		/*
 		 * This method returns a new CKString based on the substring
 		 * of the current string defined to start at 'aStartingPos'
 		 * and including 'aLength' number of characters (all positions
@@ -760,6 +780,38 @@ class CKString
 		bool operator==( const std::string & anSTLString );
 		bool operator==( std::string & anSTLString ) const;
 		bool operator==( const std::string & anSTLString ) const;
+
+		/*
+		 * This method checks to see if the two CKStrings are equal to one
+		 * another ignoring any case differences between the two based on
+		 * the values they represent and *not* on the actual pointers
+		 * themselves. If they are equal (modulo case), then this method
+		 * returns a value of true, otherwise, it returns a false.
+		 */
+		bool equalsIgnoreCase( CKString & anOther );
+		bool equalsIgnoreCase( const CKString & anOther );
+		bool equalsIgnoreCase( CKString & anOther ) const;
+		bool equalsIgnoreCase( const CKString & anOther ) const;
+		/*
+		 * These operators check to see if the CKString is equal to a simple
+		 * NULL-terminated C-string - modulo any case differences. This is
+		 * nice in that we don't have to hassle with converting all string
+		 * constants to CKStrings and then do the comparison.
+		 */
+		bool equalsIgnoreCase( char *aCString );
+		bool equalsIgnoreCase( const char *aCString );
+		bool equalsIgnoreCase( char *aCString ) const;
+		bool equalsIgnoreCase( const char *aCString ) const;
+		/*
+		 * These operators check to see if the CKString is equal to an STL
+		 * string - modulo any case differences. This is nice in that we
+		 * don't have to hassle with converting all STL std::string to
+		 * CKStrings and then do the comparison.
+		 */
+		bool equalsIgnoreCase( std::string & anSTLString );
+		bool equalsIgnoreCase( const std::string & anSTLString );
+		bool equalsIgnoreCase( std::string & anSTLString ) const;
+		bool equalsIgnoreCase( const std::string & anSTLString ) const;
 
 		/*
 		 * This method checks to see if the two CKStrings are not equal to

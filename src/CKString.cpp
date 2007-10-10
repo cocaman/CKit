@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.26 2007/09/26 19:33:46 drbob Exp $
+ * $Id: CKString.cpp,v 1.27 2007/10/10 13:18:31 drbob Exp $
  */
 
 //	System Headers
@@ -1902,6 +1902,46 @@ CKString & CKString::toLower() const
 
 
 /*
+ * This method first copies the string and then goes through all
+ * the characters in the string and makes sure that they are all
+ * uppercase. It's really pretty simple, but it's awfully handy
+ * not to have to implement this in all the projects. This is
+ * nice in that it doesn't change the original string.
+ */
+CKString CKString::copyUpper()
+{
+	CKString	retval(*this);
+	return retval.toUpper();
+}
+
+
+CKString CKString::copyUpper() const
+{
+	return ((CKString *)this)->copyUpper();
+}
+
+
+/*
+ * This method first copies the string and then goes through all
+ * the characters in the string and makes sure that they are all
+ * lowercase. It's really pretty simple, but it's awfully handy
+ * not to have to implement this in all the projects. This is
+ * nice in that it doesn't change the original string.
+ */
+CKString CKString::copyLower()
+{
+	CKString	retval(*this);
+	return retval.toLower();
+}
+
+
+CKString CKString::copyLower() const
+{
+	return ((CKString *)this)->copyLower();
+}
+
+
+/*
  * This method returns a new CKString based on the substring
  * of the current string defined to start at 'aStartingPos'
  * and including 'aLength' number of characters (all positions
@@ -3486,6 +3526,120 @@ bool CKString::operator==( std::string & anSTLString ) const
 bool CKString::operator==( const std::string & anSTLString ) const
 {
 	return ((CKString *)this)->operator==((char *)anSTLString.c_str());
+}
+
+
+/*
+ * This method checks to see if the two CKStrings are equal to one
+ * another ignoring any case differences between the two based on
+ * the values they represent and *not* on the actual pointers
+ * themselves. If they are equal (modulo case), then this method
+ * returns a value of true, otherwise, it returns a false.
+ */
+bool CKString::equalsIgnoreCase( CKString & anOther )
+{
+	return equalsIgnoreCase(anOther.mString);
+}
+
+
+bool CKString::equalsIgnoreCase( const CKString & anOther )
+{
+	return equalsIgnoreCase((char *)anOther.mString);
+}
+
+
+bool CKString::equalsIgnoreCase( CKString & anOther ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase(anOther.mString);
+}
+
+
+bool CKString::equalsIgnoreCase( const CKString & anOther ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase((char *)anOther.mString);
+}
+
+
+/*
+ * These operators check to see if the CKString is equal to a simple
+ * NULL-terminated C-string - modulo any case differences. This is
+ * nice in that we don't have to hassle with converting all string
+ * constants to CKStrings and then do the comparison.
+ */
+bool CKString::equalsIgnoreCase( char *aCString )
+{
+	bool		equal = true;
+
+	// first, check for logical sanity
+	if (equal) {
+		if (aCString == NULL) {
+			equal = false;
+		}
+	}
+
+	// next, see if the sizes match
+	if (equal) {
+		if (mSize != (int)strlen(aCString)) {
+			equal = false;
+		}
+	}
+
+	// check the buffer contents
+	if (equal && (mSize > 0)) {
+		if (strcasecmp(mString, aCString) != 0) {
+			equal = false;
+		}
+	}
+
+	return equal;
+}
+
+
+bool CKString::equalsIgnoreCase( const char *aCString )
+{
+	return equalsIgnoreCase((char *)aCString);
+}
+
+
+bool CKString::equalsIgnoreCase( char *aCString ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase(aCString);
+}
+
+
+bool CKString::equalsIgnoreCase( const char *aCString ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase((char *)aCString);
+}
+
+
+/*
+ * These operators check to see if the CKString is equal to an STL
+ * string - modulo any case differences. This is nice in that we
+ * don't have to hassle with converting all STL std::string to
+ * CKStrings and then do the comparison.
+ */
+bool CKString::equalsIgnoreCase( std::string & anSTLString )
+{
+	return equalsIgnoreCase(anSTLString.c_str());
+}
+
+
+bool CKString::equalsIgnoreCase( const std::string & anSTLString )
+{
+	return equalsIgnoreCase((char *)anSTLString.c_str());
+}
+
+
+bool CKString::equalsIgnoreCase( std::string & anSTLString ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase(anSTLString.c_str());
+}
+
+
+bool CKString::equalsIgnoreCase( const std::string & anSTLString ) const
+{
+	return ((CKString *)this)->equalsIgnoreCase((char *)anSTLString.c_str());
 }
 
 
