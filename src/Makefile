@@ -8,10 +8,10 @@
 ifeq ($(shell uname),SunOS)
 CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
-CXX_32 = 
-CXX_64 = 
-LDD_32 = 
-LDD_64 = 
+CXX_32 =
+CXX_64 =
+LDD_32 =
+LDD_64 =
 SO_EXT = so
 SO_FLAG = -shared
 endif
@@ -22,10 +22,10 @@ else
 CXX = g++
 endif
 CXX_DEFS = -D_REENTRANT -O2
-CXX_32 = 
-CXX_64 = 
-LDD_32 = 
-LDD_64 = 
+CXX_32 =
+CXX_64 =
+LDD_32 =
+LDD_64 =
 SO_EXT = so
 SO_FLAG = -shared
 endif
@@ -34,8 +34,8 @@ CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
 CXX_32 = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
 CXX_64 = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc
-LDD_32 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
-LDD_64 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc
+LDD_32 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
+LDD_64 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
 SO_EXT = dylib
 SO_FLAG = -dynamiclib
 endif
@@ -99,6 +99,7 @@ OBJS = CKUUID.o \
 	CKFWTime.o \
 	CKFWTimer.o \
 	CKString.o \
+	CKFloat.o \
 	CKVariant.o \
 	CKTable.o \
 	CKTimeSeries.o \
@@ -168,7 +169,7 @@ CKUUID.o: CKUUID.h CKString.h CKFWMutex.h CKException.h
 CKSocket.o: CKSocket.h CKString.h CKFWMutex.h CKException.h CKErrNoException.h
 CKBufferedSocket.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKBufferedSocket.o: CKException.h
-CKTCPConnection.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
+CKTCPConnection.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
 CKTCPConnection.o: CKString.h CKFWMutex.h
 CKTelnetConnection.o: CKTelnetConnection.h CKTCPConnection.h CKException.h
 CKTelnetConnection.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
@@ -180,7 +181,7 @@ CKMailDelivery.o: CKException.h
 CKMailDeliverySystem.o: CKMailDeliverySystem.h CKMailDelivery.h
 CKMailDeliverySystem.o: CKMailMessage.h CKString.h CKFWMutex.h
 CKMailMessage.o: CKMailMessage.h CKString.h CKFWMutex.h
-CKMailMessage.o: CKException.h CKUUID.h 
+CKMailMessage.o: CKException.h CKUUID.h
 CKSMTPConnection.o: CKSMTPConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKSMTPConnection.o: CKSocket.h CKString.h CKFWMutex.h CKException.h
 CKSMTPDelivery.o: CKSMTPDelivery.h CKMailDelivery.h CKMailMessage.h
@@ -191,17 +192,17 @@ CKIRCProtocol.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKIRCProtocol.o: CKSocket.h CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCProtocol.o: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h CKStopwatch.h
 CKIRCProtocol.o: CKException.h CKIRCProtocolListener.h CKFWThread.h
-CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h 
+CKIRCProtocolListener.o: CKIRCProtocolListener.h CKFWThread.h
 CKIRCProtocolListener.o: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
 CKIRCProtocolListener.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKIRCProtocolListener.o: CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKIRCProtocolListener.o: CKFWSemaphore.h CKException.h CKIRCProtocolExec.h
 CKIRCProtocolExec.o: CKException.h CKString.h CKFWMutex.h CKIRCProtocol.h
-CKIRCProtocolExec.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h 
+CKIRCProtocolExec.o: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKIRCProtocolExec.o: CKSocket.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKIRCProtocolExec.o: CKFWSemaphore.h CKIRCProtocolExec.h CKFWThread.h
 CKIRCResponder.o: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
-CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
+CKIRCResponder.o: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
 CKIRCResponder.o: CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCResponder.o: CKFWRWMutex.h CKFWSemaphore.h CKException.h
 CKMindAlignProtocol.o: CKIRCProtocol.h CKMindAlignProtocol.h
@@ -210,7 +211,7 @@ CKMindAlignProtocol.o: CKSocket.h CKString.h CKFWMutex.h CKVector.h
 CKMindAlignProtocol.o: CKStackLocker.h CKStopwatch.h
 CKMindAlignProtocol.o: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h
 CKMindAlignProtocol.o: CKException.h CKIRCProtocolListener.h CKFWThread.h
-CKFWConditional.o: CKFWConditional.h CKFWMutex.h CKErrNoException.h 
+CKFWConditional.o: CKFWConditional.h CKFWMutex.h CKErrNoException.h
 CKFWConditional.o: CKException.h CKString.h
 CKFWMutex.o: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
 CKFWRWMutex.o: CKFWRWMutex.h CKErrNoException.h CKException.h
@@ -222,11 +223,11 @@ CKFWSemaphore.o: CKString.h CKFWMutex.h
 CKFWTimedSemaphore.o: CKFWTimedSemaphore.h CKFWMutex.h CKFWConditional.h
 CKFWThread.o: ../include/SQLAPI.h CKFWThread.h CKErrNoException.h
 CKFWThread.o: CKException.h CKString.h CKFWMutex.h
-CKFWThreadLocal.o: CKFWThreadLocal.h 
+CKFWThreadLocal.o: CKFWThreadLocal.h
 CKFWTime.o: CKFWTime.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h
-CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h CKString.h 
+CKFWTimer.o: CKFWTimer.h CKErrNoException.h CKException.h CKString.h
 CKFWTimer.o: CKFWMutex.h
-CKString.o: CKException.h CKString.h CKFWMutex.h 
+CKString.o: CKException.h CKString.h CKFWMutex.h
 CKVariant.o: CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKVariant.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKVariant.o: CKFWSemaphore.h CKException.h CKTable.h
@@ -234,18 +235,18 @@ CKVariant.o: CKTimeTable.h muParser.h muParserBase.h muParserDef.h
 CKVariant.o: muParserGenerics.h muParserException.h CKPrice.h
 CKTable.o: CKException.h CKString.h CKFWMutex.h
 CKTable.o: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
-CKTable.o: CKFWRWMutex.h CKFWSemaphore.h 
-CKTimeSeries.o: CKException.h CKString.h CKFWMutex.h 
-CKTimeSeries.o: CKTable.h CKVariant.h CKFWSemaphore.h 
+CKTable.o: CKFWRWMutex.h CKFWSemaphore.h
+CKTimeSeries.o: CKException.h CKString.h CKFWMutex.h
+CKTimeSeries.o: CKTable.h CKVariant.h CKFWSemaphore.h
 CKTimeSeries.o: CKTimeSeries.h CKVector.h CKStackLocker.h CKFWRWMutex.h
-CKTimeTable.o: CKTimeTable.h CKFWMutex.h CKTable.h 
-CKTimeTable.o: CKVariant.h CKFWRWMutex.h CKFWSemaphore.h 
+CKTimeTable.o: CKTimeTable.h CKFWMutex.h CKTable.h
+CKTimeTable.o: CKVariant.h CKFWRWMutex.h CKFWSemaphore.h
 CKTimeTable.o: CKTimeSeries.h CKString.h CKVector.h CKStackLocker.h
 CKTimeTable.o: CKException.h muParser.h muParserBase.h muParserDef.h
 CKTimeTable.o: muParserGenerics.h muParserException.h
 CKPrice.o: CKPrice.h CKException.h CKString.h CKFWMutex.h
 CKPrice.o: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
-CKPrice.o: CKFWRWMutex.h CKFWSemaphore.h 
+CKPrice.o: CKFWRWMutex.h CKFWSemaphore.h
 CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKDataNode.o: CKFWSemaphore.h CKException.h
@@ -255,21 +256,26 @@ CKIndexNode.o: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKMultiIndexNode.o: CKMultiIndexNode.h CKVector.h CKString.h CKFWMutex.h
 CKMultiIndexNode.o: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKMultiIndexNode.o: CKException.h CKDataNode.h CKVariant.h CKTimeSeries.h
-CKStopwatch.o: CKException.h CKString.h CKFWMutex.h CKStopwatch.h 
-CKStopwatch.o: CKVector.h CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h 
+CKStopwatch.o: CKException.h CKString.h CKFWMutex.h CKStopwatch.h
+CKStopwatch.o: CKVector.h CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKException.o: CKException.h CKString.h CKFWMutex.h
 CKErrNoException.o: CKErrNoException.h CKException.h CKString.h CKFWMutex.h
+CKFloat.o: CKFloat.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFloat.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFloat.o: CKFWSemaphore.h CKException.h CKTable.h
+CKFloat.o: CKTimeTable.h muParser.h muParserBase.h muParserDef.h
+CKFloat.o: muParserGenerics.h muParserException.h CKPrice.h
 muParserBase.o: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
-muParserBase.o: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h 
-muParserBase.o: CKString.h CKVector.h CKException.h 
+muParserBase.o: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+muParserBase.o: CKString.h CKVector.h CKException.h
 muParserBase.o: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 muParser.o: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
-muParser.o: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h 
+muParser.o: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 muParser.o: CKString.h CKVector.h CKStackLocker.h CKTimeTable.h
 muParser.o: CKFWRWMutex.h CKFWSemaphore.h CKException.h CKTable.h CKPrice.h
 muParserTest.o: muParserTest.h muParser.h muParserBase.h muParserDef.h
 muParserTest.o: muParserGenerics.h muParserException.h CKVariant.h
-muParserTest.o: CKTimeSeries.h CKFWMutex.h 
+muParserTest.o: CKTimeSeries.h CKFWMutex.h
 muParserTest.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 muParserTest.o: CKFWSemaphore.h CKException.h
 
@@ -277,7 +283,7 @@ CKUUID.o64: CKUUID.h CKString.h CKFWMutex.h CKException.h
 CKSocket.o64: CKSocket.h CKString.h CKFWMutex.h CKException.h CKErrNoException.h
 CKBufferedSocket.o64: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKBufferedSocket.o64: CKException.h
-CKTCPConnection.o64: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
+CKTCPConnection.o64: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
 CKTCPConnection.o64: CKString.h CKFWMutex.h
 CKTelnetConnection.o64: CKTelnetConnection.h CKTCPConnection.h CKException.h
 CKTelnetConnection.o64: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
@@ -289,7 +295,7 @@ CKMailDelivery.o64: CKException.h
 CKMailDeliverySystem.o64: CKMailDeliverySystem.h CKMailDelivery.h
 CKMailDeliverySystem.o64: CKMailMessage.h CKString.h CKFWMutex.h
 CKMailMessage.o64: CKMailMessage.h CKString.h CKFWMutex.h
-CKMailMessage.o64: CKException.h CKUUID.h 
+CKMailMessage.o64: CKException.h CKUUID.h
 CKSMTPConnection.o64: CKSMTPConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKSMTPConnection.o64: CKSocket.h CKString.h CKFWMutex.h CKException.h
 CKSMTPDelivery.o64: CKSMTPDelivery.h CKMailDelivery.h CKMailMessage.h
@@ -300,17 +306,17 @@ CKIRCProtocol.o64: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKIRCProtocol.o64: CKSocket.h CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCProtocol.o64: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h CKStopwatch.h
 CKIRCProtocol.o64: CKException.h CKIRCProtocolListener.h CKFWThread.h
-CKIRCProtocolListener.o64: CKIRCProtocolListener.h CKFWThread.h 
+CKIRCProtocolListener.o64: CKIRCProtocolListener.h CKFWThread.h
 CKIRCProtocolListener.o64: CKIRCProtocol.h CKTelnetConnection.h CKTCPConnection.h
 CKIRCProtocolListener.o64: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKIRCProtocolListener.o64: CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKIRCProtocolListener.o64: CKFWSemaphore.h CKException.h CKIRCProtocolExec.h
 CKIRCProtocolExec.o64: CKException.h CKString.h CKFWMutex.h CKIRCProtocol.h
-CKIRCProtocolExec.o64: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h 
+CKIRCProtocolExec.o64: CKTelnetConnection.h CKTCPConnection.h CKBufferedSocket.h
 CKIRCProtocolExec.o64: CKSocket.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKIRCProtocolExec.o64: CKFWSemaphore.h CKIRCProtocolExec.h CKFWThread.h
 CKIRCResponder.o64: CKIRCResponder.h CKIRCProtocol.h CKTelnetConnection.h
-CKIRCResponder.o64: CKTCPConnection.h CKBufferedSocket.h CKSocket.h 
+CKIRCResponder.o64: CKTCPConnection.h CKBufferedSocket.h CKSocket.h
 CKIRCResponder.o64: CKString.h CKFWMutex.h CKVector.h CKStackLocker.h
 CKIRCResponder.o64: CKFWRWMutex.h CKFWSemaphore.h CKException.h
 CKMindAlignProtocol.o64: CKIRCProtocol.h CKMindAlignProtocol.h
@@ -319,7 +325,7 @@ CKMindAlignProtocol.o64: CKSocket.h CKString.h CKFWMutex.h CKVector.h
 CKMindAlignProtocol.o64: CKStackLocker.h CKStopwatch.h
 CKMindAlignProtocol.o64: CKFWRWMutex.h CKFWSemaphore.h CKIRCResponder.h
 CKMindAlignProtocol.o64: CKException.h CKIRCProtocolListener.h CKFWThread.h
-CKFWConditional.o64: CKFWConditional.h CKFWMutex.h CKErrNoException.h 
+CKFWConditional.o64: CKFWConditional.h CKFWMutex.h CKErrNoException.h
 CKFWConditional.o64: CKException.h CKString.h
 CKFWMutex.o64: CKFWMutex.h CKErrNoException.h CKException.h CKString.h
 CKFWRWMutex.o64: CKFWRWMutex.h CKErrNoException.h CKException.h
@@ -331,11 +337,11 @@ CKFWSemaphore.o64: CKString.h CKFWMutex.h
 CKFWTimedSemaphore.o64: CKFWTimedSemaphore.h CKFWMutex.h CKFWConditional.h
 CKFWThread.o64: ../include/SQLAPI.h CKFWThread.h CKErrNoException.h
 CKFWThread.o64: CKException.h CKString.h CKFWMutex.h
-CKFWThreadLocal.o64: CKFWThreadLocal.h 
+CKFWThreadLocal.o64: CKFWThreadLocal.h
 CKFWTime.o64: CKFWTime.h CKErrNoException.h CKException.h CKString.h CKFWMutex.h
-CKFWTimer.o64: CKFWTimer.h CKErrNoException.h CKException.h CKString.h 
+CKFWTimer.o64: CKFWTimer.h CKErrNoException.h CKException.h CKString.h
 CKFWTimer.o64: CKFWMutex.h
-CKString.o64: CKException.h CKString.h CKFWMutex.h 
+CKString.o64: CKException.h CKString.h CKFWMutex.h
 CKVariant.o64: CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKVariant.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKVariant.o64: CKFWSemaphore.h CKException.h CKTable.h
@@ -343,18 +349,18 @@ CKVariant.o64: CKTimeTable.h muParser.h muParserBase.h muParserDef.h
 CKVariant.o64: muParserGenerics.h muParserException.h CKPrice.h
 CKTable.o64: CKException.h CKString.h CKFWMutex.h
 CKTable.o64: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
-CKTable.o64: CKFWRWMutex.h CKFWSemaphore.h 
-CKTimeSeries.o64: CKException.h CKString.h CKFWMutex.h 
-CKTimeSeries.o64: CKTable.h CKVariant.h CKFWSemaphore.h 
+CKTable.o64: CKFWRWMutex.h CKFWSemaphore.h
+CKTimeSeries.o64: CKException.h CKString.h CKFWMutex.h
+CKTimeSeries.o64: CKTable.h CKVariant.h CKFWSemaphore.h
 CKTimeSeries.o64: CKTimeSeries.h CKVector.h CKStackLocker.h CKFWRWMutex.h
-CKTimeTable.o64: CKTimeTable.h CKFWMutex.h CKTable.h 
-CKTimeTable.o64: CKVariant.h CKFWRWMutex.h CKFWSemaphore.h 
+CKTimeTable.o64: CKTimeTable.h CKFWMutex.h CKTable.h
+CKTimeTable.o64: CKVariant.h CKFWRWMutex.h CKFWSemaphore.h
 CKTimeTable.o64: CKTimeSeries.h CKString.h CKVector.h CKStackLocker.h
 CKTimeTable.o64: CKException.h muParser.h muParserBase.h muParserDef.h
 CKTimeTable.o64: muParserGenerics.h muParserException.h
 CKPrice.o64: CKPrice.h CKException.h CKString.h CKFWMutex.h
 CKPrice.o64: CKTable.h CKVariant.h CKTimeSeries.h CKVector.h CKStackLocker.h
-CKPrice.o64: CKFWRWMutex.h CKFWSemaphore.h 
+CKPrice.o64: CKFWRWMutex.h CKFWSemaphore.h
 CKDataNode.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKDataNode.o64: CKFWSemaphore.h CKException.h
@@ -364,20 +370,25 @@ CKIndexNode.o64: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKMultiIndexNode.o64: CKMultiIndexNode.h CKVector.h CKString.h CKFWMutex.h
 CKMultiIndexNode.o64: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKMultiIndexNode.o64: CKException.h CKDataNode.h CKVariant.h CKTimeSeries.h
-CKStopwatch.o64: CKException.h CKString.h CKFWMutex.h CKStopwatch.h 
-CKStopwatch.o64: CKVector.h CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h 
+CKStopwatch.o64: CKException.h CKString.h CKFWMutex.h CKStopwatch.h
+CKStopwatch.o64: CKVector.h CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 CKException.o64: CKException.h CKString.h CKFWMutex.h
 CKErrNoException.o64: CKErrNoException.h CKException.h CKString.h CKFWMutex.h
+CKFloat.o64: CKFloat.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFloat.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFloat.o64: CKFWSemaphore.h CKException.h CKTable.h
+CKFloat.o64: CKTimeTable.h muParser.h muParserBase.h muParserDef.h
+CKFloat.o64: muParserGenerics.h muParserException.h CKPrice.h
 muParserBase.o64: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
-muParserBase.o64: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h 
-muParserBase.o64: CKString.h CKVector.h CKException.h 
+muParserBase.o64: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+muParserBase.o64: CKString.h CKVector.h CKException.h
 muParserBase.o64: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
 muParser.o64: muParser.h muParserBase.h muParserDef.h muParserGenerics.h
-muParser.o64: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h 
+muParser.o64: muParserException.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 muParser.o64: CKString.h CKVector.h CKStackLocker.h CKTimeTable.h
 muParser.o64: CKFWRWMutex.h CKFWSemaphore.h CKException.h CKTable.h CKPrice.h
 muParserTest.o64: muParserTest.h muParser.h muParserBase.h muParserDef.h
 muParserTest.o64: muParserGenerics.h muParserException.h CKVariant.h
-muParserTest.o64: CKTimeSeries.h CKFWMutex.h 
+muParserTest.o64: CKTimeSeries.h CKFWMutex.h
 muParserTest.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 muParserTest.o64: CKFWSemaphore.h CKException.h
