@@ -17,9 +17,9 @@ SHARED = -shared
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
-CXX_DEFS =
+CXX_DEFS = -D_REENTRANT -O2 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
 LIB_EXT = dylib
-OS_LIBS =
+OS_LIBS = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk
 SHARED = -dynamiclib
 endif
 ifeq ($(shell uname),Linux)
@@ -56,13 +56,13 @@ DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
 LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
-LDFLAGS = -fPIC
+LDFLAGS =
 
 #
 # These are the main targets that we'll be making
 #
 APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
-		series base64 mindalign
+		series base64 mindalign numberTest table
 
 all: $(APPS)
 
@@ -93,6 +93,9 @@ mindalign: mindalign.cpp $(LIB_FILE)
 nan: nan.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) nan.cpp -o nan $(LIBS) $(LDFLAGS)
 
+table: table.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) table.cpp -o table $(LIBS) $(LDFLAGS)
+
 node: node.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) node.cpp -o node $(LIBS) $(LDFLAGS)
 
@@ -113,5 +116,8 @@ series: series.cpp $(LIB_FILE)
 
 base64: base64.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) base64.cpp -o base64 $(LIBS) $(LDFLAGS)
+
+numberTest: numberTest.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) numberTest.cpp -o numberTest $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE
