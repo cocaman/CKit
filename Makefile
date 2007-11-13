@@ -7,12 +7,15 @@
 #
 ifeq ($(shell uname),SunOS)
 MAKE = /sbcimp/run/pd/gnumake/v3.80/bin/make
+CTAGS = ctags
 endif
 ifeq ($(shell uname),Linux)
 MAKE = make
+CTAGS = ctags
 endif
 ifeq ($(shell uname),Darwin)
 MAKE = make
+CTAGS = ectags  --excmd=number --tag-relative=no  --fields=+a+m+n+S -R
 endif
 
 #
@@ -35,4 +38,7 @@ clean:
 depend:
 	@ cd $(SRC_DIR); $(MAKE) depend
 	@ cd $(TESTS_DIR); $(MAKE) depend
+
+ctags:
+	@ $(CTAGS) `pwd`/src
 
