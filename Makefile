@@ -39,6 +39,6 @@ depend:
 	@ cd $(SRC_DIR); $(MAKE) depend
 	@ cd $(TESTS_DIR); $(MAKE) depend
 
-ctags:
+tags:
 	@ $(CTAGS) `pwd`/src
 
