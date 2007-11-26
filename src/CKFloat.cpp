@@ -4,13 +4,14 @@
  *               numbers and can't afford the loss of precision like you'll
  *               get with double.
  *
- * $Id: CKFloat.cpp,v 1.1 2007/10/19 19:02:04 drbob Exp $
+ * $Id: CKFloat.cpp,v 1.2 2007/11/26 19:32:30 drbob Exp $
  */
 
 //	System Headers
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 
 //	Third-Party Headers
