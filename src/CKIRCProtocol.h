@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.12 2006/09/29 17:46:36 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.13 2007/11/26 19:33:12 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -17,6 +17,7 @@
 #else
 #include <ostream>
 #endif
+#include <sys/param.h>
 
 //	Third-Party Headers
 
@@ -65,15 +66,6 @@ class CKIRCResponder;
  * then we'll break it up on sending at word boundaries.
  */
 #define MAX_MESSAGE_LEN				500
-
-#ifdef __linux__
-/*
- * On Linux, there is no standard definition for the maximum length of
- * a file name. So, in order to make the code as transportable as possible
- * we'll adopt the Solaris/Darwin definition and use that.
- */
-#define MAXHOSTNAMELEN			255
-#endif
 
 //	Public Datatypes
 /*

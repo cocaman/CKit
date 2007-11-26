@@ -12,7 +12,7 @@
  *                      takes place during a connection. So, if you can, scan
  *                      the SMTP spec on the web.
  *
- * $Id: CKSMTPConnection.h,v 1.7 2004/09/20 16:19:38 drbob Exp $
+ * $Id: CKSMTPConnection.h,v 1.8 2007/11/26 19:33:13 drbob Exp $
  */
 #ifndef __CKSMTPCONNECTION_H
 #define __CKSMTPCONNECTION_H
@@ -23,6 +23,7 @@
 #else
 #include <ostream>
 #endif
+#include <sys/param.h>
 
 //	Third-Party Headers
 
@@ -39,14 +40,6 @@
  * have that as the default we'll be using.
  */
 #define	DEFAULT_SMTP_PORT			25
-#ifdef __linux__
-/*
- * On Linux, there is no standard definition for the maximum length of
- * a file name. So, in order to make the code as transportable as possible
- * we'll adopt the Solaris/Darwin definition and use that.
- */
-#define MAXHOSTNAMELEN			255
-#endif
 
 //	Public Datatypes
 

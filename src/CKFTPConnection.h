@@ -13,7 +13,7 @@
  *                     not shell out to have the file copied and then have
  *                     to the read it in.
  *
- * $Id: CKFTPConnection.h,v 1.10 2006/02/26 17:13:04 drbob Exp $
+ * $Id: CKFTPConnection.h,v 1.11 2007/11/26 19:33:12 drbob Exp $
  */
 #ifndef __CKFTPCONNECTION_H
 #define __CKFTPCONNECTION_H
@@ -27,6 +27,7 @@
 #endif
 #include <vector>
 #include <map>
+#include <sys/param.h>
 
 //	Third-Party Headers
 
@@ -116,15 +117,6 @@
 #define	CKFTPCommandStringTYPE		"TYPE "
 #define	CKFTPCommandStringUSER		"USER "
 
-#ifdef __linux__
-/*
- * On Linux, there is no standard definition for the maximum length of
- * a file name. So, in order to make the code as transportable as possible
- * we'll adopt the Solaris/Darwin definition and use that.
- */
-#define MAXHOSTNAMELEN			255
-#endif
-
 //	Public Datatypes
 /*
  * When this class returns data about the file permissions on the
@@ -147,7 +139,7 @@ typedef struct CKFilePermissionsBlock {
 	bool		othersReadable;
 	bool		othersWritable;
 	bool		othersExecutable;
-	
+
 	// this is a simple constructor that initializes the values
 	CKFilePermissionsBlock() :
 		type('\0'),
