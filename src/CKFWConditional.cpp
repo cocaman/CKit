@@ -1,13 +1,11 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.12 2006/06/01 11:19:20 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.13 2007/11/26 19:33:12 drbob Exp $
  */
 
 //	System Headers
-#ifdef __linux__
 #include <sys/time.h>
-#endif
 
 //	Third-Party Headers
 
