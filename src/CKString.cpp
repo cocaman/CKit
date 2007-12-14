@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.27 2007/10/10 13:18:31 drbob Exp $
+ * $Id: CKString.cpp,v 1.28 2007/12/14 20:31:48 drbob Exp $
  */
 
 //	System Headers
@@ -1234,27 +1234,11 @@ bool CKString::clear() const
  */
 int CKString::intValue()
 {
-	bool		error = false;
 	int			retval = 0;
-
-	/*
-	 * We're going to loop over each character in the String until we
-	 * get to the end. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a digit
-	 * then we'll return what we have to this point, just as atoi()
-	 * would.
-	 */
-	for (int i = 0; i < mSize; i++) {
-		// see if it's not a digit
-		if (!isdigit(mString[i])) {
-			break;
-		} else {
-			// accumulate the value
-			retval = retval * 10 + (mString[i] - '0');
-		}
+	if (mSize > 0) {
+		retval = (int) strtol(mString, NULL, 10);
 	}
-
-	return error ? 0 : retval;
+	return retval;
 }
 
 
@@ -1266,31 +1250,11 @@ int CKString::intValue() const
 
 int CKString::hexIntValue()
 {
-	bool		error = false;
 	int			retval = 0;
-
-	/*
-	 * We're going to loop over each character in the string until we
-	 * get to the end. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a hex
-	 * digit then we'll return what we have to this point, just as
-	 * atoi() would.
-	 */
-	for (int i = 0; i < mSize; i++) {
-		// see if it's not a digit
-		if (!isxdigit(mString[i])) {
-			break;
-		} else {
-			// accumulate the value based on the digit itself
-			if (isdigit(mString[i])) {
-				retval = retval * 16 + (mString[i] - '0');
-			} else {
-				retval = retval * 16 + (toupper(mString[i]) - 'A' + 10);
-			}
-		}
+	if (mSize > 0) {
+		retval = (int) strtol(mString, NULL, 16);
 	}
-
-	return error ? 0 : retval;
+	return retval;
 }
 
 
@@ -1303,27 +1267,11 @@ int CKString::hexIntValue() const
 
 long CKString::longValue()
 {
-	bool		error = false;
 	long		retval = 0;
-
-	/*
-	 * We're going to loop over each character in the String until we
-	 * get to the end. As we're going, we'll be building up
-	 * the return value. If we find a character that's not a digit
-	 * then we'll return what we have to this point, just as atoi()
-	 * would.
-	 */
-	for (int i = 0; i < mSize; i++) {
-		// see if it's not a digit
-		if (!isdigit(mString[i])) {
-			break;
-		} else {
-			// accumulate the value
-			retval = retval * 10 + (mString[i] - '0');
-		}
+	if (mSize > 0) {
+		retval = strtol(mString, NULL, 10);
 	}
-
-	return error ? 0 : retval;
+	return retval;
 }
 
 
