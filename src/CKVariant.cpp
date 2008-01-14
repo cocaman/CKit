@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.27 2007/09/26 19:33:46 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.28 2008/01/14 21:46:02 drbob Exp $
  */
 
 //	System Headers
@@ -241,34 +241,42 @@ CKVariant::~CKVariant()
  */
 CKVariant & CKVariant::operator=( CKVariant & anOther )
 {
-	switch (anOther.mType) {
-		case eUnknownVariant:
-			clearValue();
-			break;
-		case eStringVariant:
-			setStringValue(anOther.mStringValue);
-			break;
-		case eNumberVariant:
-			setDoubleValue(anOther.mDoubleValue);
-			break;
-		case eDateVariant:
-			setDateValue(anOther.mDateValue);
-			break;
-		case eTableVariant:
-			setTableValue(anOther.mTableValue);
-			break;
-		case eTimeSeriesVariant:
-			setTimeSeriesValue(anOther.mTimeSeriesValue);
-			break;
-		case ePriceVariant:
-			setPriceValue(anOther.mPriceValue);
-			break;
-		case eListVariant:
-			setListValue(anOther.mListValue);
-			break;
-		case eTimeTableVariant:
-			setTimeTableValue(anOther.mTimeTableValue);
-			break;
+	/*
+	 * We have to watch out for someone setting this variant to
+	 * itself. If they do, then we'd clear out the value and set
+	 * that to ourselves, effectively clearing out whatever is in
+	 * the variable. This is bad. So we protect against it.
+	 */
+	if (this != & anOther) {
+		switch (anOther.mType) {
+			case eUnknownVariant:
+				clearValue();
+				break;
+			case eStringVariant:
+				setStringValue(anOther.mStringValue);
+				break;
+			case eNumberVariant:
+				setDoubleValue(anOther.mDoubleValue);
+				break;
+			case eDateVariant:
+				setDateValue(anOther.mDateValue);
+				break;
+			case eTableVariant:
+				setTableValue(anOther.mTableValue);
+				break;
+			case eTimeSeriesVariant:
+				setTimeSeriesValue(anOther.mTimeSeriesValue);
+				break;
+			case ePriceVariant:
+				setPriceValue(anOther.mPriceValue);
+				break;
+			case eListVariant:
+				setListValue(anOther.mListValue);
+				break;
+			case eTimeTableVariant:
+				setTimeTableValue(anOther.mTimeTableValue);
+				break;
+		}
 	}
 
 	return *this;
@@ -474,15 +482,26 @@ void CKVariant::setValueAsType( CKVariantType aType, const char *aValue )
  */
 void CKVariant::setStringValue( const char *aStringValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aStringValue != NULL) {
-		mStringValue = new CKString(aStringValue);
-		if (mStringValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
-				"(const char *) - the space to hold this string value could "
-				"not be created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the string to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eStringVariant) || (mStringValue == NULL) ||
+		(mStringValue->c_str() != aStringValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aStringValue != NULL) {
+			mStringValue = new CKString(aStringValue);
+			if (mStringValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
+					"(const char *) - the space to hold this string value could "
+					"not be created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -492,15 +511,25 @@ void CKVariant::setStringValue( const char *aStringValue )
 
 void CKVariant::setStringValue( const CKString *aStringValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aStringValue != NULL) {
-		mStringValue = new CKString(*aStringValue);
-		if (mStringValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
-				"(const char *) - the space to hold this string value could "
-				"not be created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the string to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eStringVariant) || (mStringValue != aStringValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aStringValue != NULL) {
+			mStringValue = new CKString(*aStringValue);
+			if (mStringValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setStringValue"
+					"(const char *) - the space to hold this string value could "
+					"not be created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -544,15 +573,25 @@ void CKVariant::setDoubleValue( double aDoubleValue )
  */
 void CKVariant::setTableValue( const CKTable *aTableValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aTableValue != NULL) {
-		mTableValue = new CKTable(*aTableValue);
-		if (mTableValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setTableValue"
-				"(const CKTable *) - the copy of this table value could "
-				"not be created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the table to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eTableVariant) || (mTableValue != aTableValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aTableValue != NULL) {
+			mTableValue = new CKTable(*aTableValue);
+			if (mTableValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setTableValue"
+					"(const CKTable *) - the copy of this table value could "
+					"not be created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -568,16 +607,26 @@ void CKVariant::setTableValue( const CKTable *aTableValue )
  */
 void CKVariant::setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aTimeSeriesValue != NULL) {
-		mTimeSeriesValue = new CKTimeSeries(*aTimeSeriesValue);
-		if (mTimeSeriesValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setTimeSeries"
-				"Value(const CKTimeSeries *) - the copy of this time series "
-				"value could not be created. This is a serious allocation "
-				"error.");
+	/*
+	 * Make sure that we don't try to set the table to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eTimeSeriesVariant) || (mTimeSeriesValue != aTimeSeriesValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aTimeSeriesValue != NULL) {
+			mTimeSeriesValue = new CKTimeSeries(*aTimeSeriesValue);
+			if (mTimeSeriesValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setTimeSeries"
+					"Value(const CKTimeSeries *) - the copy of this time series "
+					"value could not be created. This is a serious allocation "
+					"error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -593,15 +642,25 @@ void CKVariant::setTimeSeriesValue( const CKTimeSeries *aTimeSeriesValue )
  */
 void CKVariant::setPriceValue( const CKPrice *aPriceValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aPriceValue != NULL) {
-		mPriceValue = new CKPrice(*aPriceValue);
-		if (mPriceValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setPriceValue("
-				"const CKPrice *) - the copy of this price value could not be "
-				"created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the table to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != ePriceVariant) || (mPriceValue != aPriceValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aPriceValue != NULL) {
+			mPriceValue = new CKPrice(*aPriceValue);
+			if (mPriceValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setPriceValue("
+					"const CKPrice *) - the copy of this price value could not be "
+					"created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -617,15 +676,25 @@ void CKVariant::setPriceValue( const CKPrice *aPriceValue )
  */
 void CKVariant::setListValue( const CKVariantList *aListValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aListValue != NULL) {
-		mListValue = new CKVariantList(*aListValue);
-		if (mListValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setListValue("
-				"const CKVariantList *) - the copy of this list could not be "
-				"created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the table to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eListVariant) || (mListValue != aListValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aListValue != NULL) {
+			mListValue = new CKVariantList(*aListValue);
+			if (mListValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setListValue("
+					"const CKVariantList *) - the copy of this list could not be "
+					"created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -641,15 +710,25 @@ void CKVariant::setListValue( const CKVariantList *aListValue )
  */
 void CKVariant::setTimeTableValue( const CKTimeTable *aTimeTableValue )
 {
-	// first, see if we need to delete what's might already be here
-	clearValue();
-	// next, if we have something to set, then create space for it
-	if (aTimeTableValue != NULL) {
-		mTimeTableValue = new CKTimeTable(*aTimeTableValue);
-		if (mTimeTableValue == NULL) {
-			throw CKException(__FILE__, __LINE__, "CKVariant::setTimeTableValue("
-				"const CKTimeTable *) - the copy of this time table could not be "
-				"created. This is a serious allocation error.");
+	/*
+	 * Make sure that we don't try to set the table to something
+	 * that we already have. This will cause us a lot of grief
+	 * because we'll be clearing out the data *before* we set it to
+	 * the value provided. But if we clear it, it'll be gone - and
+	 * we'll just clear out this data. That's bad. So protect us from
+	 * it happening.
+	 */
+	if ((mType != eTimeTableVariant) || (mTimeTableValue != aTimeTableValue)) {
+		// first, see if we need to delete what's might already be here
+		clearValue();
+		// next, if we have something to set, then create space for it
+		if (aTimeTableValue != NULL) {
+			mTimeTableValue = new CKTimeTable(*aTimeTableValue);
+			if (mTimeTableValue == NULL) {
+				throw CKException(__FILE__, __LINE__, "CKVariant::setTimeTableValue("
+					"const CKTimeTable *) - the copy of this time table could not be "
+					"created. This is a serious allocation error.");
+			}
 		}
 	}
 	// ...and don't forget to set the type of data we have now
@@ -6103,6 +6182,14 @@ void CKVariantList::setTail( CKVariantNode *aNode )
 std::ostream & operator<<( std::ostream & aStream, CKVariantList & aList )
 {
 	aStream << aList.toString();
+
+	return aStream;
+}
+
+
+std::ostream & operator<<( std::ostream & aStream, const CKVariantList & aList )
+{
+	aStream << ((CKVariantList &)aList).toString();
 
 	return aStream;
 }

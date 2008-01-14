@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.16 2005/09/20 18:07:18 drbob Exp $
+ * $Id: CKVariant.h,v 1.17 2008/01/14 21:46:02 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -1180,5 +1180,6 @@ class CKVariantList
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, CKVariantList & aList );
+std::ostream & operator<<( std::ostream & aStream, const CKVariantList & aList );
 
 #endif	// __CKVARIANT_H
