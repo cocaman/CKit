@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.28 2007/12/14 20:31:48 drbob Exp $
+ * $Id: CKString.cpp,v 1.29 2008/01/14 21:44:21 drbob Exp $
  */
 
 //	System Headers
@@ -6237,6 +6237,14 @@ void CKStringList::setTail( CKStringNode *aNode )
 std::ostream & operator<<( std::ostream & aStream, CKStringList & aList )
 {
 	aStream << aList.toString();
+
+	return aStream;
+}
+
+
+std::ostream & operator<<( std::ostream & aStream, const CKStringList & aList )
+{
+	aStream << ((CKStringList &)aList).toString();
 
 	return aStream;
 }

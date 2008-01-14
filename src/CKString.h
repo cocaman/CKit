@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.17 2007/10/10 13:18:31 drbob Exp $
+ * $Id: CKString.h,v 1.18 2008/01/14 21:44:21 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -18,6 +18,7 @@
 #include <ostream>
 #endif
 #include <string>
+#include <ext/hash_fun.h>
 /*
  * Because we're using the NAN value in some places in this object,
  * we need to make sure that it's defined for all the platforms that
@@ -1596,5 +1597,35 @@ class CKStringList
  * will indicate the data type and the value.
  */
 std::ostream & operator<<( std::ostream & aStream, CKStringList & aList );
+std::ostream & operator<<( std::ostream & aStream, const CKStringList & aList );
 
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * When dealing with the STL hash_set and hash_map, the hashing and equality
+ * classes are not implemented for the CKString. These structs are the
+ * hash and equality classes that are needed by these templates in order to
+ * use the CKString as a key or a value.
+ * ----------------------------------------------------------------------------
+ */
+/*
+ * While I'm not a big fan of the way they have chosen to put in the hash_map
+ * and hash_set templates - I think it's too clunky. They should have made
+ * it possible to put a hash operator or method on the class, but that's an
+ * opinion. Anyway, given how they chose to do it, this template specialization
+ * allows us to create sets and maps using the hashing function below.
+ */
+namespace __gnu_cxx
+{
+	template<>
+	struct hash<const CKString &>
+	{
+		size_t operator()(const CKString & arg) const
+		{
+			return __stl_hash_string(arg.c_str());
+		}
+	};
+}
 #endif	// __CKSTRING_H
