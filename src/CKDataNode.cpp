@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.26 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.27 2008/01/14 21:47:10 drbob Exp $
  */
 
 //	System Headers
@@ -1577,6 +1577,989 @@ int CKDataNode::getNumOfStepsToLeaf()
 
 /********************************************************
  *
+ *               Accessor Convenience Methods
+ *
+ ********************************************************/
+/*
+ * It's nice to be able to have the level of control that the
+ * basic getVarAtPath() methods provide, but some times you
+ * just want to use the variant anyplace in the code, and to
+ * do that easily, we need a reference and a simplified way
+ * of getting at the data.
+ *
+ * This overloads the '[]' operator so that a simple path can
+ * be specified on the node and a CKVariant reference will be
+ * returned. The catch is that when there's no element at
+ * that path, an empty CKVariant will be created at that path
+ * and that's what will be returned. This basically makes sure
+ * that the tree fills out as it's accessed, and that you can
+ * then use this anywhere a CKVariant can be used.
+ */
+CKVariant & CKDataNode::operator[]( const CKString & aPath )
+{
+	// try to get the pointer to the value at the path
+	CKVariant	*retval = getVarAtPath(aPath);
+	if (retval == NULL) {
+		// not there... so add in an empty value
+		putVarAtPath(aPath, CKVariant());
+		// ...and get it's pointer after insertion
+		retval = getVarAtPath(aPath);
+	}
+
+	return *retval;
+}
+
+
+CKVariant & CKDataNode::operator[]( const CKStringList & aSteps )
+{
+	// try to get the pointer to the value at the path
+	CKVariant	*retval = getVarAtPath(aSteps);
+	if (retval == NULL) {
+		// not there... so add in an empty value
+		putVarAtPath(aSteps, CKVariant());
+		// ...and get it's pointer after insertion
+		retval = getVarAtPath(aSteps);
+	}
+
+	return *retval;
+}
+
+
+/*
+ * This method will return 'true' if the path provided exists
+ * and references a valid CKVariant. This means that the path
+ * must point to a leaf node - not a tree node, and that there
+ * needs to be a value at that location. If there is, then this
+ * guy returns true, false otherwise.
+ *
+ * This is a nice and simple way to see if the value exists
+ * without having to get it and check it for NULL, etc.
+ */
+bool CKDataNode::hasValue( const CKString & aPath )
+{
+	return (getVarAtPath(aPath) != NULL);
+}
+
+
+bool CKDataNode::hasValue( const CKStringList & aSteps )
+{
+	return (getVarAtPath(aSteps) != NULL);
+}
+
+
+/*
+ * This method returns the type of the value at the path
+ * specified. If there is no value there, eUnknownVariant
+ * will be returned. This can also be returned if the value
+ * at the path is actually an empty variant, but that's
+ * life.
+ */
+CKVariantType CKDataNode::getType( const CKString & aPath )
+{
+	CKVariantType	retval = eUnknownVariant;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val != NULL) {
+		retval = val->getType();
+	}
+
+	return retval;
+}
+
+
+CKVariantType CKDataNode::getType( const CKStringList & aSteps )
+{
+	CKVariantType	retval = eUnknownVariant;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val != NULL) {
+		retval = val->getType();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or non-numeric, then an exception
+ * will be thrown. But if it is numeric, then we'll return
+ * the value as an integer.
+ */
+int CKDataNode::getInt( const CKString & aPath )
+{
+	int		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getInt(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eNumberVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getInt(const CKString &) - the value at the path '"
+			<< aPath << "' was not a numeric value, and so we can't get the "
+			"integer value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getIntValue();
+	}
+
+	return retval;
+}
+
+
+int CKDataNode::getInt( const CKStringList & aSteps )
+{
+	int		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getInt(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eNumberVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getInt(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a numeric value, and so we can't get the "
+			"integer value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getIntValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not thrown an exception in the case of the
+ * missing value at the path, or a non-numeric value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+int CKDataNode::getInt( const CKString & aPath, int aDefault )
+{
+	int		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eNumberVariant)) {
+		retval = val->getIntValue();
+	}
+
+	return retval;
+}
+
+
+int CKDataNode::getInt( const CKStringList & aSteps, int aDefault )
+{
+	int		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eNumberVariant)) {
+		retval = val->getIntValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or non-numeric, then an exception
+ * will be thrown. But if it is numeric, then we'll return
+ * the value as a double.
+ */
+double CKDataNode::getDouble( const CKString & aPath )
+{
+	double		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDouble(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eNumberVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDouble(const CKString &) - the value at the path '"
+			<< aPath << "' was not a numeric value, and so we can't get the "
+			"double value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getDoubleValue();
+	}
+
+	return retval;
+}
+
+
+double CKDataNode::getDouble( const CKStringList & aSteps )
+{
+	double		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDouble(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eNumberVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDouble(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a numeric value, and so we can't get the "
+			"double value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getDoubleValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not thrown an exception in the case of the
+ * missing value at the path, or a non-numeric value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+double CKDataNode::getDouble( const CKString & aPath, double aDefault )
+{
+	double		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eNumberVariant)) {
+		retval = val->getDoubleValue();
+	}
+
+	return retval;
+}
+
+
+double CKDataNode::getDouble( const CKStringList & aSteps, double aDefault )
+{
+	double		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eNumberVariant)) {
+		retval = val->getDoubleValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a date, then an exception
+ * will be thrown. But if it is a date, then we'll return
+ * the value as a long of the format YYYYMMDD.
+ */
+long CKDataNode::getDate( const CKString & aPath )
+{
+	long		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDate(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eDateVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDate(const CKString &) - the value at the path '"
+			<< aPath << "' was not a date value, and so we can't get the "
+			"date value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getDateValue();
+	}
+
+	return retval;
+}
+
+
+long CKDataNode::getDate( const CKStringList & aSteps )
+{
+	long		retval = 0;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDate(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eDateVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getDate(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a date value, and so we can't get the "
+			"date value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getDateValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not thrown an exception in the case of the
+ * missing value at the path, or not a date value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+long CKDataNode::getDate( const CKString & aPath, long aDefault )
+{
+	long		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eDateVariant)) {
+		retval = val->getDateValue();
+	}
+
+	return retval;
+}
+
+
+long CKDataNode::getDate( const CKStringList & aSteps, long aDefault )
+{
+	long		retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eDateVariant)) {
+		retval = val->getDateValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a string, then an exception
+ * will be thrown. But if it is a string, then we'll return
+ * the the pointer to the actual CKString value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKString *CKDataNode::getString( const CKString & aPath )
+{
+	const CKString		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getString(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eStringVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getString(const CKString &) - the value at the path '"
+			<< aPath << "' was not a string value, and so we can't get the "
+			"string value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getStringValue();
+	}
+
+	return retval;
+}
+
+
+const CKString *CKDataNode::getString( const CKStringList & aSteps )
+{
+	const CKString		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getString(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eStringVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getString(const CKString &) - the value at the path '"
+			<< aSteps << "' was not a string value, and so we can't get the "
+			"string value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getStringValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not thrown an exception in the case of the
+ * missing value at the path, or not a string value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKString *CKDataNode::getString( const CKString & aPath, const CKString *aDefault )
+{
+	const CKString		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eStringVariant)) {
+		retval = val->getStringValue();
+	}
+
+	return retval;
+}
+
+
+const CKString *CKDataNode::getString( const CKStringList & aSteps, const CKString *aDefault )
+{
+	const CKString		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eStringVariant)) {
+		retval = val->getStringValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a table, then an exception
+ * will be thrown. But if it is a table, then we'll return
+ * the the pointer to the actual CKTable value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKTable *CKDataNode::getTable( const CKString & aPath )
+{
+	const CKTable		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTable(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTableVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTable(const CKString &) - the value at the path '"
+			<< aPath << "' was not a table value, and so we can't get the "
+			"table value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTableValue();
+	}
+
+	return retval;
+}
+
+
+const CKTable *CKDataNode::getTable( const CKStringList & aSteps )
+{
+	const CKTable		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTable(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTableVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTable(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a table value, and so we can't get the "
+			"table value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTableValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not throw an exception in the case of the
+ * missing value at the path, or not a table value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKTable *CKDataNode::getTable( const CKString & aPath, const CKTable *aDefault )
+{
+	const CKTable		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eTableVariant)) {
+		retval = val->getTableValue();
+	}
+
+	return retval;
+}
+
+
+const CKTable *CKDataNode::getTable( const CKStringList & aSteps, const CKTable *aDefault )
+{
+	const CKTable		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eTableVariant)) {
+		retval = val->getTableValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a timeseries, then an exception
+ * will be thrown. But if it is a timeseries, then we'll return
+ * the the pointer to the actual CKTimeSeries value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKTimeSeries *CKDataNode::getTimeSeries( const CKString & aPath )
+{
+	const CKTimeSeries		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeSeries(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTimeSeriesVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeSeries(const CKString &) - the value at the path '"
+			<< aPath << "' was not a timeseries value, and so we can't get the "
+			"timeseries value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTimeSeriesValue();
+	}
+
+	return retval;
+}
+
+
+const CKTimeSeries *CKDataNode::getTimeSeries( const CKStringList & aSteps )
+{
+	const CKTimeSeries		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeSeries(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTimeSeriesVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeSeries(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a timeseries value, and so we can't get the "
+			"timeseries value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTimeSeriesValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not throw an exception in the case of the
+ * missing value at the path, or not a timeseries value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKTimeSeries *CKDataNode::getTimeSeries( const CKString & aPath, const CKTimeSeries *aDefault )
+{
+	const CKTimeSeries		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eTimeSeriesVariant)) {
+		retval = val->getTimeSeriesValue();
+	}
+
+	return retval;
+}
+
+
+const CKTimeSeries *CKDataNode::getTimeSeries( const CKStringList & aSteps, const CKTimeSeries *aDefault )
+{
+	const CKTimeSeries		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eTimeSeriesVariant)) {
+		retval = val->getTimeSeriesValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a price, then an exception
+ * will be thrown. But if it is a price, then we'll return
+ * the the pointer to the actual CKPrice value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKPrice *CKDataNode::getPrice( const CKString & aPath )
+{
+	const CKPrice		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getPrice(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != ePriceVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getPrice(const CKString &) - the value at the path '"
+			<< aPath << "' was not a price value, and so we can't get the "
+			"price value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getPriceValue();
+	}
+
+	return retval;
+}
+
+
+const CKPrice *CKDataNode::getPrice( const CKStringList & aSteps )
+{
+	const CKPrice		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getPrice(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != ePriceVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getPrice(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a price value, and so we can't get the "
+			"price value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getPriceValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not throw an exception in the case of the
+ * missing value at the path, or not a price value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKPrice *CKDataNode::getPrice( const CKString & aPath, const CKPrice *aDefault )
+{
+	const CKPrice		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == ePriceVariant)) {
+		retval = val->getPriceValue();
+	}
+
+	return retval;
+}
+
+
+const CKPrice *CKDataNode::getPrice( const CKStringList & aSteps, const CKPrice *aDefault )
+{
+	const CKPrice		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == ePriceVariant)) {
+		retval = val->getPriceValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a list, then an exception
+ * will be thrown. But if it is a list, then we'll return
+ * the the pointer to the actual CKVariantList value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKVariantList *CKDataNode::getList( const CKString & aPath )
+{
+	const CKVariantList		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eListVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKString &) - the value at the path '"
+			<< aPath << "' was not a list value, and so we can't get the "
+			"list value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getListValue();
+	}
+
+	return retval;
+}
+
+
+const CKVariantList *CKDataNode::getList( const CKStringList & aSteps )
+{
+	const CKVariantList		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eListVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a list value, and so we can't get the "
+			"list value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getListValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not throw an exception in the case of the
+ * missing value at the path, or not a list value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKVariantList *CKDataNode::getList( const CKString & aPath, const CKVariantList *aDefault )
+{
+	const CKVariantList		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eListVariant)) {
+		retval = val->getListValue();
+	}
+
+	return retval;
+}
+
+
+const CKVariantList *CKDataNode::getList( const CKStringList & aSteps, const CKVariantList *aDefault )
+{
+	const CKVariantList		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eListVariant)) {
+		retval = val->getListValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method looks to the value at the path provided and
+ * if it's either not there, or not a time table, then an exception
+ * will be thrown. But if it is a time table, then we'll return
+ * the the pointer to the actual CKTimeTable value that is in the
+ * tree. If you want to keep this value, then you need to make
+ * a copy.
+ */
+const CKTimeTable *CKDataNode::getTimeTable( const CKString & aPath )
+{
+	const CKTimeTable		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeTable(const CKString &) - "
+			"there was no value available at the path '" << aPath
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTimeTableVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKString &) - the value at the path '"
+			<< aPath << "' was not a time table value, and so we can't get the "
+			"time table value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTimeTableValue();
+	}
+
+	return retval;
+}
+
+
+const CKTimeTable *CKDataNode::getTimeTable( const CKStringList & aSteps )
+{
+	const CKTimeTable		*retval = NULL;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if (val == NULL) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getTimeTable(const CKStringList &) - "
+			"there was no value available at the path '" << aSteps
+			<< "'. Please check that this value exists or use the method "
+			"that allows for a default value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else if (val->getType() != eTimeTableVariant) {
+		std::ostringstream	msg;
+		msg << "CKDataNode::getList(const CKStringList &) - the value at the path '"
+			<< aSteps << "' was not a time table value, and so we can't get the "
+			"time table value.";
+		throw CKException(__FILE__, __LINE__, msg.str());
+	} else {
+		retval = val->getTimeTableValue();
+	}
+
+	return retval;
+}
+
+
+/*
+ * This method will not throw an exception in the case of the
+ * missing value at the path, or not a time table value - rather,
+ * it will return the provided default value in both these
+ * cases. This means that it's possible to simply not store
+ * values equal to the default and use this to get all values
+ * out of the tree.
+ */
+const CKTimeTable *CKDataNode::getTimeTable( const CKString & aPath, const CKTimeTable *aDefault )
+{
+	const CKTimeTable		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aPath);
+	if ((val != NULL) && (val->getType() == eTimeTableVariant)) {
+		retval = val->getTimeTableValue();
+	}
+
+	return retval;
+}
+
+
+const CKTimeTable *CKDataNode::getTimeTable( const CKStringList & aSteps, const CKTimeTable *aDefault )
+{
+	const CKTimeTable		*retval = aDefault;
+
+	// try to get the pointer to the value at the path
+	CKVariant	*val = getVarAtPath(aSteps);
+	if ((val != NULL) && (val->getType() == eTimeTableVariant)) {
+		retval = val->getTimeTableValue();
+	}
+
+	return retval;
+}
+
+
+/********************************************************
+ *
  *                Copy Methods
  *
  ********************************************************/
@@ -2297,7 +3280,7 @@ CKDataNodeList & CKDataNodeList::operator=( CKDataNodeList & anOther )
 	if (this != & anOther) {
 		// first, clear out anything we might have right now
 		clear();
-	
+
 		// now, do a deep copy of the source list
 		copyToEnd(anOther);
 	}

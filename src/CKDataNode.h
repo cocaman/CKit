@@ -9,7 +9,7 @@
  *                be the basis of a complete tree of data and this is
  *                very important to many applications.
  *
- * $Id: CKDataNode.h,v 1.20 2005/02/14 17:07:51 drbob Exp $
+ * $Id: CKDataNode.h,v 1.21 2008/01/14 21:47:10 drbob Exp $
  */
 #ifndef __CKDATANODE_H
 #define __CKDATANODE_H
@@ -472,6 +472,235 @@ class CKDataNode
 		 * this method would return 0.
 		 */
 		int getNumOfStepsToLeaf();
+
+		/********************************************************
+		 *
+		 *               Accessor Convenience Methods
+		 *
+		 ********************************************************/
+		/*
+		 * It's nice to be able to have the level of control that the
+		 * basic getVarAtPath() methods provide, but some times you
+		 * just want to use the variant anyplace in the code, and to
+		 * do that easily, we need a reference and a simplified way
+		 * of getting at the data.
+		 *
+		 * This overloads the '[]' operator so that a simple path can
+		 * be specified on the node and a CKVariant reference will be
+		 * returned. The catch is that when there's no element at
+		 * that path, an empty CKVariant will be created at that path
+		 * and that's what will be returned. This basically makes sure
+		 * that the tree fills out as it's accessed, and that you can
+		 * then use this anywhere a CKVariant can be used.
+		 */
+		virtual CKVariant & operator[]( const CKString & aPath );
+		virtual CKVariant & operator[]( const CKStringList & aSteps );
+
+		/*
+		 * This method will return 'true' if the path provided exists
+		 * and references a valid CKVariant. This means that the path
+		 * must point to a leaf node - not a tree node, and that there
+		 * needs to be a value at that location. If there is, then this
+		 * guy returns true, false otherwise.
+		 *
+		 * This is a nice and simple way to see if the value exists
+		 * without having to get it and check it for NULL, etc.
+		 */
+		virtual bool hasValue( const CKString & aPath );
+		virtual bool hasValue( const CKStringList & aSteps );
+
+		/*
+		 * This method returns the type of the value at the path
+		 * specified. If there is no value there, eUnknownVariant
+		 * will be returned. This can also be returned if the value
+		 * at the path is actually an empty variant, but that's
+		 * life.
+		 */
+		virtual CKVariantType getType( const CKString & aPath );
+		virtual CKVariantType getType( const CKStringList & aSteps );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or non-numeric, then an exception
+		 * will be thrown. But if it is numeric, then we'll return
+		 * the value as an integer.
+		 */
+		virtual int getInt( const CKString & aPath );
+		virtual int getInt( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or a non-numeric value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual int getInt( const CKString & aPath, int aDefault );
+		virtual int getInt( const CKStringList & aSteps, int aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or non-numeric, then an exception
+		 * will be thrown. But if it is numeric, then we'll return
+		 * the value as a double.
+		 */
+		virtual double getDouble( const CKString & aPath );
+		virtual double getDouble( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or a non-numeric value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual double getDouble( const CKString & aPath, double aDefault );
+		virtual double getDouble( const CKStringList & aSteps, double aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a date, then an exception
+		 * will be thrown. But if it is a date, then we'll return
+		 * the value as a long of the format YYYYMMDD.
+		 */
+		virtual long getDate( const CKString & aPath );
+		virtual long getDate( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a date value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual long getDate( const CKString & aPath, long aDefault );
+		virtual long getDate( const CKStringList & aSteps, long aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a string, then an exception
+		 * will be thrown. But if it is a string, then we'll return
+		 * the the pointer to the actual CKString value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKString *getString( const CKString & aPath );
+		virtual const CKString *getString( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a string value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKString *getString( const CKString & aPath, const CKString *aDefault );
+		virtual const CKString *getString( const CKStringList & aSteps, const CKString *aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a table, then an exception
+		 * will be thrown. But if it is a table, then we'll return
+		 * the the pointer to the actual CKTable value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKTable *getTable( const CKString & aPath );
+		virtual const CKTable *getTable( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a table value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKTable *getTable( const CKString & aPath, const CKTable *aDefault );
+		virtual const CKTable *getTable( const CKStringList & aSteps, const CKTable *aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a timeseries, then an exception
+		 * will be thrown. But if it is a timeseries, then we'll return
+		 * the the pointer to the actual CKTimeSeries value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKTimeSeries *getTimeSeries( const CKString & aPath );
+		virtual const CKTimeSeries *getTimeSeries( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a timeseries value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKTimeSeries *getTimeSeries( const CKString & aPath, const CKTimeSeries *aDefault );
+		virtual const CKTimeSeries *getTimeSeries( const CKStringList & aSteps, const CKTimeSeries *aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a price, then an exception
+		 * will be thrown. But if it is a price, then we'll return
+		 * the the pointer to the actual CKPrice value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKPrice *getPrice( const CKString & aPath );
+		virtual const CKPrice *getPrice( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a price value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKPrice *getPrice( const CKString & aPath, const CKPrice *aDefault );
+		virtual const CKPrice *getPrice( const CKStringList & aSteps, const CKPrice *aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a list, then an exception
+		 * will be thrown. But if it is a list, then we'll return
+		 * the the pointer to the actual CKVariantList value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKVariantList *getList( const CKString & aPath );
+		virtual const CKVariantList *getList( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a list value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKVariantList *getList( const CKString & aPath, const CKVariantList *aDefault );
+		virtual const CKVariantList *getList( const CKStringList & aSteps, const CKVariantList *aDefault );
+
+		/*
+		 * This method looks to the value at the path provided and
+		 * if it's either not there, or not a time table, then an exception
+		 * will be thrown. But if it is a time table, then we'll return
+		 * the the pointer to the actual CKTimeTable value that is in the
+		 * tree. If you want to keep this value, then you need to make
+		 * a copy.
+		 */
+		virtual const CKTimeTable *getTimeTable( const CKString & aPath );
+		virtual const CKTimeTable *getTimeTable( const CKStringList & aSteps );
+		/*
+		 * This method will not throw an exception in the case of the
+		 * missing value at the path, or not a time table value - rather,
+		 * it will return the provided default value in both these
+		 * cases. This means that it's possible to simply not store
+		 * values equal to the default and use this to get all values
+		 * out of the tree.
+		 */
+		virtual const CKTimeTable *getTimeTable( const CKString & aPath, const CKTimeTable *aDefault );
+		virtual const CKTimeTable *getTimeTable( const CKStringList & aSteps, const CKTimeTable *aDefault );
 
 		/********************************************************
 		 *
