@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "-----------------------" << std::endl;
 	CKStringList	leafs = n->getUniqueLeafNodeNames();
 	for (int l = 0; l < leafs.size(); l++) {
-		std::cout << "  " << leafs[l] << std::endl;
+		std::cout << "  '" << leafs[l] << "'" << std::endl;
 	}
 	std::cout << std::endl;
 
