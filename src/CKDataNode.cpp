@@ -9,7 +9,7 @@
  *                  be the basis of a complete tree of data and this is
  *                  very important to many applications.
  *
- * $Id: CKDataNode.cpp,v 1.27 2008/01/14 21:47:10 drbob Exp $
+ * $Id: CKDataNode.cpp,v 1.28 2008/01/17 16:38:18 drbob Exp $
  */
 
 //	System Headers
@@ -1324,7 +1324,7 @@ CKStringList CKDataNode::pathToSteps( const CKString & aPath )
 				// now loop on the raw steps until we find a matching bookend
 				for (++i; i < rawCnt; i++) {
 					// add in the '/' and the component
-					comp.append(1, '/');
+					comp.append('/');
 					comp.append(raw[i]);
 					// does this end in a '"'?
 					if (raw[i][raw[i].size() - 1] == '"') {
@@ -1360,15 +1360,15 @@ CKString CKDataNode::stepsToPath( const CKStringList & aPath )
 	for (i = aPath.getHead(); i != NULL; i = i->getNext()) {
 		// see if we need a delimiter between this and the next step
 		if (i->getPrev() != NULL) {
-			retval.append(1, '/');
+			retval.append('/');
 		}
 
 		// now see if the step needs to be escaped due to a slash
 		if (i->find('/') != -1) {
 			// escape this guy as it's got a '/' in it
-			retval.append(1, '"');
+			retval.append('"');
 			retval.append(*i);
-			retval.append(1, '"');
+			retval.append('"');
 		} else {
 			retval.append(*i);
 		}
