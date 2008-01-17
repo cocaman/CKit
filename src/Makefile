@@ -106,6 +106,12 @@ OBJS = CKUUID.o \
 	CKTimeTable.o \
 	CKPrice.o \
 	CKDataNode.o \
+	CKDBDataNode.o \
+	CKDBDataNodeLoader.o \
+	CKFileDataNode.o \
+	CKFileDataNodeLoader.o \
+	CKPListDataNode.o \
+	CKPListDataNodeLoader.o \
 	CKIndexNode.o \
 	CKMultiIndexNode.o \
 	CKStopwatch.o \
@@ -250,6 +256,27 @@ CKPrice.o: CKFWRWMutex.h CKFWSemaphore.h
 CKDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKDataNode.o: CKFWSemaphore.h CKException.h
+CKDBDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKDBDataNode.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKDBDataNode.o: CKFWSemaphore.h CKException.h CKDBDataNode.h
+CKDBDataNodeLoader.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKDBDataNodeLoader.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKDBDataNodeLoader.o: CKFWSemaphore.h CKException.h CKDBDataNode.h
+CKDBDataNodeLoader.o: CKDBDataNodeLoader.h
+CKFileDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFileDataNode.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFileDataNode.o: CKFWSemaphore.h CKException.h CKFileDataNode.h
+CKFileDataNodeLoader.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFileDataNodeLoader.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFileDataNodeLoader.o: CKFWSemaphore.h CKException.h CKFileDataNode.h
+CKFileDataNodeLoader.o: CKFileDataNodeLoader.h
+CKPListDataNode.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKPListDataNode.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKPListDataNode.o: CKFWSemaphore.h CKException.h CKPListDataNode.h
+CKPListDataNodeLoader.o: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKPListDataNodeLoader.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKPListDataNodeLoader.o: CKFWSemaphore.h CKException.h CKPListDataNode.h
+CKPListDataNodeLoader.o: CKPListDataNodeLoader.h
 CKIndexNode.o: CKIndexNode.h CKDataNode.h CKVariant.h CKTimeSeries.h
 CKIndexNode.o: CKFWMutex.h CKString.h CKVector.h CKException.h
 CKIndexNode.o: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
@@ -364,6 +391,27 @@ CKPrice.o64: CKFWRWMutex.h CKFWSemaphore.h
 CKDataNode.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
 CKDataNode.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 CKDataNode.o64: CKFWSemaphore.h CKException.h
+CKDBDataNode.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKDBDataNode.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKDBDataNode.o64: CKFWSemaphore.h CKException.h CKDBDataNode.h
+CKDBDataNodeLoader.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKDBDataNodeLoader.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKDBDataNodeLoader.o64: CKFWSemaphore.h CKException.h CKDBDataNode.h
+CKDBDataNodeLoader.o64: CKDBDataNodeLoader.h
+CKFileDataNode.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFileDataNode.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFileDataNode.o64: CKFWSemaphore.h CKException.h CKFileDataNode.h
+CKFileDataNodeLoader.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKFileDataNodeLoader.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKFileDataNodeLoader.o64: CKFWSemaphore.h CKException.h CKFileDataNode.h
+CKFileDataNodeLoader.o64: CKFileDataNodeLoader.h
+CKPListDataNode.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKPListDataNode.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKPListDataNode.o64: CKFWSemaphore.h CKException.h CKPListDataNode.h
+CKPListDataNodeLoader.o64: CKDataNode.h CKVariant.h CKTimeSeries.h CKFWMutex.h
+CKPListDataNodeLoader.o64: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
+CKPListDataNodeLoader.o64: CKFWSemaphore.h CKException.h CKPListDataNode.h
+CKPListDataNodeLoader.o64: CKPListDataNodeLoader.h
 CKIndexNode.o64: CKIndexNode.h CKDataNode.h CKVariant.h CKTimeSeries.h
 CKIndexNode.o64: CKFWMutex.h CKString.h CKVector.h CKException.h
 CKIndexNode.o64: CKStackLocker.h CKFWRWMutex.h CKFWSemaphore.h
