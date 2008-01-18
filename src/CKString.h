@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.18 2008/01/14 21:44:21 drbob Exp $
+ * $Id: CKString.h,v 1.19 2008/01/18 14:24:01 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -18,7 +18,9 @@
 #include <ostream>
 #endif
 #include <string>
+#if defined(__GNUC_) && (__GNUC__ >= 4)
 #include <ext/hash_fun.h>
+#endif
 /*
  * Because we're using the NAN value in some places in this object,
  * we need to make sure that it's defined for all the platforms that
@@ -1617,6 +1619,7 @@ std::ostream & operator<<( std::ostream & aStream, const CKStringList & aList );
  * opinion. Anyway, given how they chose to do it, this template specialization
  * allows us to create sets and maps using the hashing function below.
  */
+#if defined(__GNUC_) && (__GNUC__ >= 4)
 namespace __gnu_cxx
 {
 	template<>
@@ -1628,4 +1631,5 @@ namespace __gnu_cxx
 		}
 	};
 }
+#endif
 #endif	// __CKSTRING_H
