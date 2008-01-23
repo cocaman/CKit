@@ -3,7 +3,7 @@
  *                 first-in-first-out queue of something. This is really
  *                 nice in that
  *
- * $Id: CKFIFOQueue.h,v 1.2 2004/12/20 10:39:37 drbob Exp $
+ * $Id: CKFIFOQueue.h,v 1.3 2008/01/23 18:18:51 drbob Exp $
  */
 #ifndef __CKFIFOQUEUE_H
 #define __CKFIFOQUEUE_H
@@ -317,7 +317,7 @@ template <class T> class CKFIFOQueue
 			CKStackLocker	lockem(&mMutex);
 
 			// see if we are making sure they are unique
-			if (mElementsAreUnique && !contains(anElem)) {
+			if (!mElementsAreUnique || !contains(anElem)) {
 				// now see if we have to resize the array for this guy
 				if (mSize >= mCapacity) {
 					resize(mSize + mCapacityIncrement);
