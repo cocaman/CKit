@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.19 2008/01/18 14:24:01 drbob Exp $
+ * $Id: CKString.h,v 1.20 2008/02/12 12:27:57 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -58,6 +58,7 @@
 
 //	Third-Party Headers
 #include <CKFWMutex.h>
+#include <CKFWConditional.h>
 
 //	Other Headers
 
@@ -1512,6 +1513,39 @@ class CKStringList
 
 		CKString popOffEnd();
 		CKString popOffEnd() const;
+		
+		/*
+		 * These methods remove the first and last strings from the list
+		 * and return them to the callers. The idea is that many times
+		 * when the processing of a list is done a line at a time and this
+		 * makes it easy to do this. If there are no lines in the list
+		 * this method WILL BLOCK until there is something in the list
+		 * to return. This is an efficient way but can be dangerous
+		 * because of the blocking.
+		 */
+		CKString popSomethingOffFront();
+		CKString popSomethingOffFront() const;
+
+		CKString popSomethingOffEnd();
+		CKString popSomethingOffEnd() const;
+		
+		/*
+		 * These methods remove up to 'aMaxCnt' lines from the front, or
+		 * end, of the list - depending on the method. The idea is that
+		 * many times in processing a list of "things", a thread needs to
+		 * grab a bunch of "things" and then process them. The individual
+		 * popSomethingOff...() methods are going to tie up the mutex used
+		 * to lock the list, so it's better to grab a 'bunch' at a time.
+		 * These methods will block until there is at least ONE line in the
+		 * list to process, so care needs to be taken to make sure that
+		 * the list is not empty before calling these - or you want to
+		 * block until there's something to do.
+		 */
+		CKStringList cutLinesOffFront( int aMaxCnt );
+		CKStringList cutLinesOffFront( int aMaxCnt ) const;
+		
+		CKStringList cutLinesOffEnd( int aMaxCnt );
+		CKStringList cutLinesOffEnd( int aMaxCnt ) const;
 
 		/*
 		 * This is the tokenizer/parser that wasn't in the STL string
@@ -1588,9 +1622,12 @@ class CKStringList
 		CKStringNode			*mTail;
 		/*
 		 * This is the mutex that is going to protect all the dangerous
-		 * operations so that this list is thread-safe.
+		 * operations so that this list is thread-safe. We're also going
+		 * to have a conditional to allow the users to wait on something
+		 * being put in this list.
 		 */
 		CKFWMutex				mMutex;
+		CKFWConditional			mConditional;
 };
 
 /*
@@ -1600,6 +1637,52 @@ class CKStringList
  */
 std::ostream & operator<<( std::ostream & aStream, CKStringList & aList );
 std::ostream & operator<<( std::ostream & aStream, const CKStringList & aList );
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * When dealing with removing *something* from the list we're going to be
+ * using a classic CKFWConditional. For this conditional, we need to have
+ * a class that tests to see if the thread needs to continue to wait, or
+ * if the conditions are right for it to allow execution to continue. This
+ * test is really simple - is the CKStringList empty? If so, we wait, if
+ * not then we process. This is how popSomething() works.
+ * ----------------------------------------------------------------------------
+ */
+/********************************************************
+ *
+ *                CKFWConditionalTests
+ *
+ ********************************************************/
+/*
+ * This class is the test used with the conditional on the CKStringList
+ * to indicate when the list has something in it so that those waiting
+ * on something can continue and get that something.
+ */
+class CKStringListNotEmptyTest :
+	public ICKFWConditionalSpuriousTest
+{
+	public:
+		CKStringListNotEmptyTest( CKStringNode **aHead ) :
+			mHeadPtr(aHead)
+		{
+		}
+		
+		virtual ~CKStringListNotEmptyTest()
+		{
+			mHeadPtr = NULL;
+		}
+		
+		virtual int test()
+		{
+			return ((mHeadPtr != NULL) && ((*mHeadPtr) == NULL));
+		}
+
+	private:
+		CKStringNode	**mHeadPtr;
+};
 
 
 
