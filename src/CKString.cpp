@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.29 2008/01/14 21:44:21 drbob Exp $
+ * $Id: CKString.cpp,v 1.30 2008/02/12 12:27:56 drbob Exp $
  */
 
 //	System Headers
@@ -343,13 +343,13 @@ CKString & CKString::operator=( CKString & anOther )
 		if (mSize >= mCapacity) {
 			// make the new capacity just enough to hold this guy
 			mCapacity = mSize + 1;
-	
+
 			// drop the old buffer, if we had one
 			if (mString != NULL) {
 				delete [] mString;
 				mString = NULL;
 			}
-	
+
 			// create the new one
 			mString = new char[mCapacity];
 			if (mString == NULL) {
@@ -361,7 +361,7 @@ CKString & CKString::operator=( CKString & anOther )
 				throw CKException(__FILE__, __LINE__, msg.str());
 			}
 		}
-	
+
 		// now let's clear out what we have and copy in the string
 		bzero(mString, mCapacity);
 		// now see if we need to copy anything into this buffer
@@ -4683,7 +4683,8 @@ std::ostream & operator<<( std::ostream & aStream, const CKStringNode & aNode )
 CKStringList::CKStringList() :
 	mHead(NULL),
 	mTail(NULL),
-	mMutex()
+	mMutex(),
+	mConditional(mMutex)
 {
 }
 
@@ -4696,7 +4697,8 @@ CKStringList::CKStringList() :
 CKStringList::CKStringList( CKStringList & anOther ) :
 	mHead(NULL),
 	mTail(NULL),
-	mMutex()
+	mMutex(),
+	mConditional(mMutex)
 {
 	// let the operator==() take care of this for me
 	*this = anOther;
@@ -4706,7 +4708,8 @@ CKStringList::CKStringList( CKStringList & anOther ) :
 CKStringList::CKStringList( const CKStringList & anOther ) :
 	mHead(NULL),
 	mTail(NULL),
-	mMutex()
+	mMutex(),
+	mConditional(mMutex)
 {
 	// let the operator==() take care of this for me
 	*this = anOther;
@@ -4739,11 +4742,14 @@ CKStringList::~CKStringList()
  */
 CKStringList & CKStringList::operator=( CKStringList & anOther )
 {
-	// first, clear out anything we might have right now
-	clear();
+	// make sure we're not doing this to ourselves
+	if (this != & anOther) {
+		// first, clear out anything we might have right now
+		clear();
 
-	// now, do a deep copy of the source list
-	copyToEnd(anOther);
+		// now, do a deep copy of the source list
+		copyToEnd(anOther);
+	}
 
 	return *this;
 }
@@ -5052,6 +5058,9 @@ void CKStringList::addToFront( char * aCString )
 	// first, lock up this guy against changes
 	mMutex.lock();
 
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aCString != NULL));
+
 	// we need to create a new data point node based on this guy
 	CKStringNode	*node = new CKStringNode(aCString, NULL, mHead);
 	if (node == NULL) {
@@ -5072,6 +5081,11 @@ void CKStringList::addToFront( char * aCString )
 			mHead->mPrev = node;
 		}
 		mHead = node;
+	}
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
 	}
 
 	// now we can release the lock
@@ -5150,6 +5164,9 @@ void CKStringList::addToEnd( char *aCString )
 	// first, lock up this guy against changes
 	mMutex.lock();
 
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aCString != NULL));
+
 	// we need to create a new data point node based on this guy
 	CKStringNode	*node = new CKStringNode(aCString, mTail, NULL);
 	if (node == NULL) {
@@ -5170,6 +5187,11 @@ void CKStringList::addToEnd( char *aCString )
 			mTail->mNext = node;
 		}
 		mTail = node;
+	}
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
 	}
 
 	// now we can release the lock
@@ -5209,6 +5231,9 @@ void CKStringList::putOnFront( CKStringNode *aNode )
 		// next, lock up this guy against changes
 		mMutex.lock();
 
+		// see if by adding this we're not empty
+		bool	wakeUp = (mHead == NULL);
+
 		// we simply need to link this bad boy into the list
 		aNode->mPrev = NULL;
 		aNode->mNext = mHead;
@@ -5218,6 +5243,11 @@ void CKStringList::putOnFront( CKStringNode *aNode )
 			mHead->mPrev = aNode;
 		}
 		mHead = aNode;
+
+		// see if we need to wake any waiters on this guy
+		if (wakeUp) {
+			mConditional.wakeWaiters();
+		}
 
 		// now we can release the lock
 		mMutex.unlock();
@@ -5250,6 +5280,9 @@ void CKStringList::putOnEnd( CKStringNode *aNode )
 		// next, lock up this guy against changes
 		mMutex.lock();
 
+		// see if by adding this we're not empty
+		bool	wakeUp = (mHead == NULL);
+
 		// we simply need to link this bad boy into the list
 		aNode->mPrev = mTail;
 		aNode->mNext = NULL;
@@ -5259,6 +5292,11 @@ void CKStringList::putOnEnd( CKStringNode *aNode )
 			mTail->mNext = aNode;
 		}
 		mTail = aNode;
+
+		// see if we need to wake any waiters on this guy
+		if (wakeUp) {
+			mConditional.wakeWaiters();
+		}
 
 		// now we can release the lock
 		mMutex.unlock();
@@ -5296,6 +5334,9 @@ void CKStringList::copyToFront( CKStringList & aList )
 	mMutex.lock();
 	aList.mMutex.lock();
 
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aList.mHead != NULL));
+
 	/*
 	 * I need to go through all the source data, but backwards because
 	 * I'll be putting these new nodes on the *front* of the list, and
@@ -5328,8 +5369,15 @@ void CKStringList::copyToFront( CKStringList & aList )
 		mHead = node;
 	}
 
-	// now I can release both locks
+	// now I can release the lock on the source locks
 	aList.mMutex.unlock();
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
+	}
+
+	// finally, I can release my own lock
 	mMutex.unlock();
 }
 
@@ -5357,6 +5405,9 @@ void CKStringList::copyToEnd( CKStringList & aList )
 	// first, I need to lock up both me and the source
 	mMutex.lock();
 	aList.mMutex.lock();
+
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aList.mHead != NULL));
 
 	/*
 	 * I need to go through all the source data. I'll be putting these new
@@ -5387,8 +5438,15 @@ void CKStringList::copyToEnd( CKStringList & aList )
 		mTail = node;
 	}
 
-	// now I can release both locks
+	// now I can release the lock on the source locks
 	aList.mMutex.unlock();
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
+	}
+
+	// finally, I can release my own lock
 	mMutex.unlock();
 }
 
@@ -5423,6 +5481,9 @@ void CKStringList::spliceOnFront( CKStringList & aList )
 	mMutex.lock();
 	aList.mMutex.lock();
 
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aList.mHead != NULL));
+
 	// add the source, in total, to the head of this list
 	if (mHead == NULL) {
 		// take their list in toto - mine is empty
@@ -5441,8 +5502,15 @@ void CKStringList::spliceOnFront( CKStringList & aList )
 	aList.mHead = NULL;
 	aList.mTail = NULL;
 
-	// now I can release both locks
+	// now I can release the lock on the source locks
 	aList.mMutex.unlock();
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
+	}
+
+	// finally, I can release my own lock
 	mMutex.unlock();
 }
 
@@ -5471,6 +5539,9 @@ void CKStringList::spliceOnEnd( CKStringList & aList )
 	mMutex.lock();
 	aList.mMutex.lock();
 
+	// see if by adding this we're not empty
+	bool	wakeUp = ((mHead == NULL) && (aList.mHead != NULL));
+
 	// add the source, in total, to the end of this list
 	if (mTail == NULL) {
 		// take their list in toto - mine is empty
@@ -5489,8 +5560,15 @@ void CKStringList::spliceOnEnd( CKStringList & aList )
 	aList.mHead = NULL;
 	aList.mTail = NULL;
 
-	// now I can release both locks
+	// now I can release the lock on the source locks
 	aList.mMutex.unlock();
+
+	// see if we need to wake any waiters on this guy
+	if (wakeUp) {
+		mConditional.wakeWaiters();
+	}
+
+	// finally, I can release my own lock
 	mMutex.unlock();
 }
 
@@ -5962,6 +6040,213 @@ CKString CKStringList::popOffEnd()
 CKString CKStringList::popOffEnd() const
 {
 	return ((CKStringList *)this)->popOffEnd();
+}
+
+
+/*
+ * These methods remove the first and last strings from the list
+ * and return them to the callers. The idea is that many times
+ * when the processing of a list is done a line at a time and this
+ * makes it easy to do this. If there are no lines in the list
+ * this method WILL BLOCK until there is something in the list
+ * to return. This is an efficient way but can be dangerous
+ * because of the blocking.
+ */
+CKString CKStringList::popSomethingOffFront()
+{
+	bool		error = false;
+	CKString	retval = "";
+
+	// make a test based on the head of our list
+	CKStringListNotEmptyTest	tst(&mHead);
+	// now wait until there's something on the list to get
+	mConditional.lockAndTest(tst);
+
+	// we have only one thing to remove - the head of the list - if it exists
+	if (!error) {
+		// see if we have anything to do
+		if (mHead != NULL) {
+			// get the node that we'll be removing
+			CKStringNode	*n = mHead;
+			// ...and get the string that's stored there for returning
+			retval = *n;
+			// move to the new head of the list
+			mHead = mHead->getNext();
+			// tell the node to remove itself nicely
+			n->removeFromList();
+			// and delete him
+			delete n;
+		}
+
+		// finally, we can unlock the list
+		mConditional.unlock();
+	}
+
+	return retval;
+}
+
+
+CKString CKStringList::popSomethingOffFront() const
+{
+	return ((CKStringList *)this)->popSomethingOffFront();
+}
+
+
+CKString CKStringList::popSomethingOffEnd()
+{
+	bool		error = false;
+	CKString	retval = "";
+
+	// make a test based on the head of our list
+	CKStringListNotEmptyTest	tst(&mHead);
+	// now wait until there's something on the list to get
+	mConditional.lockAndTest(tst);
+
+	// we have only one thing to remove - the tail of the list - if it exists
+	if (!error) {
+		// see if we have anything to do
+		if (mTail != NULL) {
+			// get the node that we'll be removing
+			CKStringNode	*n = mTail;
+			// ...and get the string that's stored there for returning
+			retval = *n;
+			// move to the new tail of the list
+			mTail = mTail->getPrev();
+			// tell the node to remove itself nicely
+			n->removeFromList();
+			// and delete him
+			delete n;
+		}
+
+		// finally, we can unlock the list
+		mConditional.unlock();
+	}
+
+	return retval;
+}
+
+
+CKString CKStringList::popSomethingOffEnd() const
+{
+	return ((CKStringList *)this)->popSomethingOffEnd();
+}
+
+
+/*
+ * These methods remove up to 'aMaxCnt' lines from the front, or
+ * end, of the list - depending on the method. The idea is that
+ * many times in processing a list of "things", a thread needs to
+ * grab a bunch of "things" and then process them. The individual
+ * popSomethingOff...() methods are going to tie up the mutex used
+ * to lock the list, so it's better to grab a 'bunch' at a time.
+ * These methods will block until there is at least ONE line in the
+ * list to process, so care needs to be taken to make sure that
+ * the list is not empty before calling these - or you want to
+ * block until there's something to do.
+ */
+CKStringList CKStringList::cutLinesOffFront( int aMaxCnt )
+{
+	bool			error = false;
+	CKStringList	retval;
+
+	// make a test based on the head of our list
+	CKStringListNotEmptyTest	tst(&mHead);
+	// now wait until there's something on the list to get
+	mConditional.lockAndTest(tst);
+
+	// we have only one thing to remove - the head of the list - if it exists
+	if (!error) {
+		// see if we have anything to do
+		if (mHead != NULL) {
+			// I am cutting the list off starting at the head
+			retval.mHead = mHead;
+			// move through the list to the cut line
+			int		cnt = 0;
+			for (CKStringNode *node = mHead; node != NULL; node = node->getNext()) {
+				// stop moving if we have all the caller wants
+				if (++cnt > aMaxCnt) {
+					break;
+				} else {
+					// move the tail one more spot
+					retval.mTail = node;
+				}
+			}
+			// make the new head of the remaining list
+			mHead = retval.mTail->getNext();
+			// adjust the links on the remaining list
+			if (mHead == NULL) {
+				mTail = NULL;
+			} else {
+				mHead->setPrev(NULL);
+			}
+			// clean up the links on the cut-off list
+			retval.mTail->setNext(NULL);
+		}
+
+		// finally, we can unlock the list
+		mConditional.unlock();
+	}
+
+	return retval;
+}
+
+
+CKStringList CKStringList::cutLinesOffFront( int aMaxCnt ) const
+{
+	return ((CKStringList *)this)->cutLinesOffFront(aMaxCnt);
+}
+
+
+CKStringList CKStringList::cutLinesOffEnd( int aMaxCnt )
+{
+	bool			error = false;
+	CKStringList	retval;
+
+	// make a test based on the head of our list
+	CKStringListNotEmptyTest	tst(&mTail);
+	// now wait until there's something on the list to get
+	mConditional.lockAndTest(tst);
+
+	// we have only one thing to remove - the tail of the list - if it exists
+	if (!error) {
+		// see if we have anything to do
+		if (mTail != NULL) {
+			// I am cutting the list off starting at the tail
+			retval.mTail = mTail;
+			// move through the list to the cut line
+			int		cnt = 0;
+			for (CKStringNode *node = mTail; node != NULL; node = node->getPrev()) {
+				// stop moving if we have all the caller wants
+				if (++cnt > aMaxCnt) {
+					break;
+				} else {
+					// move the head one more spot
+					retval.mHead = node;
+				}
+			}
+			// make the new tail of the remaining list
+			mTail = retval.mHead->getPrev();
+			// adjust the links on the remaining list
+			if (mTail == NULL) {
+				mHead = NULL;
+			} else {
+				mTail->setNext(NULL);
+			}
+			// clean up the links on the cut-off list
+			retval.mHead->setPrev(NULL);
+		}
+
+		// finally, we can unlock the list
+		mConditional.unlock();
+	}
+
+	return retval;
+}
+
+
+CKStringList CKStringList::cutLinesOffEnd( int aMaxCnt ) const
+{
+	return ((CKStringList *)this)->cutLinesOffEnd(aMaxCnt);
 }
 
 
