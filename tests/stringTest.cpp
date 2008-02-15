@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
 		std::cout << one_two << " !< " << one << std::endl;
 	}
 	
+#if defined(__GNUC_) && (__GNUC__ >= 4)
 	__gnu_cxx::hash_map<CKString, int, __gnu_cxx::hash<const CKString&> > months;
 	months["january"] = 31;
 	months["february"] = 28;
@@ -97,4 +98,5 @@ int main(int argc, char *argv[]) {
 	std::cout << "april     -> " << months["april"] << std::endl;
 	std::cout << "june      -> " << months["june"] << std::endl;
 	std::cout << "november  -> " << months["november"] << std::endl;
+#endif
 }
