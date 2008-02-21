@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.30 2008/02/12 12:27:56 drbob Exp $
+ * $Id: CKString.cpp,v 1.31 2008/02/21 09:54:39 drbob Exp $
  */
 
 //	System Headers
@@ -6331,6 +6331,14 @@ CKStringList CKStringList::parseIntoChunks( const CKString & aString,
 	}
 
 	return retval;
+}
+
+
+CKStringList CKStringList::parseIntoChunks( const CKString & aString,
+											const char aDelim )
+{
+	CKString	delim((char) aDelim);
+	return parseIntoChunks(aString, delim);
 }
 
 
