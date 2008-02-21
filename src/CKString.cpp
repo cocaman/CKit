@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.31 2008/02/21 09:54:39 drbob Exp $
+ * $Id: CKString.cpp,v 1.32 2008/02/21 21:39:21 drbob Exp $
  */
 
 //	System Headers
@@ -4359,7 +4359,10 @@ bool CKString::isBase64Char( char aChar )
  */
 std::ostream & operator<<( std::ostream & aStream, CKString & aString )
 {
-	aStream << aString.c_str();
+	const char *str = aString.c_str();
+	if (str != NULL) {
+		aStream << str;
+	}
 
 	return aStream;
 }
@@ -4367,7 +4370,10 @@ std::ostream & operator<<( std::ostream & aStream, CKString & aString )
 
 std::ostream & operator<<( std::ostream & aStream, const CKString & aString )
 {
-	aStream << ((CKString &)aString).c_str();
+	const char *str = aString.c_str();
+	if (str != NULL) {
+		aStream << str;
+	}
 
 	return aStream;
 }
