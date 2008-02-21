@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.20 2008/02/12 12:27:57 drbob Exp $
+ * $Id: CKString.h,v 1.21 2008/02/21 09:54:39 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -1558,6 +1558,8 @@ class CKStringList
 		 */
 		static CKStringList parseIntoChunks( const CKString & aString,
 											 const CKString & aDelim );
+		static CKStringList parseIntoChunks( const CKString & aString,
+											 const char aDelim );
 
 		/*
 		 * This method is really useful when dealing with a list of
