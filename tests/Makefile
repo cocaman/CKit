@@ -39,6 +39,7 @@ endif
 #
 INCLUDE_DIR = ../include
 LIB_DIR = ../lib
+LIB64_DIR = ../lib64
 SRC_DIR = ../src
 
 #
@@ -46,6 +47,7 @@ SRC_DIR = ../src
 # CKit contained within it.
 #
 LIB_FILE = $(LIB_DIR)/libCKit.$(LIB_EXT)
+LIB64_FILE = $(LIB64_DIR)/libCKit.$(LIB_EXT)
 
 #
 # These are the pretty standard C++-style defines for a makefile - the
@@ -56,13 +58,14 @@ DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
 LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
+LIBS64 = -L$(LIB64_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
 LDFLAGS =
 
 #
 # These are the main targets that we'll be making
 #
 APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
-		series base64 mindalign numberTest table plistNode
+		series base64 mindalign numberTest table plistNode initProb
 
 all: $(APPS)
 
@@ -122,5 +125,8 @@ base64: base64.cpp $(LIB_FILE)
 
 numberTest: numberTest.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) numberTest.cpp -o numberTest $(LIBS) $(LDFLAGS)
+
+initProb: initProb.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) initProb.cpp -o initProb $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE
