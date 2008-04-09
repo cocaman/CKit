@@ -9,7 +9,7 @@
  *                         and the other work is left to the super to deal
  *                         with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.h,v 1.1 2006/09/29 17:46:36 drbob Exp $
+ * $Id: CKMindAlignProtocol.h,v 1.2 2008/04/09 19:48:48 drbob Exp $
  */
 #ifndef __CKMINDALIGNPROTOCOL_H
 #define __CKMINDALIGNPROTOCOL_H
@@ -301,7 +301,15 @@ class CKMindAlignProtocol :
 		 * authentication token to the MindAlign server so that the server
 		 * knows who this is coming from.
 		 */
-		void doAUTH( const CKString & aToken );
+		virtual void doAUTH( const CKString & aToken );
+		/*
+		 * This executes the standard IRC 'JOIN' command but because MindAlign
+		 * is not as fast on it's feet as IRC, I need to be a little careful
+		 * on the verification that we're in the channel before returning.
+		 * This puts us in the channel on the server so that we can send
+		 * messages to it.
+		 */
+		virtual void doJOIN( const CKString & aChannel );
 
 	private:
 		/*

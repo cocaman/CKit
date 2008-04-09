@@ -6,7 +6,7 @@
  *                   and return a CKString as a reply. This is the core
  *                   of the chat servers.
  *
- * $Id: CKIRCProtocol.h,v 1.13 2007/11/26 19:33:12 drbob Exp $
+ * $Id: CKIRCProtocol.h,v 1.14 2008/04/09 19:48:48 drbob Exp $
  */
 #ifndef __CKIRCPROTOCOL_H
 #define __CKIRCPROTOCOL_H
@@ -531,54 +531,54 @@ class CKIRCProtocol
 		 * channel to the remote host. This is meant to supply a password
 		 * to the IRC server to ensure at least some level of security.
 		 */
-		void doPASS( const CKString & aPassword );
+		virtual void doPASS( const CKString & aPassword );
 		/*
 		 * This executes the standard IRC 'NICK' command on the communication
 		 * channel to the remote host. This is meant to supply the requested
 		 * nickname to the IRC server so that everyone knows who this is coming
 		 * from.
 		 */
-		void doNICK( const CKString & aNick );
+		virtual void doNICK( const CKString & aNick );
 		/*
 		 * This executes the standard IRC 'USER' command on the communication
 		 * channel to the remote host. This is meant to supply real
 		 * information about the user to the IRC server.
 		 */
-		void doUSER( const CKString & aNick,
-					 const CKString & aHost,
-					 const CKString & aServer,
-					 const CKString & aRealName );
+		virtual void doUSER( const CKString & aNick,
+							 const CKString & aHost,
+							 const CKString & aServer,
+							 const CKString & aRealName );
 		/*
 		 * This executes the standard IRC 'QUIT' command on the communication
 		 * channel to the remote host. This is meant to log off this
 		 * connection and leave a message on the way out.
 		 */
-		void doQUIT( const CKString & aMsg );
+		virtual void doQUIT( const CKString & aMsg );
 		/*
 		 * This executes the standard IRC 'JOIN' command on the communication
 		 * channel to the remote host. This puts us in the channel on the
 		 * server so that we can send messages to it.
 		 */
-		void doJOIN( const CKString & aChannel );
+		virtual void doJOIN( const CKString & aChannel );
 		/*
 		 * This executes the standard IRC 'PRIVMSG' command on the
 		 * communication channel to the remote host. This sends a private
 		 * message to the supplied user or channel and includes a return
 		 * code - the doNOTICE is different in that no return code is sent.
 		 */
-		void doPRIVMSG( const CKString & aDest, const CKString & aMsg );
+		virtual void doPRIVMSG( const CKString & aDest, const CKString & aMsg );
 		/*
 		 * This executes the standard IRC 'NOTICE' command on the
 		 * communication channel to the remote host. This is similar to
 		 * doPRIVMSG() but here we do NOT get a reply from the IRC server.
 		 */
-		void doNOTICE( const CKString & aDest, const CKString & aMsg );
+		virtual void doNOTICE( const CKString & aDest, const CKString & aMsg );
 		/*
 		 * This execute the PONG command that is used in response to the PING
 		 * sent from the IRC Server. This lets the server know that I'm alive
 		 * and listening...
 		 */
-		void doPONG();
+		virtual void doPONG();
 
 	private:
 		/*

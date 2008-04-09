@@ -9,7 +9,7 @@
  *                           and the other work is left to the super to deal
  *                           with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.cpp,v 1.2 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKMindAlignProtocol.cpp,v 1.3 2008/04/09 19:48:48 drbob Exp $
  */
 
 //	System Headers
@@ -799,6 +799,34 @@ void CKMindAlignProtocol::doAUTH( const CKString & aToken )
 	CKString		cmd = "AUTH ";
 	cmd += aToken;
 	executeCommand(cmd);
+}
+
+
+/*
+ * This executes the standard IRC 'JOIN' command but because MindAlign
+ * is not as fast on it's feet as IRC, I need to be a little careful
+ * on the verification that we're in the channel before returning.
+ * This puts us in the channel on the server so that we can send
+ * messages to it.
+ */
+void CKMindAlignProtocol::doJOIN( const CKString & aChannel )
+{
+	// do this only if we haven't already joined this channel
+	if (!isChannelInChannelList(aChannel)) {
+		// do the join with the server
+		CKString		cmd = "JOIN ";
+		cmd += aChannel;
+		executeCommand(cmd);
+		/*
+		 * This isn't perfect, but it seems that all the JOINs I've
+		 * tested are valid within 0.5 sec of the call. This is a lot
+		 * easier than scanning the returned data, so we'll let it go
+		 * at this for now.
+		 */
+		mmsleep(500);
+		// ...and add it to our list
+		addToChannelList(aChannel);
+	}
 }
 
 
