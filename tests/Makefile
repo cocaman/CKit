@@ -57,15 +57,15 @@ INCLUDES = -I. -I$(INCLUDE_DIR) -I$(SRC_DIR)
 DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
-LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
-LIBS64 = -L$(LIB64_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
+LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lcurl -lCKit -lpthread
+LIBS64 = -L$(LIB64_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lcurl -lCKit -lpthread
 LDFLAGS =
 
 #
 # These are the main targets that we'll be making
 #
 APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
-		series base64 mindalign numberTest table plistNode initProb
+		series base64 mindalign numberTest table plistNode initProb url
 
 all: $(APPS)
 
@@ -128,5 +128,8 @@ numberTest: numberTest.cpp $(LIB_FILE)
 
 initProb: initProb.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) initProb.cpp -o initProb $(LIBS) $(LDFLAGS)
+
+url: url.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) url.cpp -o url $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE

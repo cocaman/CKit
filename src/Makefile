@@ -63,8 +63,8 @@ LIB64_FILE = $(LIB64_DIR)/libCKit.$(SO_EXT)
 INCLUDES = -I. -I$(INCLUDE_DIR)
 DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
-LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi
-LIBS64 = -L$(LIB64_DIR) -lstdc++ -lsqlapi
+LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi -lcurl
+LIBS64 = -L$(LIB64_DIR) -lstdc++ -lsqlapi -lcurl
 LDFLAGS = -fPIC $(LIBS) $(LDD_32)
 LD64FLAGS = -fPIC $(LIBS64) $(LDD_64)
 
@@ -73,6 +73,7 @@ LD64FLAGS = -fPIC $(LIBS64) $(LDD_64)
 #
 .SUFFIXES: .h .cpp .o .o64
 OBJS = CKUUID.o \
+	CKURL.o \
 	CKSocket.o \
 	CKBufferedSocket.o \
 	CKTCPConnection.o \
@@ -172,6 +173,7 @@ $(LIB64_FILE): $(LIB64_DIR) $(OBJS64)
 # DO NOT DELETE
 
 CKUUID.o: CKUUID.h CKString.h CKFWMutex.h CKException.h
+CKURL.o: CKURL.h CKString.h CKFWMutex.h CKException.h CKStackLocker.h
 CKSocket.o: CKSocket.h CKString.h CKFWMutex.h CKException.h CKErrNoException.h
 CKBufferedSocket.o: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKBufferedSocket.o: CKException.h
@@ -307,6 +309,7 @@ muParserTest.o: CKString.h CKVector.h CKStackLocker.h CKFWRWMutex.h
 muParserTest.o: CKFWSemaphore.h CKException.h
 
 CKUUID.o64: CKUUID.h CKString.h CKFWMutex.h CKException.h
+CKURL.o64: CKURL.h CKString.h CKFWMutex.h CKException.h CKStackLocker.h
 CKSocket.o64: CKSocket.h CKString.h CKFWMutex.h CKException.h CKErrNoException.h
 CKBufferedSocket.o64: CKBufferedSocket.h CKSocket.h CKString.h CKFWMutex.h
 CKBufferedSocket.o64: CKException.h
