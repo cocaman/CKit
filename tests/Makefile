@@ -58,7 +58,11 @@ DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 
 LIBS = -L$(LIB_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lcurl -lCKit -lpthread
+ifeq ($(shell uname),SunOS)
+LIBS64 = -L$(LIB64_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lCKit -lpthread
+else
 LIBS64 = -L$(LIB64_DIR) $(OS_LIBS) -lstdc++ -lsqlapi -lcurl -lCKit -lpthread
+endif
 LDFLAGS =
 
 #
