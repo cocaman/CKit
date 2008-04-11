@@ -64,7 +64,11 @@ INCLUDES = -I. -I$(INCLUDE_DIR)
 DEFINES = $(CXX_DEFS)
 CXXFLAGS = -fPIC -g -Wall $(INCLUDES) $(DEFINES)
 LIBS = -L$(LIB_DIR) -lstdc++ -lsqlapi -lcurl
+ifeq ($(shell uname),SunOS)
+LIBS64 = -L$(LIB64_DIR) -lstdc++ -lsqlapi
+else
 LIBS64 = -L$(LIB64_DIR) -lstdc++ -lsqlapi -lcurl
+endif
 LDFLAGS = -fPIC $(LIBS) $(LDD_32)
 LD64FLAGS = -fPIC $(LIBS64) $(LDD_64)
 
@@ -129,6 +133,7 @@ OBJS64 = $(SRCS:%.cpp=%.o64)
 #
 ifeq ($(shell uname),SunOS)
 all: $(LIB_FILE) $(LIB64_FILE)
+OBJS64 := $(OBJS64:CKURL.o64=)
 else
 ifeq ($(shell uname),Darwin)
 all: $(LIB_FILE) $(LIB64_FILE)
