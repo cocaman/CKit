@@ -11,11 +11,12 @@
  *             the connection to the host will be maintained if you issue
  *             multiple calls to the same host.
  *
- * $Id: CKURL.cpp,v 1.1 2008/04/11 18:22:04 drbob Exp $
+ * $Id: CKURL.cpp,v 1.2 2008/04/11 21:25:42 drbob Exp $
  */
 
 //	System Headers
 #include <string.h>
+#include <strings.h>
 
 //	Third-Party Headers
 
