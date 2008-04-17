@@ -5,7 +5,7 @@
  *              This was originally written in the MarketMash server by
  *              Jeremy.
  *
- * $Id: CKVector.h,v 1.5 2008/03/01 11:07:13 drbob Exp $
+ * $Id: CKVector.h,v 1.6 2008/04/17 00:18:54 drbob Exp $
  */
 #ifndef __CKVECTOR_H
 #define __CKVECTOR_H
@@ -153,7 +153,7 @@ template <class T> class CKVector
 				mCapacity = anOther.mCapacity;
 				mInitialCapacity = anOther.mInitialCapacity;
 				mCapacityIncrement = anOther.mCapacityIncrement;
-	
+
 				// next, try to get the right sized array
 				mElements = new T[mSize];
 				if (mElements == NULL) {
@@ -164,7 +164,7 @@ template <class T> class CKVector
 						"error as soon as possible.";
 					throw CKException(__FILE__, __LINE__, msg.str());
 				}
-	
+
 				// now let's copy in the elements one by one
 				for (int i = 0; i < mSize; i++) {
 					mElements[i] = anOther.mElements[i];
