@@ -1,9 +1,10 @@
 /*
  * CKFIFOQueue.h - this file defines a template class that is a simple
  *                 first-in-first-out queue of something. This is really
- *                 nice in that
+ *                 nice in that we can choose to have it ignore duplicates
+ *                 or we can have duplicates included.
  *
- * $Id: CKFIFOQueue.h,v 1.3 2008/01/23 18:18:51 drbob Exp $
+ * $Id: CKFIFOQueue.h,v 1.4 2008/04/25 19:03:00 drbob Exp $
  */
 #ifndef __CKFIFOQUEUE_H
 #define __CKFIFOQUEUE_H
@@ -571,11 +572,6 @@ template <class T> class CKFIFOQueue
 		 * for just about anything. In these cases, it's nice not to have to
 		 * worry about the ownership of the representation, so this returns
 		 * a CKString.
-		 *
-		 * If the default 'false' is used then the only information that's
-		 * returned is with regards to the node itself and not a complete
-		 * dump of the tree rooted at this node. Pass in a 'true' if you
-		 * want to see the entire tree at this node.
 		 */
 		CKString toString() const
 		{
