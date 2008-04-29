@@ -7,7 +7,7 @@
  *                           allow subsequent push() calls to replace the data
  *                           but preserve the order.
  *
- * $Id: CKFIFOCoalescingQueue.h,v 1.1 2008/04/25 19:04:04 drbob Exp $
+ * $Id: CKFIFOCoalescingQueue.h,v 1.2 2008/04/29 19:32:26 drbob Exp $
  */
 #ifndef __CKFIFOCOALESCINGQUEUE_H
 #define __CKFIFOCOALESCINGQUEUE_H
@@ -254,6 +254,32 @@ template <class K, class T> class CKFIFOCoalescingQueue
 
 
 		/*
+		 * When you have a map of keys and values and you want to place them
+		 * all onto this queue, you can call this method.
+		 */
+		void push( const std::map<K,T> & aMap )
+		{
+			// first, lock up this guy against changes
+			CKStackLocker	lockem(&mMutex);
+
+			// get the size of the keys right now
+			int		startingSize = mKeys.size();
+			// now let's rip through the map of stuff and add what's needed
+			typename std::map<K,T>::const_iterator		i;
+			for (i = aMap.being; i != aMap.end(); ++i) {
+				// add the data to the map - replacing or adding as it may be
+				mElements[i->first] = i->second;
+				// push the key onto the key stack - ignoring duplicates
+				mKeys.push(i->first);
+			}
+			// see if we need to wake any waiters
+			if ((startingSize == 0) && (mKeys.size() > 0)) {
+				mConditional.wakeWaiter();
+			}
+		}
+
+
+		/*
 		 * When you want to remove the next element off the queue,
 		 * this method will return that element and it will be removed
 		 * from the queue itself.
@@ -279,6 +305,41 @@ template <class K, class T> class CKFIFOCoalescingQueue
 			// ...now get the value out of the map and remove it from the map
 			retval = mElements[key];
 			mElements.erase(key);
+
+			return retval;
+		}
+
+
+		/*
+		 * When you want to remove more than one element from the queue
+		 * in fact, remove up to 'aNumber' of them, then you can call this
+		 * method and it will return these elements in a CKVector<T>.
+		 */
+		CKVector<T> pop( int aNumber )
+		{
+			CKVector<T>		retval;
+
+			// first, see if we have anything to do
+			if (mKeys.empty()) {
+				std::ostringstream	msg;
+				msg << "CKFIFOCoalescingQueue<K,T>::pop(int) - there are no elements "
+					"in this queue to return. Please use the size() method to verify "
+					"that there is something to get.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
+
+			// next, lock up this guy against changes
+			CKStackLocker	lockem(&mMutex);
+
+			// figure out how many to grab off the queue
+			int		cnt = (aNumber > mKeys.size() ? mKeys.size() : aNumber);
+			for (int i = 0; i < cnt; ++i) {
+				// grab the first one in the queue
+				K	key = mKeys.pop();
+				// ...now get the value out of the map and remove it from the map
+				retval.addToEnd(mElements[key]);
+				mElements.erase(key);
+			}
 
 			return retval;
 		}

@@ -4,7 +4,7 @@
  *                 nice in that we can choose to have it ignore duplicates
  *                 or we can have duplicates included.
  *
- * $Id: CKFIFOQueue.h,v 1.4 2008/04/25 19:03:00 drbob Exp $
+ * $Id: CKFIFOQueue.h,v 1.5 2008/04/29 19:32:26 drbob Exp $
  */
 #ifndef __CKFIFOQUEUE_H
 #define __CKFIFOQUEUE_H
@@ -25,6 +25,7 @@
 #include "CKStackLocker.h"
 #include "CKFWConditional.h"
 #include "CKException.h"
+#include "CKVector.h"
 
 //	Forward Declarations
 template <class T> class CKFIFOQueue;
@@ -337,6 +338,47 @@ template <class T> class CKFIFOQueue
 
 
 		/*
+		 * When you have a vector of elements and you want to place them
+		 * all onto this queue, you can call this method.
+		 */
+		void push( const CKVector<T> & aVector )
+		{
+			// first, see if we have anything to do
+			if (mElements == NULL) {
+				std::ostringstream	msg;
+				msg << "CKFIFOQueue<T>::push(CKVector<T> &) - the storage for "
+					"this queue is NULL and that is a data corruption problem that "
+					"needs to be looked into as soon as possible. This should "
+					"never happen.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
+
+			// next, lock up this guy against changes
+			CKStackLocker	lockem(&mMutex);
+
+			// see if we need to resize for adding everything to the queue
+			int		startingSize = mSize;
+			if (mSize + aVector.size() >= mCapacity) {
+				resize(mSize + aVector.size() + mCapacityIncrement);
+			}
+
+			// see if we are making sure they are unique
+			for (int i = 0; i < aVector.size(); ++i) {
+				if (!mElementsAreUnique || !contains(aVector[i])) {
+					// put this guy where he belongs and up the count
+					mElements[mSize] = aVector[i];
+					mSize++;
+				}
+			}
+	
+			// see if we need to wake any waiters
+			if ((startingSize == 0) && (mSize > 0)) {
+				mConditional.wakeWaiter();
+			}
+		}
+
+
+		/*
 		 * When you want to remove the next element off the queue,
 		 * this method will return that element and it will be removed
 		 * from the queue itself.
@@ -348,7 +390,7 @@ template <class T> class CKFIFOQueue
 			// first, see if we have anything to do
 			if (mElements == NULL) {
 				std::ostringstream	msg;
-				msg << "CKFIFOQueue<T>::pop(T &) - the storage for this queue "
+				msg << "CKFIFOQueue<T>::pop() - the storage for this queue "
 					"is NULL and that is a data corruption problem that needs to "
 					"be looked into as soon as possible. This should never happen.";
 				throw CKException(__FILE__, __LINE__, msg.str());
@@ -371,6 +413,58 @@ template <class T> class CKFIFOQueue
 			mSize--;
 			for (int i = 0; i < mSize; i++) {
 				mElements[i] = mElements[i+1];
+			}
+
+			return retval;
+		}
+
+
+		/*
+		 * When you want to remove more than one element from the queue
+		 * in fact, remove up to 'aNumber' of them, then you can call this
+		 * method and it will return these elements in a CKVector<T>.
+		 */
+		CKVector<T> pop( int aNumber )
+		{
+			CKVector<T>		retval;
+
+			// first, see if we have anything to do
+			if (mElements == NULL) {
+				std::ostringstream	msg;
+				msg << "CKFIFOQueue<T>::pop(int) - the storage for this queue "
+					"is NULL and that is a data corruption problem that needs to "
+					"be looked into as soon as possible. This should never happen.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
+			if (mSize == 0) {
+				std::ostringstream	msg;
+				msg << "CKFIFOQueue<T>::pop(int) - there are no elements in this queue "
+					"to return. Please use the size() method to verify that there "
+					"is something to get.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+			}
+
+			// next, lock up this guy against changes
+			CKStackLocker	lockem(&mMutex);
+
+			// figure out how many to grab off the queue
+			int		cnt = (aNumber > mSize ? mSize : aNumber);
+			for (int i = 0; i < cnt; ++i) {
+				retval.addToEnd(mElements[i]);
+			}
+
+			// now we need to move everything to the left
+			if (cnt == mSize) {
+				// we're clearing everything out, that means reset the size
+				mSize = 0;
+			} else {
+				// just making it smaller - but not empty
+				int		j = 0;
+				for (int i = cnt; i < mSize; ++i) {
+					mElements[j++] = mElements[i];
+				}
+				// now adjust the size for the removed elements
+				mSize -= cnt;
 			}
 
 			return retval;

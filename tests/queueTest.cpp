@@ -7,9 +7,11 @@
 
 #include "CKLIFOQueue.h"
 #include "CKLIFOCoalescingQueue.h"
+#include "CKFIFOQueue.h"
+#include "CKFIFOCoalescingQueue.h"
 
 int main(int argc, char *argv[]) {
-	CKLIFOQueue<int>	a;
+	CKFIFOQueue<int>	a;
 
 	std::cout << "a.size = " << a.size() << std::endl;
 	std::cout << "a.capacity = " << a.capacity() << std::endl;
