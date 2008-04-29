@@ -7,7 +7,7 @@
  *                           allow subsequent push() calls to replace the data
  *                           but preserve the order.
  *
- * $Id: CKFIFOCoalescingQueue.h,v 1.2 2008/04/29 19:32:26 drbob Exp $
+ * $Id: CKFIFOCoalescingQueue.h,v 1.3 2008/04/29 20:36:36 drbob Exp $
  */
 #ifndef __CKFIFOCOALESCINGQUEUE_H
 #define __CKFIFOCOALESCINGQUEUE_H
@@ -24,6 +24,7 @@
 //	Third-Party Headers
 
 //	Other Headers
+#include "CKFIFOQueue.h"
 #include "CKString.h"
 #include "CKFWMutex.h"
 #include "CKStackLocker.h"
@@ -266,7 +267,7 @@ template <class K, class T> class CKFIFOCoalescingQueue
 			int		startingSize = mKeys.size();
 			// now let's rip through the map of stuff and add what's needed
 			typename std::map<K,T>::const_iterator		i;
-			for (i = aMap.being; i != aMap.end(); ++i) {
+			for (i = aMap.begin(); i != aMap.end(); ++i) {
 				// add the data to the map - replacing or adding as it may be
 				mElements[i->first] = i->second;
 				// push the key onto the key stack - ignoring duplicates
