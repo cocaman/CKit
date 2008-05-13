@@ -5,7 +5,7 @@
  *                 then be treated as a single data type and thus really
  *                 simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.cpp,v 1.28 2008/01/14 21:46:02 drbob Exp $
+ * $Id: CKVariant.cpp,v 1.29 2008/05/13 20:11:33 drbob Exp $
  */
 
 //	System Headers
@@ -902,6 +902,102 @@ const CKTimeTable *CKVariant::getTimeTableValue() const
 			"therefore we can't get a time table value from it.");
 	}
 	return mTimeTableValue;
+}
+
+
+/*
+ * These operators allow me to use the variants as regular types
+ * when casting to the right type. The trick is that if the variant
+ * is not the casted type, an exception will be thrown due to an
+ * illegal cast.
+ */
+CKVariant::operator int() const
+{
+	return getIntValue();
+}
+
+
+CKVariant::operator double() const
+{
+	return getDoubleValue();
+}
+
+
+CKVariant::operator long() const
+{
+	return getDateValue();
+}
+
+
+CKVariant::operator CKString &() const
+{
+	return *((CKString *)getStringValue());
+}
+
+
+CKVariant::operator CKString *() const
+{
+	return (CKString *)getStringValue();
+}
+
+
+CKVariant::operator CKTable &() const
+{
+	return *((CKTable *)getTableValue());
+}
+
+
+CKVariant::operator CKTable *() const
+{
+	return (CKTable *)getTableValue();
+}
+
+
+CKVariant::operator CKTimeSeries &() const
+{
+	return *((CKTimeSeries *)getTimeSeriesValue());
+}
+
+
+CKVariant::operator CKTimeSeries *() const
+{
+	return (CKTimeSeries *)getTimeSeriesValue();
+}
+
+
+CKVariant::operator CKPrice &() const
+{
+	return *((CKPrice *)getPriceValue());
+}
+
+
+CKVariant::operator CKPrice *() const
+{
+	return (CKPrice *)getPriceValue();
+}
+
+
+CKVariant::operator CKVariantList &() const
+{
+	return *((CKVariantList *)getListValue());
+}
+
+
+CKVariant::operator CKVariantList *() const
+{
+	return (CKVariantList *)getListValue();
+}
+
+
+CKVariant::operator CKTimeTable &() const
+{
+	return *((CKTimeTable *)getTimeTableValue());
+}
+
+
+CKVariant::operator CKTimeTable *() const
+{
+	return (CKTimeTable *)getTimeTableValue();
 }
 
 

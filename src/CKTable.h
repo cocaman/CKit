@@ -5,12 +5,13 @@
  *             really allows us to have a very general table structure of
  *             objects and manipulate them very easily.
  *
- * $Id: CKTable.h,v 1.19 2007/01/18 10:02:37 drbob Exp $
+ * $Id: CKTable.h,v 1.20 2008/05/13 20:11:33 drbob Exp $
  */
 #ifndef __CKTABLE_H
 #define __CKTABLE_H
 
 //	System Headers
+#include <map>
 /*
  * Because we're using the NAN value in some places in this object,
  * we need to make sure that it's defined for all the platforms that
@@ -556,6 +557,17 @@ class CKTable {
 		 */
 		bool operator!=( const CKTable & anOther ) const;
 		/*
+		 * To make it a little easier on the user of this table, I have
+		 * created these operators so that elements in the table can be
+		 * referenced like simply indexes: tbl(0,5) - for both the RHS
+		 * and LHS of the equation. This requires the CKVariant to handle
+		 * a lot of the work, but that's not horrible, really.
+		 */
+		CKVariant & operator()( int aRow, int aCol );
+		CKVariant & operator()( int aRow, const CKString & aColHeader );
+		CKVariant & operator()( const CKString & aRowLabel, int aCol );
+		CKVariant & operator()( const CKString & aRowLabel, const CKString & aColHeader );
+		/*
 		 * Because there are times when it's useful to have a nice
 		 * human-readable form of the contents of this table. Most of the
 		 * time this means that it's used for debugging, but it could be used
@@ -668,7 +680,7 @@ class CKTable {
 		 * about how all these things are created. It's all encapsulated
 		 * pretty nicely.
 		 */
-		CKVariant		*mTable;
+		CKVariant					*mTable;
 		/*
 		 * This is a array of CKString values that are the column
 		 * headers. The reason for picking the CKString is that it allows
@@ -676,7 +688,14 @@ class CKTable {
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		CKString		*mColumnHeaders;
+		CKString					*mColumnHeaders;
+		/*
+		 * This is the 'index' of the column headers so that it will be
+		 * very fast converting a column header into it's numerical column
+		 * position. This is populated at the same time as the mColumnHeaders
+		 * so it stays in sync at all times.
+		 */
+		std::map<CKString, int>		mColumnHeadersIndex;
 		/*
 		 * This is a array of CKString values that are the row
 		 * labels. The reason for picking the CKString is that it allows
@@ -684,21 +703,28 @@ class CKTable {
 		 * management of the strings and it's just as easy to get the
 		 * C-string equivalent from them when using the encoding/decoding.
 		 */
-		CKString		*mRowLabels;
+		CKString					*mRowLabels;
+		/*
+		 * This is the 'index' of the row labels so that it will be
+		 * very fast converting a row label into it's numerical row
+		 * position. This is populated at the same time as the mRowLabels
+		 * so it stays in sync at all times.
+		 */
+		std::map<CKString, int>		mRowLabelsIndex;
 		/*
 		 * This is the current number of rows expressed in the table's
 		 * data structure. It has been used in the creation of the data
 		 * table, above, and if the value is -1, then this indicates that
 		 * no table has been defined.
 		 */
-		int				mNumRows;
+		int							mNumRows;
 		/*
 		 * This is the current number of columns expressed in the table's
 		 * data structure. It has been used in the creation of the data
 		 * table, above, and if the value is -1, then this indicates that
 		 * no table has been defined.
 		 */
-		int				mNumColumns;
+		int							mNumColumns;
 
 		/********************************************************
 		 *
