@@ -46,4 +46,25 @@ int main(int argc, char *argv[]) {
 	b.merge(a);
 	std::cout << "A + B:" << std::endl;
 	std::cout << b << std::endl;
+	
+	CKTable		animal(3, 3);
+	animal.setColumnHeader(0, "Name");
+	animal.setColumnHeader(1, "Legs");
+	animal.setColumnHeader(2, "Diet");
+	animal(0,0) = "Pig";
+	animal(0,1) = (int)4;
+	animal(0,2) = "slop";
+	animal(1,0) = "Cow";
+	animal(1,1) = (int)4;
+	animal(1,2) = "hay";
+	animal(2,0) = "Duck";
+	animal(2,1) = (int)2;
+	animal(2,2) = "grass";
+	std::cout << "Animals:" << std::endl;
+	std::cout << animal << std::endl;
+	
+	std::cout << "Column for 'Name': " << animal.getColumnForHeader("Name") << std::endl;
+	std::cout << "Column for 'Legs': " << animal.getColumnForHeader("Legs") << std::endl;
+	std::cout << "Column for 'Diet': " << animal.getColumnForHeader("Diet") << std::endl;
+	std::cout << "Column for 'Location': " << animal.getColumnForHeader("Location") << std::endl;
 }

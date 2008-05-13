@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.24 2007/09/26 19:33:46 drbob Exp $
+ * $Id: CKTable.cpp,v 1.25 2008/05/13 20:11:33 drbob Exp $
  */
 
 //	System Headers
@@ -56,7 +56,9 @@
 CKTable::CKTable() :
 	mTable(NULL),
 	mColumnHeaders(NULL),
+	mColumnHeadersIndex(),
 	mRowLabels(NULL),
+	mRowLabelsIndex(),
 	mNumRows(-1),
 	mNumColumns(-1)
 {
@@ -72,7 +74,9 @@ CKTable::CKTable() :
 CKTable::CKTable( int aNumRows, int aNumColumns ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
+	mColumnHeadersIndex(),
 	mRowLabels(NULL),
+	mRowLabelsIndex(),
 	mNumRows(-1),
 	mNumColumns(-1)
 {
@@ -100,7 +104,9 @@ CKTable::CKTable( const CKStringList aRowLabels,
 				  const CKStringList aColumnHeaders ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
+	mColumnHeadersIndex(),
 	mRowLabels(NULL),
+	mRowLabelsIndex(),
 	mNumRows(-1),
 	mNumColumns(-1)
 {
@@ -129,7 +135,9 @@ CKTable::CKTable( const CKStringList aRowLabels,
 CKTable::CKTable( const CKString & aCode ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
+	mColumnHeadersIndex(),
 	mRowLabels(NULL),
+	mRowLabelsIndex(),
 	mNumRows(-1),
 	mNumColumns(-1)
 {
@@ -155,7 +163,9 @@ CKTable::CKTable( const CKString & aCode ) :
 CKTable::CKTable( const CKTable & anOther ) :
 	mTable(NULL),
 	mColumnHeaders(NULL),
+	mColumnHeadersIndex(),
 	mRowLabels(NULL),
+	mRowLabelsIndex(),
 	mNumRows(-1),
 	mNumColumns(-1)
 {
@@ -202,9 +212,11 @@ CKTable & CKTable::operator=( const CKTable & anOther )
 			createTable(anOther.mNumRows, anOther.mNumColumns);
 
 			// now, copy over the row labels and column headers
+			mRowLabelsIndex = anOther.mRowLabelsIndex;
 			for (int r = 0; r < mNumRows; r++) {
 				mRowLabels[r] = anOther.mRowLabels[r];
 			}
+			mColumnHeadersIndex = anOther.mColumnHeadersIndex;
 			for (int c = 0; c < mNumColumns; c++) {
 				mColumnHeaders[c] = anOther.mColumnHeaders[c];
 			}
@@ -1106,6 +1118,7 @@ void CKTable::setColumnHeader( int aCol, const CKString & aHeader )
 
 	// now set it intelligently
 	mColumnHeaders[aCol] = aHeader;
+	mColumnHeadersIndex[aHeader] = aCol;
 }
 
 
@@ -1130,6 +1143,7 @@ void CKTable::setColumnHeader( int aCol, const char *aHeader )
 
 	// now set it intelligently
 	mColumnHeaders[aCol] = aHeader;
+	mColumnHeadersIndex[aHeader] = aCol;
 }
 
 
@@ -1153,6 +1167,7 @@ void CKTable::setRowLabel( int aRow, const CKString & aLabel )
 
 	// now set it intelligently
 	mRowLabels[aRow] = aLabel;
+	mRowLabelsIndex[aLabel] = aRow;
 }
 
 
@@ -1177,6 +1192,7 @@ void CKTable::setRowLabel( int aRow, const char *aLabel )
 
 	// now set it intelligently
 	mRowLabels[aRow] = aLabel;
+	mRowLabelsIndex[aLabel] = aRow;
 }
 
 
@@ -2142,12 +2158,11 @@ int CKTable::getColumnForHeader( const CKString & aHeader ) const
 {
 	int		retval = -1;
 
-	// scan the array for the argument
-	for ( int i = 0; i < mNumColumns; ++i ) {
-		if (mColumnHeaders[i] == aHeader) {
-			retval = i;
-			break;
-		}
+	// see if the header is in the map
+	std::map<CKString, int>::const_iterator		i = mColumnHeadersIndex.find(aHeader);
+	if (i != mColumnHeadersIndex.end()) {
+		// found it... so get the column number
+		retval = i->second;
 	}
 
 	return retval;
@@ -2163,12 +2178,11 @@ int CKTable::getRowForLabel( const CKString & aLabel ) const
 {
 	int		retval = -1;
 
-	// scan the array for the argument
-	for ( int i = 0; i < mNumRows; ++i ) {
-		if (mRowLabels[i] == aLabel) {
-			retval = i;
-			break;
-		}
+	// see if the header is in the map
+	std::map<CKString, int>::const_iterator		i = mRowLabelsIndex.find(aLabel);
+	if (i != mRowLabelsIndex.end()) {
+		// found it... so get the row number
+		retval = i->second;
 	}
 
 	return retval;
@@ -2381,11 +2395,15 @@ bool CKTable::merge( const CKTable & aTable )
 	if (!error) {
 		// do the column headers first
 		for (int i = 0; i < newColumnHeaders.size(); i++) {
-			mColumnHeaders[oldCols + i] = newColumnHeaders[i];
+			CKString	& header = newColumnHeaders[i];
+			mColumnHeaders[oldCols + i] = header;
+			mColumnHeadersIndex[header] = oldCols + i; 
 		}
 		// now do the row labels next
 		for (int i = 0; i < newRowLabels.size(); i++) {
-			mRowLabels[oldRows + i] = newRowLabels[i];
+			CKString	& label = newRowLabels[i];
+			mRowLabels[oldRows + i] = label;
+			mRowLabelsIndex[label] = oldRows + i;
 		}
 	}
 
@@ -2411,7 +2429,7 @@ bool CKTable::merge( const CKTable & aTable )
 
 		// map all the rows from the source to the new table
 		for (int row = 0; row < aTable.mNumRows; row++) {
-			CKString		label = aTable.mRowLabels[row];
+			CKString	& label = aTable.mRowLabels[row];
 			if (label == "") {
 				targetRow.addToEnd(blankRow++);
 			} else {
@@ -2420,11 +2438,11 @@ bool CKTable::merge( const CKTable & aTable )
 		}
 		// now do the same for all the columns in the source
 		for (int col = 0; col < aTable.mNumColumns; col++) {
-			CKString		label = aTable.mColumnHeaders[col];
-			if (label == "") {
+			CKString	& header = aTable.mColumnHeaders[col];
+			if (header == "") {
 				targetCol.addToEnd(blankCol++);
 			} else {
-				targetCol.addToEnd(getColumnForHeader(label));
+				targetCol.addToEnd(getColumnForHeader(header));
 			}
 		}
 
@@ -3170,16 +3188,22 @@ void CKTable::takeValuesFromCode( const CKString & aCode )
 	 * Next, we need to read off the column headers that we need to
 	 * apply to this newly constructed table
 	 */
+	mColumnHeadersIndex.clear();
 	for (int j = 0; j < colCnt; j++) {
-		mColumnHeaders[j] = chunks[bit++];
+		CKString	& header = chunks[bit++];
+		mColumnHeaders[j] = header;
+		mColumnHeadersIndex[header] = j;
 	}
 
 	/*
 	 * Next, we need to read off the row labels that we need to
 	 * apply to this newly constructed table
 	 */
+	mRowLabelsIndex.clear();
 	for (int i = 0; i < rowCnt; i++) {
-		mRowLabels[i] = chunks[bit++];
+		CKString	& label = chunks[bit++];
+		mRowLabels[i] = label;
+		mRowLabelsIndex[label] = i;
 	}
 
 	/*
@@ -3239,6 +3263,7 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	 * If we're still here then we need to create the array of CKString
 	 * values that will be the column headers.
 	 */
+	std::map<CKString, int>		headersIndex;
 	CKString		*headers = new CKString[aNumColumns];
 	if (headers == NULL) {
 		std::ostringstream	msg;
@@ -3256,6 +3281,7 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	 * If we're still here then we need to create the array of CKString
 	 * values that will be the row labels.
 	 */
+	std::map<CKString, int>		labelsIndex;
 	CKString		*labels = new CKString[aNumRows];
 	if (labels == NULL) {
 		std::ostringstream	msg;
@@ -3287,11 +3313,15 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 		}
 		// ...now the column headers
 		for (i = 0; i < copyCols; ++i) {
-			headers[i] = mColumnHeaders[i];
+			CKString	& header = mColumnHeaders[i];
+			headers[i] = header;
+			headersIndex[header] = i;
 		}
 		// ...and finally the row labels
 		for (j = 0; j < copyRows; ++j) {
-			labels[j] = mRowLabels[j];
+			CKString	& label = mRowLabels[j];
+			labels[j] = label;
+			labelsIndex[label] = j;
 		}
 	}
 
@@ -3307,7 +3337,9 @@ void CKTable::resizeTable( int aNumRows, int aNumColumns )
 	mNumColumns = aNumColumns;
 	mTable = table;
 	mColumnHeaders = headers;
+	mColumnHeadersIndex = headersIndex;
 	mRowLabels = labels;
+	mRowLabelsIndex = labelsIndex;
 }
 
 
@@ -3371,6 +3403,37 @@ bool CKTable::operator==( const CKTable & anOther ) const
 bool CKTable::operator!=( const CKTable & anOther ) const
 {
 	return !(this->operator==(anOther));
+}
+
+
+/*
+ * To make it a little easier on the user of this table, I have
+ * created these operators so that elements in the table can be
+ * referenced like simply indexes: tbl(0,5) - for both the RHS
+ * and LHS of the equation. This requires the CKVariant to handle
+ * a lot of the work, but that's not horrible, really.
+ */
+CKVariant & CKTable::operator()( int aRow, int aCol )
+{
+	return getValue(aRow, aCol);
+}
+
+
+CKVariant & CKTable::operator()( int aRow, const CKString & aColHeader )
+{
+	return getValue(aRow, aColHeader);
+}
+
+
+CKVariant & CKTable::operator()( const CKString & aRowLabel, int aCol )
+{
+	return getValue(aRowLabel, aCol);
+}
+
+
+CKVariant & CKTable::operator()( const CKString & aRowLabel, const CKString & aColHeader )
+{
+	return getValue(aRowLabel, aColHeader);
 }
 
 
@@ -3521,7 +3584,9 @@ void CKTable::setColumnHeaders( const CKStringList & aList )
 
 	// now copy in all the values
 	for (int i = 0; i < mNumColumns; i++) {
-		mColumnHeaders[i] = aList[i];
+		CKString	& header = aList[i];
+		mColumnHeaders[i] = header;
+		mColumnHeadersIndex[header] = i;
 	}
 }
 
@@ -3547,7 +3612,9 @@ void CKTable::setRowLabels( const CKStringList & aList )
 
 	// now copy in all the values
 	for (int i = 0; i < mNumRows; i++) {
-		mRowLabels[i] = aList[i];
+		CKString	& label = aList[i];
+		mRowLabels[i] = label;
+		mRowLabelsIndex[label] = i;
 	}
 }
 
@@ -3693,6 +3760,8 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	}
+	// clear out the index of these column headers
+	mColumnHeadersIndex.clear();
 
 	/*
 	 * If we're still here then we need to create the array of CKString
@@ -3706,6 +3775,8 @@ void CKTable::createTable( int aNumRows, int aNumColumns )
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	}
+	// clear out the index of these row labels
+	mRowLabelsIndex.clear();
 }
 
 
@@ -3766,8 +3837,13 @@ void CKTable::createTable( const CKStringList & aRowLabels,
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
+		// clear out the existing index of column headers
+		mColumnHeadersIndex.clear();
+		// now populate the new headers from the list
 		for (int i = 0; i < mNumColumns; i++) {
-			mColumnHeaders[i] = aColHeaders[i];
+			CKString	& header = aColHeaders[i];
+			mColumnHeaders[i] = header;
+			mColumnHeadersIndex[header] = i;
 		}
 	}
 
@@ -3784,8 +3860,13 @@ void CKTable::createTable( const CKStringList & aRowLabels,
 			"new table. This is a serious allocation problem.";
 		throw CKException(__FILE__, __LINE__, msg.str());
 	} else {
+		// clear out the existing index of row labels
+		mRowLabelsIndex.clear();
+		// now populate the new labels from the list
 		for (int i = 0; i < mNumRows; i++) {
-			mRowLabels[i] = aRowLabels[i];
+			CKString	& label = aRowLabels[i];
+			mRowLabels[i] = label;
+			mRowLabelsIndex[label] = i;
 		}
 	}
 }
@@ -3810,12 +3891,16 @@ void CKTable::dropTable()
 		delete [] mColumnHeaders;
 		mColumnHeaders = NULL;
 	}
+	// ...and clear out the index
+	mColumnHeadersIndex.clear();
 
 	// ...and the array of row labels
 	if (mRowLabels != NULL) {
 		delete [] mRowLabels;
 		mRowLabels = NULL;
 	}
+	// ...and clear out the index
+	mRowLabelsIndex.clear();
 
 	// also, set the size to 'undefined'
 	mNumRows = -1;
