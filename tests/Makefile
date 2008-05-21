@@ -69,7 +69,7 @@ LDFLAGS =
 # These are the main targets that we'll be making
 #
 APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
-		series base64 mindalign numberTest table plistNode initProb url
+		series base64 mindalign numberTest table plistNode initProb url maps
 
 all: $(APPS)
 
@@ -135,5 +135,8 @@ initProb: initProb.cpp $(LIB_FILE)
 
 url: url.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) url.cpp -o url $(LIBS) $(LDFLAGS)
+
+maps: maps.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) maps.cpp -o maps $(LIBS) $(LDFLAGS)
 
 # DO NOT DELETE
