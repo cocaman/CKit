@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.32 2008/02/21 21:39:21 drbob Exp $
+ * $Id: CKString.cpp,v 1.33 2008/06/11 23:09:46 drbob Exp $
  */
 
 //	System Headers
@@ -3186,9 +3186,9 @@ CKString & CKString::convertToBase64()
 			}
 
 			// mask these into the four 6-bit chunks
-			dest1 = src1 >> 2;
-			dest2 = ((src1 & 0x3) << 4) | (src2 >> 4);
-			dest3 = ((src2 & 0xf) << 2) | (src3 >> 6);
+			dest1 = (src1 & 0xfc) >> 2;
+			dest2 = ((src1 & 0x3) << 4) | ((src2 & 0xf0) >> 4);
+			dest3 = ((src2 & 0xf) << 2) | ((src3 & 0xc0) >> 6);
 			dest4 = src3 & 0x3f;
 
 			// now add the encoded values for these 4 chunks
