@@ -6,7 +6,7 @@
  *                make an object with the subset of features that we really
  *                need and leave out the problems that STL brings.
  *
- * $Id: CKString.cpp,v 1.33 2008/06/11 23:09:46 drbob Exp $
+ * $Id: CKString.cpp,v 1.34 2008/06/12 08:36:54 drbob Exp $
  */
 
 //	System Headers
@@ -3115,7 +3115,7 @@ CKString & CKString::trim() const
  * for that encoding. This includes the 76-character line limit where
  * the line will be broken by a '\n'.
  */
-CKString & CKString::convertToBase64()
+CKString & CKString::convertToBase64( bool breakIntoLines )
 {
 	bool		error = false;
 
@@ -3127,7 +3127,7 @@ CKString & CKString::convertToBase64()
 		if (mString == NULL) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::convertToBase64() - the CKString's storage is NULL "
+			msg << "CKString::convertToBase64(bool) - the CKString's storage is NULL "
 				"and that means that there's been a terrible data corruption "
 				"problem. Please check into this as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3153,7 +3153,7 @@ CKString & CKString::convertToBase64()
 		if (!resize((int) (byteCnt * 1.25))) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKString::convertToBase64() - the storage for the encoded "
+			msg << "CKString::convertToBase64(bool) - the storage for the encoded "
 				"date could not be created and that's a serious allocation "
 				"problem. Please check on it as soon as possible.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -3206,7 +3206,7 @@ CKString & CKString::convertToBase64()
 			}
 
 			// if we've reached the line length limit, put a CRLF in there
-			if ((i > 0) && (i % (76/4*3) == 0)) {
+			if (breakIntoLines && (i > 0) && (i % (76/4*3) == 0)) {
 				append("\r\n");
 			}
 		}

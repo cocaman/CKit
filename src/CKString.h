@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.21 2008/02/21 09:54:39 drbob Exp $
+ * $Id: CKString.h,v 1.22 2008/06/12 08:36:55 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -740,7 +740,7 @@ class CKString
 		 * for that encoding. This includes the 76-character line limit where
 		 * the line will be broken by a '\n'.
 		 */
-		CKString & convertToBase64();
+		CKString & convertToBase64( bool breakIntoLines = true );
 		/*
 		 * When data is received in Base64 encoding it can be placed in
 		 * this instance and then this method can be run to convert it to

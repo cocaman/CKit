@@ -9,7 +9,7 @@
  *                           and the other work is left to the super to deal
  *                           with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.cpp,v 1.3 2008/04/09 19:48:48 drbob Exp $
+ * $Id: CKMindAlignProtocol.cpp,v 1.4 2008/06/12 08:36:54 drbob Exp $
  */
 
 //	System Headers
@@ -680,7 +680,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 	if (!error) {
 		// copy it because the encoding will change the value
 		CKString	encoded(aPassword);
-		encoded.convertToBase64();
+		encoded.convertToBase64(false);
 		// make the command to send to the authentication server
 		CKString	cmd = "LOGIN:";
 		cmd.append(aUser).append(";SECRET:").append(encoded).append("\n");
