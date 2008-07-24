@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.19 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.20 2008/07/24 08:51:02 drbob Exp $
  */
 
 //	System Headers
@@ -1220,7 +1220,7 @@ void CKIRCProtocol::stopListener()
 CKString CKIRCProtocol::getReply()
 {
 	bool			error = false;
-	CKString		retval("");
+	CKString		retval;
 
 	/*
 	 * First, see if we're connected to some IRC server, and if not, then
@@ -1245,6 +1245,17 @@ CKString CKIRCProtocol::getReply()
 	// now read up to the "\n" NEWLINE that the IRC server sends
 	if (!error) {
 		retval = mCommPort.readUpToNEWLINE();
+		/*
+		 * It's possible that the data is empty - but the only way for
+		 * that to be acceptable is for a timeout to have occured. So,
+		 * if the data is empty and a timeout *didn't* occur, then we
+		 * need to disconnect this guy and the next pass through, we'll
+		 * be able to connect again and set things up properly - we
+		 * hope.
+		 */
+		if (retval.empty() && (errno != ERR_READ_TIMEOUT)) {
+			disconnect();
+		}
 	}
 
 	return retval;
