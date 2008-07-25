@@ -9,7 +9,7 @@
  *                         and the other work is left to the super to deal
  *                         with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.h,v 1.2 2008/04/09 19:48:48 drbob Exp $
+ * $Id: CKMindAlignProtocol.h,v 1.3 2008/07/25 19:07:02 drbob Exp $
  */
 #ifndef __CKMINDALIGNPROTOCOL_H
 #define __CKMINDALIGNPROTOCOL_H
@@ -281,12 +281,22 @@ class CKMindAlignProtocol :
 		 * This method is used to ask the already connected authentication
 		 * server what the authentication token is for the supplied user
 		 * and password. The returned value is the token itself.
+		 *
+		 * If the MindAlign authentication server does not accept this set
+		 * of login credentials without error (save the failed login) then
+		 * this method will return the empty string. Please check for this
+		 * before assuming it's a valid token.
 		 */
 		CKString obtainToken( const CKString & aUser, const CKString & aPassword );
 		/*
 		 * This method is used to ask the provided authentication server
 		 * connection what the authentication token is for the supplied user
 		 * and password. The returned value is the token itself.
+		 *
+		 * If the MindAlign authentication server does not accept this set
+		 * of login credentials without error (save the failed login) then
+		 * this method will return the empty string. Please check for this
+		 * before assuming it's a valid token.
 		 */
 		CKString obtainToken( CKTelnetConnection *aConn, const CKString & aUser, const CKString & aPassword );
 

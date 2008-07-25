@@ -9,7 +9,7 @@
  *                           and the other work is left to the super to deal
  *                           with. This is the core of the secure chat servers.
  *
- * $Id: CKMindAlignProtocol.cpp,v 1.4 2008/06/12 08:36:54 drbob Exp $
+ * $Id: CKMindAlignProtocol.cpp,v 1.5 2008/07/25 19:07:02 drbob Exp $
  */
 
 //	System Headers
@@ -615,6 +615,11 @@ void CKMindAlignProtocol::disconnectAuthServer()
  * This method is used to ask the already connected authentication
  * server what the authentication token is for the supplied user
  * and password. The returned value is the token itself.
+ *
+ * If the MindAlign authentication server does not accept this set
+ * of login credentials without error (save the failed login) then
+ * this method will return the empty string. Please check for this
+ * before assuming it's a valid token.
  */
 CKString CKMindAlignProtocol::obtainToken( const CKString & aUser, const CKString & aPassword )
 {
@@ -626,6 +631,11 @@ CKString CKMindAlignProtocol::obtainToken( const CKString & aUser, const CKStrin
  * This method is used to ask the provided authentication server
  * connection what the authentication token is for the supplied user
  * and password. The returned value is the token itself.
+ *
+ * If the MindAlign authentication server does not accept this set
+ * of login credentials without error (save the failed login) then
+ * this method will return the empty string. Please check for this
+ * before assuming it's a valid token.
  */
 CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKString & aUser, const CKString & aPassword )
 {
@@ -688,7 +698,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 		if (!aConn->send(cmd)) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKMindAlignProtocol::connectAuthServer(const CKString & , int) - "
+			msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
 				"the authentication server could not be sent the login credentials. "
 				"Please make sure that the server is OK.";
 			throw CKException(__FILE__, __LINE__, msg.str());
@@ -696,6 +706,37 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 			// get the response and clean it up
 			info = aConn->readUpToNEWLINE();
 			info.trim();
+		}
+	}
+
+	/*
+	 * If the MindAlign suthentication server returns an error then
+	 * let's see what it is. If it's 504 then it means that the login
+	 * credentials are invalid or wrong. In this case, we simply flag
+	 * it as an error and the calling method
+	 */
+	if (!error) {
+   		if (info.left(5) == "ERROR") {
+   			// get the MindAlign authentication error code - after the ':'
+   			CKString	code = info.substrAfter(':');
+   			// let's see what the error code is...
+   			if (code == "504") {
+   				/*
+   				 * While this may not seem like an error, we are being
+   				 * told that this is an illegal login. It could be because
+   				 * it doesn't exist on the server or the password is bad.
+   				 * Because we know this is a bad login, let's customize
+   				 * the exception and say exactly what it is.
+   				 */
+   				error = true;
+				std::ostringstream	msg;
+				msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
+					"the MindAlign authentication server has said that the login "
+					"credentials for '" << aUser << "' with a password of '"
+					<< aPassword << "' are invalid (error: 504). This means the "
+					"user can't login.";
+				throw CKException(__FILE__, __LINE__, msg.str());
+   			}
 		}
 	}
 
@@ -713,7 +754,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 		if (chunks.size() < 5) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKMindAlignProtocol::connectAuthServer(const CKString & , int) - "
+			msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
 				"the authentication server responded to the login credentials "
 				"with '" << info << "'. This does not have the 5 components that "
 				"it should. Please check with them to see if the format changed.";
@@ -748,7 +789,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 			// flag the error and throw the exception
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKMindAlignProtocol::connectAuthServer(const CKString & , int) - "
+			msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
 				"the authentication server responded to the login credentials "
 				"with '" << info << "' and the 'NICK' component was empty. "
 				"That's bad news. Please check with the authentication folks.";
@@ -759,7 +800,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 			// flag the error and throw the exception
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKMindAlignProtocol::connectAuthServer(const CKString & , int) - "
+			msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
 				"the authentication server responded to the login credentials "
 				"with '" << info << "' and the 'NICK' component was not what we "
 				"sent (" << aUser << "). That's bad news. Please check with the "
@@ -767,7 +808,7 @@ CKString CKMindAlignProtocol::obtainToken( CKTelnetConnection *aConn, const CKSt
 		} else if (token.empty()) {
 			error = true;
 			std::ostringstream	msg;
-			msg << "CKMindAlignProtocol::connectAuthServer(const CKString & , int) - "
+			msg << "CKMindAlignProtocol::obtainToken(const CKString &, const CKString &) - "
 				"the authentication server responded to the login credentials "
 				"with '" << info << "' and the 'TOKEN' component was empty. "
 				"That's bad news. Please check with the authentication folks.";
