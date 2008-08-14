@@ -6,7 +6,7 @@
  *                     and return a CKString as a reply. This is the core
  *                     of the chat servers.
  *
- * $Id: CKIRCProtocol.cpp,v 1.20 2008/07/24 08:51:02 drbob Exp $
+ * $Id: CKIRCProtocol.cpp,v 1.21 2008/08/14 19:00:39 drbob Exp $
  */
 
 //	System Headers
@@ -1161,8 +1161,8 @@ void CKIRCProtocol::startListener()
 			// make sure it's running
 			if (!mListener->isRunning()) {
 				std::ostringstream	msg;
-				msg << "CKIRCProtocol::stopListener() - the Listener for this "
-					"instance could not be stopped. This is a serious threading "
+				msg << "CKIRCProtocol::startListener() - the Listener for this "
+					"instance could not be started. This is a serious threading "
 					"problem.";
 				throw CKException(__FILE__, __LINE__, msg.str());
 			}
@@ -1253,7 +1253,7 @@ CKString CKIRCProtocol::getReply()
 		 * be able to connect again and set things up properly - we
 		 * hope.
 		 */
-		if (retval.empty() && (errno != ERR_READ_TIMEOUT)) {
+		if (retval.empty() && (errno == ERR_READ_ERROR)) {
 			disconnect();
 		}
 	}
