@@ -6,7 +6,7 @@
  *                    where each subclass will convert the data in the line to
  *                    a path and value for insertion into the tree.
  *
- * $Id: CKFileDataNode.cpp,v 1.1 2008/01/17 16:26:59 drbob Exp $
+ * $Id: CKFileDataNode.cpp,v 1.2 2008/12/23 17:36:23 drbob Exp $
  */
 
 //	System Headers
@@ -454,7 +454,7 @@ bool CKFileDataNode::processCurrent( CKString & aLine, CKStringList & allElems )
 	 * decent framework to make it easy. Nonetheless, we shouldn't
 	 * be silly and return an error...
 	 */
-	
+
 	return !error;
 }
 

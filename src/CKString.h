@@ -6,7 +6,7 @@
  *              make an object with the subset of features that we really
  *              need and leave out the problems that STL brings.
  *
- * $Id: CKString.h,v 1.22 2008/06/12 08:36:55 drbob Exp $
+ * $Id: CKString.h,v 1.23 2008/12/23 17:36:23 drbob Exp $
  */
 #ifndef __CKSTRING_H
 #define __CKSTRING_H
@@ -1513,7 +1513,7 @@ class CKStringList
 
 		CKString popOffEnd();
 		CKString popOffEnd() const;
-		
+
 		/*
 		 * These methods remove the first and last strings from the list
 		 * and return them to the callers. The idea is that many times
@@ -1528,7 +1528,7 @@ class CKStringList
 
 		CKString popSomethingOffEnd();
 		CKString popSomethingOffEnd() const;
-		
+
 		/*
 		 * These methods remove up to 'aMaxCnt' lines from the front, or
 		 * end, of the list - depending on the method. The idea is that
@@ -1543,7 +1543,7 @@ class CKStringList
 		 */
 		CKStringList cutLinesOffFront( int aMaxCnt );
 		CKStringList cutLinesOffFront( int aMaxCnt ) const;
-		
+
 		CKStringList cutLinesOffEnd( int aMaxCnt );
 		CKStringList cutLinesOffEnd( int aMaxCnt ) const;
 
@@ -1671,12 +1671,12 @@ class CKStringListNotEmptyTest :
 			mHeadPtr(aHead)
 		{
 		}
-		
+
 		virtual ~CKStringListNotEmptyTest()
 		{
 			mHeadPtr = NULL;
 		}
-		
+
 		virtual int test()
 		{
 			return ((mHeadPtr != NULL) && ((*mHeadPtr) == NULL));
