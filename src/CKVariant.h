@@ -5,7 +5,7 @@
  *               then be treated as a single data type and thus really
  *               simplify dealing with tables of different types of data.
  *
- * $Id: CKVariant.h,v 1.18 2008/05/13 20:11:33 drbob Exp $
+ * $Id: CKVariant.h,v 1.19 2008/12/23 17:36:23 drbob Exp $
  */
 #ifndef __CKVARIANT_H
 #define __CKVARIANT_H
@@ -319,7 +319,7 @@ class CKVariant
 		 * of this class, then they need to make a copy.
 		 */
 		const CKTimeTable *getTimeTableValue() const;
-		
+
 		/*
 		 * These operators allow me to use the variants as regular types
 		 * when casting to the right type. The trick is that if the variant

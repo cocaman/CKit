@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.25 2008/05/13 20:11:33 drbob Exp $
+ * $Id: CKTable.cpp,v 1.26 2008/12/23 17:36:23 drbob Exp $
  */
 
 //	System Headers
@@ -2397,7 +2397,7 @@ bool CKTable::merge( const CKTable & aTable )
 		for (int i = 0; i < newColumnHeaders.size(); i++) {
 			CKString	& header = newColumnHeaders[i];
 			mColumnHeaders[oldCols + i] = header;
-			mColumnHeadersIndex[header] = oldCols + i; 
+			mColumnHeadersIndex[header] = oldCols + i;
 		}
 		// now do the row labels next
 		for (int i = 0; i < newRowLabels.size(); i++) {
