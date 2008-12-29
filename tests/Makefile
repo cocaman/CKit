@@ -69,7 +69,8 @@ LDFLAGS =
 # These are the main targets that we'll be making
 #
 APPS = uuid smtp ftp chat nan node stringTest vectorTest queueTest ParserTest \
-		series base64 mindalign numberTest table plistNode initProb url maps
+		series base64 mindalign numberTest table plistNode initProb url maps \
+		plistTest
 
 all: $(APPS)
 
@@ -108,6 +109,9 @@ node: node.cpp $(LIB_FILE)
 
 plistNode: plistNode.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) plistNode.cpp -o plistNode $(LIBS) $(LDFLAGS)
+
+plistTest: plistTest.cpp $(LIB_FILE)
+	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) plistTest.cpp -o plistTest $(LIBS) $(LDFLAGS)
 
 stringTest: stringTest.cpp $(LIB_FILE)
 	$(CXX) -m32 $(CXXFLAGS) $(DEBUG) stringTest.cpp -o stringTest $(LIBS) $(LDFLAGS)
