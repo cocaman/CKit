@@ -6,7 +6,7 @@
  *                       data from the file as the plist definition contains
  *                       all the structure necessary for building the tree.
  *
- * $Id: CKPListDataNode.cpp,v 1.1 2008/01/17 16:43:30 drbob Exp $
+ * $Id: CKPListDataNode.cpp,v 1.2 2008/12/29 15:09:51 drbob Exp $
  */
 
 //	System Headers
@@ -736,7 +736,8 @@ bool CKPListDataNode::parseFromPList( char * & aStr )
 				forcedString = false;
 				// we certainly don't have any value for this guy - yet
 				value.clearValue();
-			} else if ((aStr[0] == '\n') && !key.empty() && !buff.empty()) {
+			} else if (((aStr[0] == ';') || (aStr[0] == '\n')) &&
+					   !key.empty() && !buff.empty()) {
 				/*
 				 * This is the character indicating that we're done
 				 * with a key/value definition and we therefore need
