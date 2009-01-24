@@ -4,7 +4,7 @@
  *                 nice in that we can choose to have it ignore duplicates
  *                 or we can have duplicates included.
  *
- * $Id: CKLIFOQueue.h,v 1.5 2008/04/29 19:32:26 drbob Exp $
+ * $Id: CKLIFOQueue.h,v 1.6 2009/01/24 15:55:50 drbob Exp $
  */
 #ifndef __CKLIFOQUEUE_H
 #define __CKLIFOQUEUE_H
@@ -374,13 +374,13 @@ template <class T> class CKLIFOQueue
 					for (int j = mSize; j > 0; --j) {
 						mElements[j] = mElements[j-1];
 					}
-	
+
 					// put this guy where he belongs and up the count
 					mElements[0] = aVector[i];
 					mSize++;
 				}
 			}
-	
+
 			// see if we need to wake any waiters
 			if ((startingSize == 0) && (mSize > 0)) {
 				mConditional.wakeWaiter();
