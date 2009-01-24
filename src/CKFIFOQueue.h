@@ -4,7 +4,7 @@
  *                 nice in that we can choose to have it ignore duplicates
  *                 or we can have duplicates included.
  *
- * $Id: CKFIFOQueue.h,v 1.5 2008/04/29 19:32:26 drbob Exp $
+ * $Id: CKFIFOQueue.h,v 1.6 2009/01/24 15:55:50 drbob Exp $
  */
 #ifndef __CKFIFOQUEUE_H
 #define __CKFIFOQUEUE_H
@@ -370,7 +370,7 @@ template <class T> class CKFIFOQueue
 					mSize++;
 				}
 			}
-	
+
 			// see if we need to wake any waiters
 			if ((startingSize == 0) && (mSize > 0)) {
 				mConditional.wakeWaiter();
