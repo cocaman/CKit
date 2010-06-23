@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional waiter.
  *
- * $Id: CKFWConditional.cpp,v 1.13 2007/11/26 19:33:12 drbob Exp $
+ * $Id: CKFWConditional.cpp,v 1.14 2010/06/23 13:45:12 drbob Exp $
  */
 
 //	System Headers
@@ -77,7 +77,7 @@ CKFWConditional::~CKFWConditional()
 }
 
 
-int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
+int CKFWConditional::lockAndTest( const ICKFWConditionalSpuriousTest & aTest,
 								  int aTimeoutInMillis )
 {
 	int lResult = FWCOND_LOCK_SUCCESS;
@@ -103,7 +103,7 @@ int CKFWConditional::lockAndTest( ICKFWConditionalSpuriousTest & aTest,
 
 	// now lock and test - but use the right wait function
 	mMutex.lock();
-	while(aTest.test()) {
+	while(((ICKFWConditionalSpuriousTest &)aTest).test()) {
 		if (aTimeoutInMillis >= 0) {
 			// now wait just that long and no longer
 			int rc = pthread_cond_timedwait(&mConditional, &mMutex.mMutex, &lTimeSpec);

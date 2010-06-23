@@ -17,9 +17,9 @@ SHARED = -shared
 endif
 ifeq ($(shell uname),Darwin)
 CXX = g++
-CXX_DEFS = -D_REENTRANT -O2 -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386
+CXX_DEFS = -D_REENTRANT -O2 -arch ppc -arch i386
 LIB_EXT = dylib
-OS_LIBS = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk
+OS_LIBS = 
 SHARED = -dynamiclib
 endif
 ifeq ($(shell uname),Linux)

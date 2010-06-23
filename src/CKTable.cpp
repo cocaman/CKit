@@ -5,7 +5,7 @@
  *               really allows us to have a very general table structure of
  *               objects and manipulate them very easily.
  *
- * $Id: CKTable.cpp,v 1.26 2008/12/23 17:36:23 drbob Exp $
+ * $Id: CKTable.cpp,v 1.27 2010/06/23 13:45:12 drbob Exp $
  */
 
 //	System Headers
@@ -3515,7 +3515,7 @@ bool CKTable::chooseAndApplyDelimiter( CKString & aBuff )
 	if (!error) {
 		bool	replaced = false;
 		// these are out list of possible delimiters in a reasonable order
-		char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
+		const char	*delimiters = ";|!~`_@#^*/'=.+-<>[]{}1234567890abcde";
 		int		passCnt = (int)strlen(delimiters);
 		// check each and replace if it's not found
 		for (int pass = 0; pass < passCnt; ++pass) {

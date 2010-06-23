@@ -33,9 +33,9 @@ ifeq ($(shell uname),Darwin)
 CXX = g++
 CXX_DEFS = -D_REENTRANT -O2
 CXX_32 = -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386
-CXX_64 = -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch x86_64
-LDD_32 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
-LDD_64 = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch x86_64 -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
+CXX_64 = -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc64 -arch x86_64
+LDD_32 = -lgcc_s.1 -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
+LDD_64 = -lgcc_s.1 -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch x86_64 -install_name libCKit.$(SO_EXT) -current_version 1.0.0 -compatibility_version 1.0.0
 SO_EXT = dylib
 SO_FLAG = -dynamiclib
 endif
