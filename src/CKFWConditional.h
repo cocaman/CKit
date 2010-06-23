@@ -1,7 +1,7 @@
 /*
  * CKFWConditional.h - this file defines the conditional
  *
- * $Id: CKFWConditional.h,v 1.9 2006/05/19 19:34:07 drbob Exp $
+ * $Id: CKFWConditional.h,v 1.10 2010/06/23 13:45:12 drbob Exp $
  */
 #ifndef __CKFW_CONDITIONAL_H
 #define __CKFW_CONDITIONAL_H
@@ -74,14 +74,14 @@ class CKFWConditional
 	public:
 		CKFWConditional( CKFWMutex & aMutex );
 		virtual ~CKFWConditional();
-		
+
 		inline void waitForLock()
 		{
 			CKFWConditionalDefaultTest arg;
 			lockAndTest(arg);
 		}
-		
-		inline void waitForLock( ICKFWConditionalSpuriousTest & aTest = CKFWConditionalDefaultTest(), int aTimeoutInMillis = -1 )
+
+		inline void waitForLock( const ICKFWConditionalSpuriousTest & aTest = CKFWConditionalDefaultTest(), int aTimeoutInMillis = -1 )
 		{
 			lockAndTest(aTest, aTimeoutInMillis);
 		}
@@ -91,13 +91,13 @@ class CKFWConditional
 			CKFWConditionalDefaultTest arg;
 			lockAndTest(arg);
 		}
-		
-		int lockAndTest( ICKFWConditionalSpuriousTest & aTest,
+
+		int lockAndTest( const ICKFWConditionalSpuriousTest & aTest,
 						 int aTimeoutInMillis = -1 );
 		void lockAndWait();
 		void wakeWaiter();
 		void wakeWaiters();
-		
+
 		/**
 		 * just unlocks the underlying mutex.  This is so that you only
 		 * have to use the conditional to do the locking and unlocking.
@@ -109,7 +109,7 @@ class CKFWConditional
 	private:
 		CKFWMutex			& mMutex;
 		pthread_cond_t		mConditional;
-		
+
 		friend int CKFWConditionalTest( char * argv[] = 0, int argc = 0 );
 };
 

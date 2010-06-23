@@ -55,27 +55,27 @@ class ParserBase
 		friend class ParserDebug;
 
 		/** \brief Parser function prototype.
-		
+
 		   Encapsulates a Parser function prototype.
 		*/
 		class FunProt
 		{
 			friend class ParserBase;
-		
+
 			public:
 				FunProt(void *a_pFun, int a_iArgc, bool a_bAllowOpti) :
 					pFun(a_pFun),
 					iArgc(a_iArgc),
 					bAllowOpti(a_bAllowOpti)
 				{}
-		
+
 				/** \brief Default constructor. */
 				FunProt() :
 					pFun(0),
 					iArgc(0),
 					bAllowOpti(0)
 				{}
-		
+
 				/** \brief Copy constructor. */
 				FunProt(const FunProt &a_Fun)
 				{
@@ -83,9 +83,9 @@ class ParserBase
 					iArgc = a_Fun.iArgc;
 					bAllowOpti = a_Fun.bAllowOpti;
 				}
-		
+
 				/** \brief Get number of Arguments.
-				
+
 				  If this value is negative this indicates a function with variable argument count.
 				  Internally abs(iArgc) is the actual number of arguments given to a specific call
 				  of this function during string/bytecode parsing.
@@ -94,7 +94,7 @@ class ParserBase
 				{
 					return iArgc;
 				}
-		
+
 			private:
 				void *pFun;       ///< Callback pointer
 				int   iArgc;      ///< Argument count
@@ -104,62 +104,62 @@ class ParserBase
 	public:
 		/** \brief Type of exceptions thrown by the parser. */
 		typedef ParserException exception_type;
-		
+
 		/** \brief Base datatype of the parser. */
 		// typedef MU_PARSER_BASETYPE value_type;
 		typedef CKVariant value_type;
-		
+
 		/** \brief String type of the parser. */
 		typedef MU_PARSER_STRINGTYPE  string_type;
-		
+
 		/** \brief Type of the string characters. */
 		typedef string_type::value_type char_type;
-		
+
 		/** \brief User defined function with one parameter. */
 		typedef value_type (*fun_type1)(value_type &);
-		
+
 		/** \brief User defined function with two parameters. */
 		typedef value_type (*fun_type2)(value_type &, value_type &);
-		
+
 		/** \brief User defined function with three parameters. */
 		typedef value_type (*fun_type3)(value_type &, value_type &, value_type &);
-		
+
 		/** \brief User defined function with four parameters. */
 		typedef value_type (*fun_type4)(value_type &, value_type &, value_type &, value_type &);
-		
+
 		/** \brief User defined function with five parameters. */
 		typedef value_type (*fun_type5)(value_type &, value_type &, value_type &, value_type &, value_type &);
-		
+
 		/** \brief User defined function arbitrary number of parameters */
 		typedef value_type (*multfun_type)(const std::vector<value_type>&);
-		
+
 		/** \brief Storage for user variables and their pointers */
 		typedef std::map<string_type, value_type*> varmap_type;
-		
+
 		/** \brief Storage for user defined constants. */
 		typedef std::map<string_type, value_type> valmap_type;
-		
+
 		/** \brief Storage type for names of user defined functions and their pointers. */
 		typedef std::map<string_type, FunProt > funmap_type;
 
 	private:
 		/** \brief Storage type for names of user defined functions and their pointers. */
 		typedef std::map<string_type, fun_type1 > optmap_type;
-		
+
 		/** \brief Storage type for names of user defined functions and their pointers. */
 		typedef std::map<string_type, fun_type1 > infix_oprt_type;
-		
+
 		/** \brief Pointer to 'value_type foo()' type of memberfunction. */
 		typedef value_type (ParserBase::*ParseFunction)() const;
-		
+
 		/** \brief Token type for internal use only. */
 		typedef ParserToken<value_type, MU_PARSER_STRINGTYPE> token_type;
-		
+
 		/** \brief Type of the underlying bytecode. */
 		typedef ParserByteCode<value_type> bytecode_type;
 
 		/** \brief Syntax codes.
-		
+
 		  The syntax codes control the syntax check done during the first time parsing of the
 		  expression string. They are flags that indicate which tokens are allowed next if certain
 		  tokens are identified.
@@ -178,24 +178,24 @@ class ParserBase
 		};
 
 		/** \brief Operator strings. */
-		static char_type *c_DefaultOprt[];
+		static const char_type *c_DefaultOprt[];
 
 	public:
 		ParserBase();
 		ParserBase( const ParserBase &a_Parser );
 		ParserBase& operator=(const ParserBase &a_Parser);
 		virtual ~ParserBase();
-		
+
 		void Init();
 
 		/** \brief Calcule the result.
-		
+
 		  \pre a formula must be set.
 		  \pre variables must have been set (if needed)
-		
+
 		  \sa #m_pParseFormula
 		  \throw ParseException if no Formula is set or in case of any other error.
-		
+
 		  A note on const correctness:
 		  I considere it important that Calc is a const function.
 		  Due to caching operations Calc changes only the state of internal variables with one exception
@@ -224,21 +224,21 @@ class ParserBase
 		void AddVar(const string_type &a_strConst, value_type *a_fVar);
 		void AddPostfixOp(const string_type &a_strFun, fun_type1);
 		void AddPrefixOp(const string_type &a_strName, fun_type1 a_pOprt);
-		
+
 		// Clear user defined variables, constants or functions
 		void ClearVar();
 		void ClearFun();
 		void ClearConst();
 		void ClearPrefixOp();
 		void ClearPostfixOp();
-		
+
 		void RemoveVar(const string_type &a_strVarName);
 		const varmap_type& GetUsedVar() const;
 		const varmap_type& GetVar() const;
 		const string_type& GetFormula() const;
 		const funmap_type& GetFunDef() const;
 		const valmap_type& GetConst() const;
-		
+
 		virtual const char_type* ValidNameChars() const = 0;
 		virtual const char_type* ValidOprtChars() const = 0;
 		virtual const char_type* ValidPrefixOprtChars() const = 0;
@@ -247,7 +247,7 @@ class ParserBase
 		virtual void InitFun() {};
 		virtual void InitConst() {};
 		virtual void InitOprt() {};
-		
+
 		void  Error(EErrorCodes a_iErrc, const string_type &a_strTok) const;
 		void  Error(EErrorCodes a_iErrc, int a_iPos=-1, const string_type &a_strTok = "") const;
 		void  CheckName(const string_type &a_strName, const string_type &a_CharSet) const;
@@ -255,7 +255,7 @@ class ParserBase
 	private:
 		void Assign(const ParserBase &a_Parser);
 		void InitErrMsg();
-		
+
 		int  ExtractToken(const char_type *a_szCharSet, string_type &a_strTok, int a_iPos) const;
 		bool IsValTok(int &a_iPos, token_type &a_Tok) const;
 		bool IsVarTok(int &a_iPos, token_type &a_Tok) const;
@@ -267,24 +267,24 @@ class ParserBase
 		token_type ApplyOprt(const token_type &a_Val1,
 							 const token_type &a_OptTok,
 							 const token_type &a_Val2) const;
-		
+
 		void ApplyInfixOp(ParserStack<token_type> &a_stOpt,
 						  ParserStack<token_type> &a_stVal) const;
-		
+
 		void ApplyFunction(int iArgCount,
 						   ParserStack<token_type> &a_stOpt,
 						   ParserStack<token_type> &a_stVal) const;
-		
+
 		token_type ApplyUnaryOprt(const token_type &a_FunTok,
 								  const token_type &a_ValTok) const;
-		
+
 		token_type ReadToken(int &index, int &SyntaxFlags) const;
 		int GetOprtPri(const token_type &a_Tok) const;
-		
+
 		value_type ParseString() const;
 		value_type ParseCmdCode() const;
 		value_type ParseValue() const;
-		
+
 		void  ClearFormula();
 
 #if defined(MU_PARSER_DUMP_STACK) | defined(MU_PARSER_DUMP_CMDCODE)
@@ -293,7 +293,7 @@ class ParserBase
 #endif
 
 		/** \brief Pointer to the parser function.
-		
+
 		  Calc() calls the function whose address is stored there.
 		*/
 		mutable ParseFunction m_pParseFormula;
@@ -301,7 +301,7 @@ class ParserBase
 		mutable const long *m_pCmdCode;     ///< Formula converted to bytecode, points to the data of the bytecode class.
 		mutable bytecode_type m_vByteCode; ///< The Bytecode class.
 		mutable varmap_type m_UsedVar;     ///< Map holding the variable found in the current expression.
-		
+
 		string_type  m_strFormula;  ///< The original formula.
 		funmap_type  m_FunDef;      ///< Map of function names and pointers.
 		valmap_type  m_ConstDef;    ///< user constants.
@@ -313,7 +313,7 @@ class ParserBase
 		bool m_bUseByteCode;  ///< Flag that indicates if bytecode parsing is on or off.
 
 		/** \brief Flag that contronls behaviour if undefined variables have been found.
-		
+
 		  If true, the parser does not throw an exception if an undefined variable is found.
 		  otherwise it does. This variable is used internally only!
 		  It supresses a "undefined variable" exception in GetUsedVar().
@@ -321,7 +321,7 @@ class ParserBase
 		  those the are not defined by the time of it's call.
 		*/
 		mutable bool m_bSkipErrors;
-		
+
 		value_type m_fZero;  ///< Dummy value of zero, referenced by undefined variables
 };
 

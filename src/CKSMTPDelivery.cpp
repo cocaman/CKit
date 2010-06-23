@@ -6,7 +6,7 @@
  *                      communications. It's used in the Mail Delivery system
  *                      as one of the ways in which a message can be sent.
  *
- * $Id: CKSMTPDelivery.cpp,v 1.10 2007/09/26 19:33:46 drbob Exp $
+ * $Id: CKSMTPDelivery.cpp,v 1.11 2010/06/23 13:45:12 drbob Exp $
  */
 
 //	System Headers
@@ -32,9 +32,9 @@
  * and so I can use them to look up the textual values of things given
  * only the numerical values that C like to give us.
  */
-char *wdays[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-					"Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+const char *wdays[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+const char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+						 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 
 /********************************************************

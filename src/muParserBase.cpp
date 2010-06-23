@@ -41,13 +41,13 @@ namespace MathUtils
 {
 
 #if !defined(MU_PARSER_WIDESTRING)
-ParserBase::char_type* ParserBase::c_DefaultOprt[] = { "<=", ">=", "!=", "==", "<",
-                                                       ">", "+", "-", "*", "/", "^",
-                                                       "&&", "||", "(", ")", ",", 0 };
+const ParserBase::char_type* ParserBase::c_DefaultOprt[] = { "<=", ">=", "!=", "==", "<",
+                                                             ">", "+", "-", "*", "/", "^",
+                                                             "&&", "||", "(", ")", ",", 0 };
 #else
-ParserBase::char_type* ParserBase::c_DefaultOprt[] = { L"<=", L">=", L"!=", L"==", L"<",
-                                                       L">", L"+", L"-", L"*", L"/", L"^",
-                                                       L"&&", L"||", L"(", L")", L",", 0 };
+const ParserBase::char_type* ParserBase::c_DefaultOprt[] = { L"<=", L">=", L"!=", L"==", L"<",
+                                                             L">", L"+", L"-", L"*", L"/", L"^",
+                                                             L"&&", L"||", L"(", L")", L",", 0 };
 #endif
 
 //------------------------------------------------------------------------------
