@@ -137,6 +137,7 @@ OBJS64 := $(OBJS64:CKURL.o64=)
 else
 ifeq ($(shell uname),Darwin)
 all: $(LIB_FILE) $(LIB64_FILE)
+	lipo -create $(LIB_FILE) $(LIB64_FILE) -output $(LIB_FILE)
 else
 ifeq ($(shell uname),Linux)
 ifeq ($(shell uname -m),x86_64)
