@@ -2,7 +2,7 @@
  * CKFWRWMutex.h - this file defines the simple read/write mutex that can be
  *                 used in a large number of applications.
  *
- * $Id: CKFWRWMutex.h,v 1.1 2004/12/01 18:28:20 drbob Exp $
+ * $Id: CKFWRWMutex.h,v 1.2 2010/08/25 12:00:25 drbob Exp $
  */
 #ifndef __CKFWRW_MUTEX_H
 #define __CKFWRW_MUTEX_H
@@ -67,7 +67,7 @@ class CKFWRWMutex
 		 * if there is some other problem. Does Not Block.
 		 */
 		bool tryWriteLock();
-  
+
 		/**
 		 * Attempts to unlock this mutex.  Throws a CKErrNoException if there is
 		 * some problem. See man pthread_mutex_unlock

@@ -2,7 +2,7 @@
  * CKFWMutex.cpp - this file implements the simple mutex that can
  *                 be used in a large number of applications.
  *
- * $Id: CKFWTimer.cpp,v 1.8 2007/09/26 19:33:45 drbob Exp $
+ * $Id: CKFWTimer.cpp,v 1.9 2010/08/25 12:00:26 drbob Exp $
  */
 
 //	System Headers
@@ -47,7 +47,7 @@ CKFWTimer::CKFWTimer( int aMonth,
 	mTime( 0 )
 {
 	struct tm lTime;
-	
+
 	lTime.tm_sec  = aSecond;
 	lTime.tm_min  = aMinute;
 	lTime.tm_hour = aHour;
