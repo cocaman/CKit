@@ -9,8 +9,8 @@
  *                 you need to pop off the top split time to get to the next one.
  *                 This means that the list of split times it a "scan once"
  *                 scheme, but that's not a real limitation for this guy.
- * 
- * $Id: CKStopwatch.h,v 1.7 2004/09/25 16:14:39 drbob Exp $
+ *
+ * $Id: CKStopwatch.h,v 1.8 2010/08/25 12:00:26 drbob Exp $
  */
 #ifndef __CKSTOPWATCH_H
 #define __CKSTOPWATCH_H
@@ -194,7 +194,7 @@ class CKStopwatch
 		 */
 		bool operator!=( const CKStopwatch & anOther ) const;
 		/*
-		 * Because there are times when it's useful to have a nice 
+		 * Because there are times when it's useful to have a nice
 		 * human-readable form of the contents of this instance. Most of the
 		 * time this means that it's used for debugging, but it could be used
 		 * for just about anything. In these cases, it's nice not to have to
@@ -206,7 +206,7 @@ class CKStopwatch
 	protected:
 		/*
 		 * This method is useful because C++ can't compare structs and we
-		 * need to be able to compare lots of them for this guy's 
+		 * need to be able to compare lots of them for this guy's
 		 * operator==() method.
 		 */
 		static bool areEqual( const struct tms & aTime, const struct tms & anOther );
