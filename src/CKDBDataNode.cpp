@@ -616,7 +616,7 @@ bool CKDBDataNode::processCurrent( SACommand & aCmd )
 	 * decent framework to make it easy. Nonetheless, we shouldn't
 	 * be silly and return an error...
 	 */
-	
+
 	return !error;
 }
 
