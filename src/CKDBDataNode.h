@@ -186,7 +186,7 @@ class CKDBDataNode :
 		 * looking in the database logs.
 		 */
 		virtual const char *getDefaultMachineName();
-		
+
 		/*
 		 * This method attempts to open a connection to the database
 		 * whose parameters are already stored in this instance. Of
