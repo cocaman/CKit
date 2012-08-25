@@ -26,16 +26,16 @@
 CKFWMutex::CKFWMutex() :
 	mLockingThread((pthread_t)-1)
 {
-  int lError = pthread_mutex_init(&mMutex,0);
-  if ( lError != 0 ) {
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
+	int lError = pthread_mutex_init(&mMutex,0);
+	if ( lError != 0 ) {
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 }
 
 CKFWMutex::~CKFWMutex()
 {
-  pthread_mutex_unlock( &mMutex );
-  pthread_mutex_destroy( &mMutex );
+	pthread_mutex_unlock( &mMutex );
+	pthread_mutex_destroy( &mMutex );
 }
 
 /**
@@ -45,17 +45,17 @@ CKFWMutex::~CKFWMutex()
  */
 bool CKFWMutex::tryLock()
 {
-  int lError = pthread_mutex_trylock( &mMutex );
-  if ( lError != 0 ) {
-    if ( lError == EBUSY ) {
-      return false;
-    }
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
+	int lError = pthread_mutex_trylock( &mMutex );
+	if ( lError != 0 ) {
+		if ( lError == EBUSY ) {
+			return false;
+		}
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 
-  mLockingThread = pthread_self( );
+	mLockingThread = pthread_self( );
 
-  return true;
+	return true;
 }
 
 /**
@@ -65,21 +65,21 @@ bool CKFWMutex::tryLock()
  */
 void CKFWMutex::lock()
 {
-  int lError = pthread_mutex_lock( &mMutex );
-  if ( lError != 0 ) {
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
+	int lError = pthread_mutex_lock( &mMutex );
+	if ( lError != 0 ) {
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 
-  mLockingThread = pthread_self();
+	mLockingThread = pthread_self();
 }
 
 void CKFWMutex::unlock()
 {
-  int lError = pthread_mutex_unlock( &mMutex );
-  if ( lError != 0 ) {
-    throw CKErrNoException( __FILE__, __LINE__, lError );
-  }
+	int lError = pthread_mutex_unlock( &mMutex );
+	if ( lError != 0 ) {
+		throw CKErrNoException( __FILE__, __LINE__, lError );
+	}
 
-  mLockingThread = ( pthread_t )-1;
+	mLockingThread = ( pthread_t )-1;
 }
 // vim: set ts=2:

@@ -28,40 +28,40 @@
  */
 class CKFWMutex
 {
-public :
-  CKFWMutex( );
-  virtual ~CKFWMutex( );
+	public :
+		CKFWMutex( );
+		virtual ~CKFWMutex( );
 
-  /**
-   * Attempts to lock the mutex.  Returns true if successful, false if the
-   * lock is already busy. Throws a CKErrNoException if there is some other
-   * problem. Does Not Block.
-   */
-  bool tryLock( );
+		/**
+		* Attempts to lock the mutex.  Returns true if successful, false if the
+		* lock is already busy. Throws a CKErrNoException if there is some other
+		* problem. Does Not Block.
+		*/
+		bool tryLock( );
 
-  /**
-   * Attempts to lock the mutex.  If the mutex is already locked, this thread
-   * will block until the mutex is available.  Throws a CKErrNoException if
-   * there is some problem
-   */
-  void lock( );
+		/**
+		* Attempts to lock the mutex.  If the mutex is already locked, this thread
+		* will block until the mutex is available.  Throws a CKErrNoException if
+		* there is some problem
+		*/
+		void lock( );
 
-  /**
-   * Attempts to unlock this mutex.  Throws a CKErrNoException if there is
-   * some problem. See man pthread_mutex_unlock
-   */
-  void unlock( ) ;
+		/**
+		* Attempts to unlock this mutex.  Throws a CKErrNoException if there is
+		* some problem. See man pthread_mutex_unlock
+		*/
+		void unlock( ) ;
 
-  // void clear( );
+		// void clear( );
 
-private :
-  friend class CKFWConditional;
+	private :
+		friend class CKFWConditional;
 
-  pthread_mutex_t mMutex;
+		pthread_mutex_t mMutex;
 
-  pthread_t mLockingThread;
+		pthread_t mLockingThread;
 
-  friend int CKFWMutexTest( char * argv[] = 0, int argc = 0 );
+		friend int CKFWMutexTest( char * argv[] = 0, int argc = 0 );
 };
 
 #endif	// __CKFW_MUTEX_H
